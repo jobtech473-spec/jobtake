@@ -46,10 +46,10 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 }
 
 export function JobsListClient({
-  initialFilters, jobs, total, page, perPage, categories,
+  initialFilters, jobs, total, page, perPage, categories, initialSort,
 }: {
   initialFilters: { q: string; location: string; category: string; workMode: string; seniority: string; collarType: string };
-  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[];
+  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; initialSort: string;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
@@ -59,7 +59,15 @@ export function JobsListClient({
   const [searchLoc, setSearchLoc] = useState(initialFilters.location);
   const [searchCat, setSearchCat] = useState(initialFilters.category);
   const [searchExp, setSearchExp] = useState(initialFilters.seniority);
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState(initialSort);
+
+  function changeSort(v: string) {
+    setSortBy(v);
+    const p = new URLSearchParams(sp);
+    if (v && v !== "newest") p.set("sort", v); else p.delete("sort");
+    p.delete("page");
+    startT(() => router.push(`/jobs?${p.toString()}`));
+  }
 
   function doSearch(e?: React.FormEvent) {
     e?.preventDefault();
@@ -260,7 +268,7 @@ export function JobsListClient({
               <span>Sort by:</span>
               <select
                 value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
+                onChange={e => changeSort(e.target.value)}
                 className="text-sm font-semibold text-zinc-700 bg-transparent outline-none border-0 cursor-pointer"
               >
                 <option value="newest">Newest</option>

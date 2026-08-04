@@ -6,7 +6,7 @@ import { JobsListClient } from "./JobsListClient";
 
 export const dynamic = "force-dynamic";
 
-type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; seniority?: string; collarType?: string; page?: string }>;
+type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; seniority?: string; collarType?: string; page?: string; sort?: string }>;
 
 export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
@@ -16,6 +16,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const workMode = sp.workMode || "";
   const seniority = sp.seniority || "";
   const collarType = sp.collarType || "";
+  const sort = sp.sort || "newest";
   const page = Math.max(1, parseInt(sp.page || "1", 10));
   const perPage = 12;
 
@@ -31,10 +32,17 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   if (seniority) where.seniority = seniority as Prisma.JobWhereInput["seniority"];
   if (collarType) (where as any).collarType = { equals: collarType };
 
+  const orderBy: Prisma.JobOrderByWithRelationInput[] =
+    sort === "salary"
+      ? [{ salaryMax: "desc" }, { salaryMin: "desc" }]
+      : sort === "relevant"
+      ? [{ featured: "desc" }, { viewsCount: "desc" }, { publishedAt: "desc" }]
+      : [{ featured: "desc" }, { publishedAt: "desc" }];
+
   const [jobs, total, categories] = await Promise.all([
     prisma.job.findMany({
       where,
-      orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
+      orderBy,
       take: perPage,
       skip: (page - 1) * perPage,
       include: {
@@ -58,6 +66,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
 
         <JobsListClient
           initialFilters={{ q, location, category: categorySlug, workMode, seniority, collarType }}
+          initialSort={sort}
           jobs={jobs.map(j => ({
             id: j.id,
             slug: j.slug,

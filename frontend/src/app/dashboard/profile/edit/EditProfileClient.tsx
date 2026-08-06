@@ -12,26 +12,40 @@ type Props = {
   initialBio: string;
   initialPhone: string;
   initialLocation: string;
+  initialSkills: string[];
 };
 
-export function EditProfileClient({ initialName, initialHeadline, initialBio, initialPhone, initialLocation }: Props) {
+export function EditProfileClient({ initialName, initialHeadline, initialBio, initialPhone, initialLocation, initialSkills }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeName, setResumeName] = useState<string | null>(null);
 
   const [name, setName]         = useState(initialName);
   const [headline, setHeadline] = useState(initialHeadline);
   const [bio, setBio]           = useState(initialBio);
   const [phone, setPhone]       = useState(initialPhone);
   const [location, setLocation] = useState(initialLocation);
-  const [skills, setSkills]     = useState<string[]>([]);
+  const [skills, setSkills]     = useState<string[]>(initialSkills);
   const [skillInput, setSkillInput] = useState("");
 
   function addSkill(val: string) {
     const t = val.trim();
-    if (t && !skills.includes(t)) setSkills(s => [...s, t]);
+    if (t && !skills.some(s => s.toLowerCase() === t.toLowerCase())) setSkills(s => [...s, t]);
     setSkillInput("");
+  }
+
+  async function handleResumeUpload(file: File) {
+    setUploadingResume(true); setError(null);
+    const form = new FormData();
+    form.append("resume", file);
+    const res = await fetch("/api/dashboard/resume", { method: "POST", body: form });
+    const data = await res.json().catch(() => ({}));
+    setUploadingResume(false);
+    if (!res.ok) { setError(data.error || "Failed to upload resume"); return; }
+    setResumeName(data.resume.fileName);
   }
 
   async function handleSave() {
@@ -39,7 +53,7 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
     const res = await fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, headline, bio, phone, location }),
+      body: JSON.stringify({ name, headline, bio, phone, location, skills }),
     });
     const data = await res.json();
     setSaving(false);
@@ -157,13 +171,16 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
           </div>
           <div className="p-6">
             <label className="cursor-pointer block border-2 border-dashed border-zinc-200 rounded-xl p-8 flex flex-col items-center gap-3 text-center hover:border-blue-300 hover:bg-blue-50 transition">
-              <FileText className="h-10 w-10 text-zinc-300" />
+              {uploadingResume ? <Loader2 className="h-10 w-10 text-zinc-300 animate-spin" /> : <FileText className="h-10 w-10 text-zinc-300" />}
               <div>
-                <div className="text-sm font-semibold text-zinc-700">Upload your resume</div>
+                <div className="text-sm font-semibold text-zinc-700">
+                  {resumeName ? `Uploaded: ${resumeName}` : "Upload your resume"}
+                </div>
                 <div className="text-xs text-zinc-400 mt-0.5">PDF, DOC or DOCX · Max 5MB</div>
               </div>
               <span className="bg-white border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 transition">Choose File</span>
-              <input type="file" accept=".pdf,.doc,.docx" className="hidden" />
+              <input type="file" accept=".pdf,.doc,.docx" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); e.target.value = ""; }} />
             </label>
           </div>
         </div>

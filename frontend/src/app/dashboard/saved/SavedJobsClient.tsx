@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { Bookmark, Search, SlidersHorizontal, Briefcase, MapPin, Clock, ArrowRight, ArrowLeft } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import { JobPreviewModal } from "@/components/JobPreviewModal";
 
 type Job = {
   id: string;
@@ -36,7 +36,6 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
   const [location, setLocation] = useState("");
   const [sortOpen, setSortOpen] = useState(false);
   const [sort, setSort] = useState<"recent" | "oldest">("recent");
-  const [preview, setPreview] = useState<Job | null>(null);
 
   const isDemo = jobs.length === 0;
   const list = isDemo ? DEMO_JOBS : jobs;
@@ -213,10 +212,10 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
                     <button className="h-9 w-9 rounded-xl border border-blue-200 bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition">
                       <Bookmark className="h-4 w-4 text-blue-600 fill-blue-600" />
                     </button>
-                    <button onClick={() => setPreview(j)}
+                    <Link href={j.slug && j.slug !== "#" ? `/jobs/${j.slug}` : `/jobs?q=${encodeURIComponent(j.title)}`}
                       className="flex items-center gap-1.5 bg-white border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition">
                       View Job
-                    </button>
+                    </Link>
                   </div>
                   <div className="text-xs text-zinc-400">Saved {timeAgo(j.savedAt)}</div>
                 </div>
@@ -238,10 +237,6 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
         </div>
       </div>
 
-      <JobPreviewModal
-        job={preview ? { title: preview.title, company: preview.company, logoUrl: preview.logoUrl, employmentType: preview.employmentType, location: preview.location, slug: preview.slug } : null}
-        onClose={() => setPreview(null)}
-      />
     </>
   );
 }

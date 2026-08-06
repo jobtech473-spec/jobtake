@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { syncUserSkills } from "@/lib/skills";
 
 export async function GET() {
   const me = await getCurrentUser();
@@ -33,6 +34,8 @@ export async function PATCH(req: NextRequest) {
     where: { id: me.id },
     data: { ...rest },
   });
+
+  if (skills) await syncUserSkills(me.id, skills);
 
   return NextResponse.json({ user });
 }

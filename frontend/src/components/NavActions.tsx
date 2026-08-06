@@ -28,7 +28,7 @@ export function NavActions({ user }: Props) {
   if (!user) {
     return (
       <div className="ml-auto flex items-center gap-2">
-        <Link href="/jobs" className="hidden sm:inline-flex text-sm px-5 py-2 rounded-lg border border-blue-500 text-blue-600 font-bold hover:bg-blue-50 transition-colors" data-testid="nav-login">
+        <Link href="/login" className="hidden sm:inline-flex text-sm px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors" data-testid="nav-login">
           Find Job
         </Link>
        <Link
@@ -47,6 +47,9 @@ export function NavActions({ user }: Props) {
 
   return (
     <div className="ml-auto flex items-center gap-2" ref={ref}>
+      <Link href="/jobs" className="hidden sm:inline-flex text-sm px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors" data-testid="nav-login">
+        Find Job
+      </Link>
       <Link href={dashHref} className="hidden sm:inline-flex text-sm px-3 py-2 rounded-full text-zinc-700 hover:text-zinc-950 transition-colors" data-testid="nav-dashboard">
         Dashboard
       </Link>

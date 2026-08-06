@@ -11,6 +11,12 @@ export default async function EditProfilePage() {
   const user = await prisma.user.findUnique({ where: { id: me.id } });
   if (!user) redirect("/login");
 
+  const userSkills = await prisma.userSkill.findMany({
+    where: { userId: me.id },
+    include: { skill: true },
+    orderBy: { skill: { name: "asc" } },
+  });
+
   return (
     <DashboardShell role="SEEKER" current="/dashboard/profile">
       <EditProfileClient
@@ -19,6 +25,7 @@ export default async function EditProfilePage() {
         initialBio={user.bio ?? ""}
         initialPhone={user.phone ?? ""}
         initialLocation={user.location ?? ""}
+        initialSkills={userSkills.map(us => us.skill.name)}
       />
     </DashboardShell>
   );

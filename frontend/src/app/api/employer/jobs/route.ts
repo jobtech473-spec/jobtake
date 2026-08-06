@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   // pick company: provided, or first owned, or auto-create
   let companyId = data.data.companyId;
   if (!companyId) {
-    const owned = await prisma.company.findFirst({ where: { ownerId: user.id } });
+    const owned = await prisma.company.findFirst({ where: { ownerId: user.id }, orderBy: { createdAt: "asc" } });
     if (owned) companyId = owned.id;
     else {
       const c = await prisma.company.create({

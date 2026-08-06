@@ -15,6 +15,7 @@ export default async function CompanyProfilePage() {
 
   const company = await prisma.company.findFirst({
     where: { ownerId: me.id },
+    orderBy: { createdAt: "asc" },
     include: { benefits: true },
   });
 

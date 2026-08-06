@@ -3,8 +3,14 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import {
-  User, Lock, Bell, Trash2, Shield, Eye, ChevronRight, Pencil,
+  Lock, Bell, Trash2, Shield, Eye,
 } from "lucide-react";
+import { ProfileEditor } from "@/components/settings/ProfileEditor";
+import { ChangePasswordButton } from "@/components/settings/ChangePasswordButton";
+import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
+import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
+import { TwoFactorRow } from "@/components/settings/TwoFactorRow";
+import { SessionsRow } from "@/components/settings/SessionsRow";
 
 export default async function SeekerSettingsPage() {
   const me = await getCurrentUser();
@@ -26,42 +32,7 @@ export default async function SeekerSettingsPage() {
       <div className="max-w-3xl space-y-4">
 
         {/* ── Profile Information ── */}
-        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                <User className="h-4 w-4 text-blue-600" />
-              </div>
-              <div>
-                <div className="font-bold text-zinc-900 text-sm">Profile Information</div>
-                <div className="text-xs text-zinc-400">Update your personal information.</div>
-              </div>
-            </div>
-            <button className="h-8 w-8 rounded-xl border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition">
-              <Pencil className="h-3.5 w-3.5 text-zinc-500" />
-            </button>
-          </div>
-          <div className="p-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-500 mb-1.5">Full Name</label>
-                <input
-                  defaultValue={user.name ?? ""}
-                  readOnly
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm outline-none bg-white text-zinc-900 font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-500 mb-1.5">Email Address</label>
-                <input
-                  defaultValue={user.email}
-                  readOnly
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm outline-none bg-white text-zinc-900 font-medium"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProfileEditor initialName={user.name ?? ""} email={user.email} />
 
         {/* ── Security ── */}
         <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden">
@@ -84,12 +55,12 @@ export default async function SeekerSettingsPage() {
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-zinc-800">Password</div>
-                  <div className="text-xs text-zinc-400">Last changed: Never</div>
+                  <div className="text-xs text-zinc-400">
+                    Last changed: {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : "Never"}
+                  </div>
                 </div>
               </div>
-              <button className="text-sm font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-4 py-1.5 rounded-xl hover:bg-blue-100 transition">
-                Change Password
-              </button>
+              <ChangePasswordButton />
             </div>
 
             {/* 2FA */}
@@ -103,10 +74,7 @@ export default async function SeekerSettingsPage() {
                   <div className="text-xs text-zinc-400">Add an extra layer of security to your account.</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">Not enabled</span>
-                <ChevronRight className="h-4 w-4 text-zinc-300" />
-              </div>
+              <TwoFactorRow initialEnabled={user.twoFactorEnabled} />
             </div>
 
             {/* Active Sessions */}
@@ -120,10 +88,7 @@ export default async function SeekerSettingsPage() {
                   <div className="text-xs text-zinc-400">Manage where you&apos;re logged in.</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-blue-600">View Sessions</span>
-                <ChevronRight className="h-4 w-4 text-zinc-300" />
-              </div>
+              <SessionsRow />
             </div>
 
           </div>
@@ -151,7 +116,7 @@ export default async function SeekerSettingsPage() {
                   <div className="text-xs text-zinc-400">Choose what updates you want to receive.</div>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-zinc-300" />
+              <EmailNotificationsToggle initialEnabled={user.emailNotifications} />
             </div>
           </div>
         </div>
@@ -177,9 +142,7 @@ export default async function SeekerSettingsPage() {
                 <div className="text-xs text-zinc-400">Permanently delete your account and all data.</div>
               </div>
             </div>
-            <button className="text-sm font-semibold text-red-600 border border-red-200 bg-red-50 px-4 py-1.5 rounded-xl hover:bg-red-100 transition">
-              Delete Account
-            </button>
+            <DeleteAccountButton />
           </div>
         </div>
 

@@ -35,6 +35,14 @@ async function main() {
     update: {},
     create: { email: "employer@jobtake.com", name: "Hire Manager", role: Role.EMPLOYER, passwordHash: employerHash, status: "ACTIVE" },
   });
+  // Dedicated owner for demo/showcase companies used to populate public job listings.
+  // Kept separate from `employer` so the interactive test-employer account owns exactly
+  // one company, matching the app's one-company-per-employer assumption.
+  const demoOwner = await prisma.user.upsert({
+    where: { email: "demo-companies@jobtake.internal" },
+    update: {},
+    create: { email: "demo-companies@jobtake.internal", name: "Jobtake Demo Companies", role: Role.EMPLOYER, passwordHash: employerHash, status: "SUSPENDED" },
+  });
   const seeker = await prisma.user.upsert({
     where: { email: "seeker@jobtake.com" },
     update: {},
@@ -65,15 +73,26 @@ async function main() {
   for (const c of companies) {
     const co = await prisma.company.upsert({
       where: { slug: slug(c.name) },
-      update: { tagline: c.tagline },
+      update: { name: c.name, tagline: c.tagline, ownerId: demoOwner.id, industry: c.industry, size: c.size },
       create: {
-        ownerId: employer.id,
+        ownerId: demoOwner.id,
         name: c.name, slug: slug(c.name), tagline: c.tagline,
         industry: c.industry, size: c.size, status: "ACTIVE", verified: true, featured: true,
       },
     });
     companyMap[c.name] = co.id;
   }
+
+  // The interactive test-employer account gets its own single company.
+  await prisma.company.upsert({
+    where: { slug: "hire-manager-co" },
+    update: { ownerId: employer.id },
+    create: {
+      ownerId: employer.id,
+      name: "Hire Manager Co", slug: "hire-manager-co", tagline: "Demo employer account company.",
+      industry: "IT & Software", size: "51-200", status: "ACTIVE", verified: true, featured: false,
+    },
+  });
 
   // Skills
   const skillNames = ["TypeScript", "React", "Node.js", "Python", "Rust", "Go", "PyTorch", "Figma", "Design Systems", "Motion", "Distributed Systems", "LLMs", "SQL", "Lifecycle Marketing", "Brand", "OCaml", "Statistics", "Strategy", "Platform"];

@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { Role } from "@prisma/client";
@@ -91,3 +92,14 @@ export async function requireRole(roles: Role[]) {
 }
 
 export const COOKIE_NAME = COOKIE;
+
+/** Hash a raw session JWT so we never store the token itself in the DB. */
+export function hashToken(token: string) {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+/** Returns the raw session token from the cookie, if present. */
+export async function getSessionToken() {
+  const c = await cookies();
+  return c.get(COOKIE)?.value ?? null;
+}

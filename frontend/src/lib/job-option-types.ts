@@ -14,8 +14,8 @@ export type ManagedOptions = Record<ManagedOptionType, ManagedOption[]>;
 
 export const OPTION_TYPE_LABELS: Record<ManagedOptionType, string> = {
   LOCATION: "Locations",
-  INDUSTRY: "Industries",
-  ROLE: "Roles",
+  INDUSTRY: "Type of Industries",
+  ROLE: "Job Role",
   CTC: "CTC Bands",
   EXPERIENCE: "Experience Bands",
 };

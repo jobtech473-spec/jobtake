@@ -10,9 +10,16 @@ import {
   Zap, Building2, ListChecks, Download, HeadphonesIcon,
   ExternalLink,
 } from "lucide-react";
+import { ChangePasswordButton } from "@/components/settings/ChangePasswordButton";
+import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
+import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
+import { TwoFactorRow } from "@/components/settings/TwoFactorRow";
+import { SessionsRow } from "@/components/settings/SessionsRow";
 
-const Row = ({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) => (
-  <div className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors cursor-pointer group">
+const Row = ({
+  icon, title, desc, action,
+}: { icon: React.ReactNode; title: string; desc: string; action?: React.ReactNode }) => (
+  <div className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors group">
     <div className="flex items-center gap-4">
       <div className="h-9 w-9 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center shrink-0">
         {icon}
@@ -22,7 +29,7 @@ const Row = ({ icon, title, desc }: { icon: React.ReactNode; title: string; desc
         <div className="text-xs text-zinc-400 mt-0.5">{desc}</div>
       </div>
     </div>
-    <ChevronRight className="h-4 w-4 text-zinc-300 group-hover:text-zinc-500 transition-colors" />
+    {action ?? <ChevronRight className="h-4 w-4 text-zinc-300 group-hover:text-zinc-500 transition-colors" />}
   </div>
 );
 
@@ -59,9 +66,12 @@ export default async function EmployerSettingsPage() {
               </div>
             </div>
             <div className="divide-y divide-zinc-50 grid md:grid-cols-2">
-              <Row icon={<Lock className="h-4 w-4 text-zinc-400" />}       title="Change Password"          desc="Update your account password" />
-              <Row icon={<Eye className="h-4 w-4 text-zinc-400" />}        title="Active Sessions"           desc="Manage devices and sessions" />
-              <Row icon={<Smartphone className="h-4 w-4 text-zinc-400" />} title="Two-Factor Authentication" desc="Add extra layer of security" />
+              <Row icon={<Lock className="h-4 w-4 text-zinc-400" />}       title="Change Password"          desc="Update your account password"
+                action={<ChangePasswordButton className="text-sm font-semibold text-blue-600" />} />
+              <Row icon={<Eye className="h-4 w-4 text-zinc-400" />}        title="Active Sessions"           desc="Manage devices and sessions"
+                action={<SessionsRow />} />
+              <Row icon={<Smartphone className="h-4 w-4 text-zinc-400" />} title="Two-Factor Authentication" desc="Add extra layer of security"
+                action={<TwoFactorRow initialEnabled={user.twoFactorEnabled} />} />
               <Row icon={<Activity className="h-4 w-4 text-zinc-400" />}   title="Login &amp; Security Activity" desc="See recent account activity" />
             </div>
           </div>
@@ -78,7 +88,8 @@ export default async function EmployerSettingsPage() {
               </div>
             </div>
             <div className="divide-y divide-zinc-50 grid md:grid-cols-2">
-              <Row icon={<Mail className="h-4 w-4 text-zinc-400" />}    title="New Applicant Alerts"     desc="Get notified when someone applies" />
+              <Row icon={<Mail className="h-4 w-4 text-zinc-400" />}    title="New Applicant Alerts"     desc="Email notifications for account activity"
+                action={<EmailNotificationsToggle initialEnabled={user.emailNotifications} />} />
               <Row icon={<Briefcase className="h-4 w-4 text-zinc-400" />} title="Job Post Approved"      desc="When admin approves your posting" />
               <Row icon={<Bell className="h-4 w-4 text-zinc-400" />}    title="Applicant Status Updates" desc="Notify when applicant updates their profile" />
               <Row icon={<Globe className="h-4 w-4 text-zinc-400" />}   title="Weekly Hiring Report"     desc="Summary of your job performance" />
@@ -123,9 +134,7 @@ export default async function EmployerSettingsPage() {
                   <div className="text-xs text-zinc-400">Permanently delete your account</div>
                 </div>
               </div>
-              <button className="text-sm font-semibold text-red-600 border border-red-200 bg-red-50 px-4 py-1.5 rounded-xl hover:bg-red-100 transition">
-                Delete Account
-              </button>
+              <DeleteAccountButton />
             </div>
           </div>
 

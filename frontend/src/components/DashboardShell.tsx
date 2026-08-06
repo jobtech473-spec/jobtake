@@ -50,7 +50,7 @@ export async function DashboardShell({ children, role, current }: { children: Re
   // Get company slug for employer
   let companySlug: string | null = null;
   if (role === "EMPLOYER") {
-    const company = await prisma.company.findFirst({ where: { ownerId: user.id }, select: { slug: true } });
+    const company = await prisma.company.findFirst({ where: { ownerId: user.id }, orderBy: { createdAt: "asc" }, select: { slug: true } });
     companySlug = company?.slug ?? null;
   }
 

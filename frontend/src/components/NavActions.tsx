@@ -28,8 +28,8 @@ export function NavActions({ user }: Props) {
   if (!user) {
     return (
       <div className="ml-auto flex items-center gap-2">
-        <Link href="/login" className="hidden sm:inline-flex text-sm px-5 py-2 rounded-lg border border-blue-500 text-blue-600 font-semibold hover:bg-blue-50 transition-colors" data-testid="nav-login">
-          Sign in
+        <Link href="/jobs" className="hidden sm:inline-flex text-sm px-5 py-2 rounded-lg border border-blue-500 text-blue-600 font-bold hover:bg-blue-50 transition-colors" data-testid="nav-login">
+          Find Job
         </Link>
        <Link
   href="/employers/login"

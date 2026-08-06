@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest) {
   const body = await req.json();
   if (!body.name?.trim()) return jsonError("Company name is required");
 
-  const company = await prisma.company.findFirst({ where: { ownerId: me.id } });
+  const company = await prisma.company.findFirst({ where: { ownerId: me.id }, orderBy: { createdAt: "asc" } });
   if (!company) return jsonError("Company not found", 404);
 
   const updated = await prisma.company.update({

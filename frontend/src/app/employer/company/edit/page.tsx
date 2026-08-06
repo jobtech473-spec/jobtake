@@ -12,6 +12,7 @@ export default async function CompanyEditPage() {
   const [company, options] = await Promise.all([
     prisma.company.findFirst({
       where: { ownerId: me.id },
+      orderBy: { createdAt: "asc" },
       include: { benefits: true },
     }),
     getManagedOptions(true, true),

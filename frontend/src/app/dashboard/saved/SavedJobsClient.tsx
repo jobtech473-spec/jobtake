@@ -21,14 +21,6 @@ const LOGO_COLORS = [
   "bg-violet-600", "bg-orange-600", "bg-indigo-600", "bg-pink-600",
 ];
 
-const DEMO_JOBS: Job[] = [
-  { id: "d1", title: "Product Designer",       company: "Acme Corp",  logoUrl: null, slug: "#", employmentType: "Full-time", location: "Bengaluru, India",  savedAt: new Date(Date.now() - 2*86400000).toISOString(), postedAt: new Date(Date.now() - 2*86400000).toISOString() },
-  { id: "d2", title: "UI/UX Designer",         company: "InnovateX",  logoUrl: null, slug: "#", employmentType: "Full-time", location: "Remote",            savedAt: new Date(Date.now() - 3*86400000).toISOString(), postedAt: new Date(Date.now() - 3*86400000).toISOString() },
-  { id: "d3", title: "Senior Visual Designer", company: "Microsoft",  logoUrl: null, slug: "#", employmentType: "Full-time", location: "Hyderabad, India",  savedAt: new Date(Date.now() - 5*86400000).toISOString(), postedAt: new Date(Date.now() - 5*86400000).toISOString() },
-  { id: "d4", title: "Interaction Designer",   company: "InVision",   logoUrl: null, slug: "#", employmentType: "Full-time", location: "Remote",            savedAt: new Date(Date.now() - 7*86400000).toISOString(), postedAt: new Date(Date.now() - 7*86400000).toISOString() },
-  { id: "d5", title: "Product Designer",       company: "Spotify",    logoUrl: null, slug: "#", employmentType: "Full-time", location: "Mumbai, India",     savedAt: new Date(Date.now() - 7*86400000).toISOString(), postedAt: new Date(Date.now() - 7*86400000).toISOString() },
-];
-
 export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
   const [search, setSearch] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -37,8 +29,7 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
   const [sortOpen, setSortOpen] = useState(false);
   const [sort, setSort] = useState<"recent" | "oldest">("recent");
 
-  const isDemo = jobs.length === 0;
-  const list = isDemo ? DEMO_JOBS : jobs;
+  const list = jobs;
 
   const employmentTypes = Array.from(new Set(list.map(j => j.employmentType))).filter(Boolean);
   const locations = Array.from(new Set(list.map(j => j.location))).filter(Boolean);
@@ -71,12 +62,6 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
           <p className="text-sm text-zinc-500 mt-0.5">Keep track of opportunities you&apos;re interested in and apply when you&apos;re ready.</p>
         </div>
       </div>
-
-      {isDemo && (
-        <div className="mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-amber-700 font-medium">
-          <span>👋</span> Demo preview — these are sample saved jobs. Save real jobs while browsing to see them here.
-        </div>
-      )}
 
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
@@ -183,7 +168,16 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
       {/* Job list */}
       <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden" data-testid="saved-jobs-list">
         <div className="divide-y divide-zinc-50">
-          {filtered.length === 0 ? (
+          {list.length === 0 ? (
+            <div className="py-16 text-center">
+              <Bookmark className="h-8 w-8 mx-auto text-zinc-200 mb-3" />
+              <p className="text-sm font-semibold text-zinc-500">No saved jobs yet</p>
+              <p className="text-sm text-zinc-400 mt-1">Save jobs you're interested in while browsing to see them here.</p>
+              <Link href="/jobs" className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-blue-600 hover:underline">
+                Browse jobs <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
               <Bookmark className="h-8 w-8 mx-auto text-zinc-200 mb-3" />
               <p className="text-sm text-zinc-400">No saved jobs found.</p>
@@ -225,16 +219,18 @@ export function SavedJobsClient({ jobs }: { jobs: Job[] }) {
         </div>
 
         {/* Pagination */}
-        <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between">
-          <span className="text-xs text-zinc-400">Showing 1 to {filtered.length} of {list.length} saved jobs</span>
-          <div className="flex items-center gap-1">
-            <button className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center"><ArrowLeft className="h-4 w-4" /></button>
-            {[1, 2].map(n => (
-              <button key={n} className={`h-8 w-8 rounded-lg text-sm font-semibold transition ${n === 1 ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}>{n}</button>
-            ))}
-            <button className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center"><ArrowRight className="h-4 w-4" /></button>
+        {list.length > 0 && (
+          <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between">
+            <span className="text-xs text-zinc-400">Showing 1 to {filtered.length} of {list.length} saved jobs</span>
+            <div className="flex items-center gap-1">
+              <button className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center"><ArrowLeft className="h-4 w-4" /></button>
+              {[1, 2].map(n => (
+                <button key={n} className={`h-8 w-8 rounded-lg text-sm font-semibold transition ${n === 1 ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}>{n}</button>
+              ))}
+              <button className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center"><ArrowRight className="h-4 w-4" /></button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
     </>

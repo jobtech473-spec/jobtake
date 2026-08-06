@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 function formatExperienceRange(min: number | null, max: number | null, fallback: string) {
   if (min !== null && max !== null) return `${min}-${max} yrs`;
   if (min !== null) return `${min}+ yrs`;

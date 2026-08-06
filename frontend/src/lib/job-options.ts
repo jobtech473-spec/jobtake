@@ -42,6 +42,12 @@ const FALLBACKS: ManagedOptions = {
     option("EXPERIENCE", "5 - 10 years", "5-10", 4),
     option("EXPERIENCE", "10+ years", "10-", 5),
   ],
+  KEYWORD: [
+    option("KEYWORD", "Urgent Hiring", "Urgent Hiring", 0),
+    option("KEYWORD", "Work From Home", "Work From Home", 1),
+    option("KEYWORD", "Immediate Joiner", "Immediate Joiner", 2),
+    option("KEYWORD", "Walk-in Interview", "Walk-in Interview", 3),
+  ],
 };
 
 function option(type: ManagedOptionType, label: string, value: string, sortOrder: number): ManagedOption {

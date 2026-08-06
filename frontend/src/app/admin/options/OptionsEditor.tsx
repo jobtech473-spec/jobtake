@@ -15,6 +15,7 @@ import {
   Pencil,
   Plus,
   Search,
+  Tag,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -58,6 +59,15 @@ const TYPES: OptionMeta[] = [
     swatch: "bg-violet-50 text-violet-600",
     icon: UserRound,
   },
+  {
+    type: "KEYWORD",
+    singular: "Keyword",
+    hint: "Manage keyword tags used to highlight and filter jobs.",
+    placeholder: "e.g. Urgent Hiring",
+    valuePlaceholder: "Urgent Hiring",
+    swatch: "bg-amber-50 text-amber-600",
+    icon: Tag,
+  },
 ];
 
 type Drafts = Record<ManagedOptionType, { label: string; value: string }>;
@@ -68,6 +78,7 @@ function blankDrafts(): Drafts {
     LOCATION: { label: "", value: "" },
     INDUSTRY: { label: "", value: "" },
     ROLE: { label: "", value: "" },
+    KEYWORD: { label: "", value: "" },
     CTC: { label: "3 - 6 LPA", value: "3-6" },
     EXPERIENCE: { label: "1 - 3 years", value: "1-3" },
   };

@@ -511,4 +511,5 @@ enum JobOptionType {
   ROLE
   CTC
   EXPERIENCE
+  KEYWORD
 }

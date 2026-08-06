@@ -61,15 +61,6 @@ const TYPE_STYLES: Record<string, string> = {
   ONSITE: "bg-slate-100 text-slate-700",
 };
 
-const COMPANY_COLORS = [
-  "bg-blue-500",
-  "bg-violet-500",
-  "bg-emerald-500",
-  "bg-orange-400",
-  "bg-slate-700",
-  "bg-indigo-700",
-];
-
 function humanize(value: string) {
   return value
     .toLowerCase()
@@ -281,12 +272,11 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
           <table className="w-full table-fixed text-sm">
             <colgroup>
               <col className="w-12" />
-              <col className="w-[22%]" />
-              <col className="w-[18%]" />
+              <col className="w-[30%]" />
+              <col className="w-[14%]" />
+              <col className="w-[15%]" />
               <col className="w-[12%]" />
-              <col className="w-[13%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
+              <col className="w-[12%]" />
               <col className="w-[15%]" />
             </colgroup>
             <thead>
@@ -295,7 +285,6 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
                   <input type="checkbox" className="h-4 w-4 rounded border-zinc-300" aria-label="Select all jobs" />
                 </th>
                 <th className="px-4 py-4">Job Title</th>
-                <th className="px-4 py-4">Company</th>
                 <th className="px-4 py-4">Job Type</th>
                 <th className="px-4 py-4">Status</th>
                 <th className="px-3 py-4">Applicants</th>
@@ -304,9 +293,8 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
-              {pagedJobs.map((job, index) => {
+              {pagedJobs.map((job) => {
                 const type = getJobType(job);
-                const companyInitial = job.company.charAt(0).toUpperCase();
 
                 return (
                   <tr key={job.id} className="hover:bg-zinc-50/70" data-testid={`admin-job-${job.id}`}>
@@ -320,14 +308,6 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
                           <div className="truncate font-bold text-zinc-950">{job.title}</div>
                           <div className="mt-0.5 truncate text-xs text-zinc-500">{job.location}</div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 align-middle">
-                      <div className="flex items-center gap-3">
-                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white ${COMPANY_COLORS[index % COMPANY_COLORS.length]}`}>
-                          {companyInitial}
-                        </span>
-                        <span className="min-w-0 truncate font-medium text-zinc-700">{job.company}</span>
                       </div>
                     </td>
                     <td className="px-3 py-4 align-middle">

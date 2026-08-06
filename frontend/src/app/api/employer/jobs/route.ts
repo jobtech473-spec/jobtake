@@ -98,8 +98,8 @@ export async function POST(req: NextRequest) {
       salaryCurrency: data.data.salaryCurrency,
       salaryPeriod: data.data.salaryPeriod,
       collarType: data.data.collarType,
-      status: user.role === "ADMIN" ? "PUBLISHED" : "PENDING",
-      publishedAt: user.role === "ADMIN" ? new Date() : null,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
     },
   });
 

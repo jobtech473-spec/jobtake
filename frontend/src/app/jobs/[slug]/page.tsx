@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { PublicNav } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ApplyPanel } from "./ApplyPanel";
+import { SaveJobButton } from "./SaveJobButton";
 import { StickyApplyBar } from "./StickyApplyBar";
 import { NavHider } from "@/components/NavHider";
 import { RichText } from "@/components/RichText";
@@ -10,7 +11,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { formatSalary, timeAgo } from "@/lib/utils";
 import {
   MapPin, Briefcase, BadgeDollarSign, Building2,
-  BadgeCheck, ArrowLeft, Bookmark, Share2,
+  BadgeCheck, ArrowLeft, Share2,
   Star, Users, TrendingUp, ShieldCheck, GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
@@ -42,9 +43,14 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
   if (!job || job.status !== "PUBLISHED") notFound();
 
   let hasApplied = false;
+  let isSaved = false;
   if (me) {
-    const dup = await prisma.application.findUnique({ where: { jobId_userId: { jobId: job.id, userId: me.id } } });
+    const [dup, savedRow] = await Promise.all([
+      prisma.application.findUnique({ where: { jobId_userId: { jobId: job.id, userId: me.id } } }),
+      prisma.savedJob.findUnique({ where: { userId_jobId: { userId: me.id, jobId: job.id } } }),
+    ]);
     hasApplied = !!dup;
+    isSaved = !!savedRow;
   }
 
   const companyInitial = job.company.name[0].toUpperCase();
@@ -96,9 +102,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                   <BadgeCheck className="h-7 w-7 text-blue-500 shrink-0" />
                 </h1>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button className="h-9 w-9 rounded-xl border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors">
-                    <Bookmark className="h-4 w-4 text-zinc-700" />
-                  </button>
+                  <SaveJobButton jobId={job.id} isLoggedIn={!!me} initialSaved={isSaved} />
                   <button className="h-9 w-9 rounded-xl border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors">
                     <Share2 className="h-4 w-4 text-zinc-700" />
                   </button>

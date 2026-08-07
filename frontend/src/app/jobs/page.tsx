@@ -2,6 +2,7 @@ import { PublicNav } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { getCurrentUser } from "@/lib/auth";
 import { JobsListClient } from "./JobsListClient";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,9 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
       ? [{ featured: "desc" }, { viewsCount: "desc" }, { publishedAt: "desc" }]
       : [{ featured: "desc" }, { publishedAt: "desc" }];
 
-  const [jobs, total, categories] = await Promise.all([
+  const me = await getCurrentUser();
+
+  const [jobs, total, categories, savedJobs] = await Promise.all([
     prisma.job.findMany({
       where,
       orderBy,
@@ -53,6 +56,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
     }),
     prisma.job.count({ where }),
     prisma.category.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
+    me ? prisma.savedJob.findMany({ where: { userId: me.id }, select: { jobId: true } }) : Promise.resolve([]),
   ]);
 
   return (
@@ -91,6 +95,8 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
           page={page}
           perPage={perPage}
           categories={categories}
+          isLoggedIn={!!me}
+          initialSavedIds={savedJobs.map(s => s.jobId)}
         />
       </div>
       <PublicFooter />

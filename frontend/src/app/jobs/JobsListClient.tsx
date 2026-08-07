@@ -46,10 +46,11 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 }
 
 export function JobsListClient({
-  initialFilters, jobs, total, page, perPage, categories, initialSort,
+  initialFilters, jobs, total, page, perPage, categories, initialSort, isLoggedIn, initialSavedIds,
 }: {
   initialFilters: { q: string; location: string; category: string; workMode: string; seniority: string; collarType: string };
   jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; initialSort: string;
+  isLoggedIn: boolean; initialSavedIds: string[];
 }) {
   const router = useRouter();
   const sp = useSearchParams();
@@ -60,6 +61,38 @@ export function JobsListClient({
   const [searchCat, setSearchCat] = useState(initialFilters.category);
   const [searchExp, setSearchExp] = useState(initialFilters.seniority);
   const [sortBy, setSortBy] = useState(initialSort);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set(initialSavedIds));
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  async function toggleSave(e: React.MouseEvent, jobId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isLoggedIn) { router.push("/login"); return; }
+    if (savingId) return;
+    const isSaved = savedIds.has(jobId);
+    setSavingId(jobId);
+    setSavedIds(prev => {
+      const next = new Set(prev);
+      isSaved ? next.delete(jobId) : next.add(jobId);
+      return next;
+    });
+    try {
+      const res = await fetch("/api/saved-jobs", {
+        method: isSaved ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setSavedIds(prev => {
+        const next = new Set(prev);
+        isSaved ? next.add(jobId) : next.delete(jobId);
+        return next;
+      });
+    } finally {
+      setSavingId(null);
+    }
+  }
 
   function changeSort(v: string) {
     setSortBy(v);
@@ -350,10 +383,11 @@ export function JobsListClient({
                               <span className="text-xs text-zinc-400">{timeAgo(j.publishedAt)}</span>
                             )}
                             <button
-                              onClick={e => e.preventDefault()}
-                              className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-blue-600 transition-colors"
+                              onClick={e => toggleSave(e, j.id)}
+                              aria-label={savedIds.has(j.id) ? "Unsave job" : "Save job"}
+                              className={`p-1.5 rounded-lg hover:bg-zinc-100 transition-colors ${savedIds.has(j.id) ? "text-blue-600" : "text-zinc-400 hover:text-blue-600"}`}
                             >
-                              <Bookmark className="h-4 w-4" />
+                              <Bookmark className={`h-4 w-4 ${savedIds.has(j.id) ? "fill-blue-600" : ""}`} />
                             </button>
                           </div>
                         </div>

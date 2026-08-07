@@ -159,6 +159,38 @@ async function main() {
     if (!existing) await prisma.testimonial.create({ data: { ...ts[i], sortOrder: i, active: true } });
   }
 
+  // Master data: Education levels & Keyword tags (so admins have real, editable rows from day one)
+  const educationLevels = [
+    ["10th Pass", "10th Pass"],
+    ["12th Pass", "12th Pass"],
+    ["ITI Pass", "ITI Pass"],
+    ["Diploma", "Diploma"],
+    ["Under Graduate (UG)", "Under Graduate (UG)"],
+    ["Post Graduate (PG)", "Post Graduate (PG)"],
+  ];
+  for (let i = 0; i < educationLevels.length; i++) {
+    const [label, value] = educationLevels[i];
+    await prisma.jobOption.upsert({
+      where: { type_value: { type: "EDUCATION", value } },
+      update: {},
+      create: { type: "EDUCATION", label, value, sortOrder: i, active: true },
+    });
+  }
+  const keywordTags = [
+    ["Urgent Hiring", "Urgent Hiring"],
+    ["Work From Home", "Work From Home"],
+    ["Immediate Joiner", "Immediate Joiner"],
+    ["Walk-in Interview", "Walk-in Interview"],
+  ];
+  for (let i = 0; i < keywordTags.length; i++) {
+    const [label, value] = keywordTags[i];
+    await prisma.jobOption.upsert({
+      where: { type_value: { type: "KEYWORD", value } },
+      update: {},
+      create: { type: "KEYWORD", label, value, sortOrder: i, active: true },
+    });
+  }
+
   console.log("Seed complete.");
   console.log("Login credentials:");
   console.log("  Admin    : admin@jobtake.com / admin12345");

@@ -66,7 +66,7 @@ export async function DashboardShell({ children, role, current }: { children: Re
         >
           {/* Logo */}
           <div className="px-5 pt-6 pb-4">
-            <Logo size={32} />
+            <Logo size={72} />
           </div>
 
           {/* Post a New Job button — employer only */}

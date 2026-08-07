@@ -55,7 +55,7 @@ export default function EmployerLoginPage() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Top nav */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-zinc-100">
-        <Logo size={36} />
+        <Logo size={72} />
         <div className="flex items-center gap-3 text-sm text-zinc-500">
           Looking for talent?
           <Link

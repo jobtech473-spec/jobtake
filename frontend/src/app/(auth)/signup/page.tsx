@@ -62,7 +62,7 @@ function EmployerSignupForm() {
     <div className="min-h-screen bg-white">
       {/* Top nav */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-zinc-100">
-        <Logo size={36} />
+        <Logo size={72} />
         <div className="flex items-center gap-3 text-sm text-zinc-600">
           Already have an account?
           <Link href="/login?role=employer" className="px-4 py-2 rounded-lg border border-orange-400 text-orange-500 font-medium hover:bg-orange-50 transition">
@@ -307,7 +307,7 @@ function CandidateSignupForm() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Top nav */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-zinc-100">
-        <Logo size={36} />
+        <Logo size={72} />
         <div className="flex items-center gap-3 text-sm text-zinc-600">
           Already a member?
           <Link href="/login" className="px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium hover:bg-blue-50 transition">

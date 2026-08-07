@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="flex items-center px-8 py-5 border-b border-zinc-100">
-        <Logo size={36} />
+        <Logo size={72} />
       </header>
 
       <div className="flex-1 flex items-center justify-center px-8 py-12">

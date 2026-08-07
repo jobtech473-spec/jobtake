@@ -54,7 +54,11 @@ export default async function AdminJobs() {
 
   const jobs = await prisma.job.findMany({
     orderBy: { createdAt: "desc" },
-    include: { company: { select: { name: true } }, _count: { select: { applications: true } } },
+    include: {
+      company: { select: { name: true } },
+      postedBy: { select: { name: true } },
+      _count: { select: { applications: true } },
+    },
     take: 300,
   });
 
@@ -146,6 +150,7 @@ export default async function AdminJobs() {
           featured: j.featured,
           location: j.location,
           company: j.company.name,
+          postedBy: j.postedBy.name,
           applicants: j._count.applications,
           createdAt: j.createdAt.toISOString(),
           employmentType: j.employmentType,

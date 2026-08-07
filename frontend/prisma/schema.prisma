@@ -512,4 +512,5 @@ enum JobOptionType {
   CTC
   EXPERIENCE
   KEYWORD
+  EDUCATION
 }

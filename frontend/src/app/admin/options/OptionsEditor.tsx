@@ -9,6 +9,7 @@ import {
   Database,
   EyeOff,
   Filter,
+  GraduationCap,
   ListChecks,
   Loader2,
   MapPin,
@@ -68,6 +69,15 @@ const TYPES: OptionMeta[] = [
     swatch: "bg-amber-50 text-amber-600",
     icon: Tag,
   },
+  {
+    type: "EDUCATION",
+    singular: "Education",
+    hint: "Manage minimum education levels used in job postings.",
+    placeholder: "e.g. Under Graduate (UG)",
+    valuePlaceholder: "Under Graduate (UG)",
+    swatch: "bg-rose-50 text-rose-600",
+    icon: GraduationCap,
+  },
 ];
 
 type Drafts = Record<ManagedOptionType, { label: string; value: string }>;
@@ -79,6 +89,7 @@ function blankDrafts(): Drafts {
     INDUSTRY: { label: "", value: "" },
     ROLE: { label: "", value: "" },
     KEYWORD: { label: "", value: "" },
+    EDUCATION: { label: "", value: "" },
     CTC: { label: "3 - 6 LPA", value: "3-6" },
     EXPERIENCE: { label: "1 - 3 years", value: "1-3" },
   };

@@ -48,6 +48,14 @@ const FALLBACKS: ManagedOptions = {
     option("KEYWORD", "Immediate Joiner", "Immediate Joiner", 2),
     option("KEYWORD", "Walk-in Interview", "Walk-in Interview", 3),
   ],
+  EDUCATION: [
+    option("EDUCATION", "10th Pass", "10th Pass", 0),
+    option("EDUCATION", "12th Pass", "12th Pass", 1),
+    option("EDUCATION", "ITI Pass", "ITI Pass", 2),
+    option("EDUCATION", "Diploma", "Diploma", 3),
+    option("EDUCATION", "Under Graduate (UG)", "Under Graduate (UG)", 4),
+    option("EDUCATION", "Post Graduate (PG)", "Post Graduate (PG)", 5),
+  ],
 };
 
 function option(type: ManagedOptionType, label: string, value: string, sortOrder: number): ManagedOption {

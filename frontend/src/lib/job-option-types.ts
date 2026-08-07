@@ -1,4 +1,4 @@
-export type ManagedOptionType = "LOCATION" | "INDUSTRY" | "ROLE" | "CTC" | "EXPERIENCE" | "KEYWORD";
+export type ManagedOptionType = "LOCATION" | "INDUSTRY" | "ROLE" | "CTC" | "EXPERIENCE" | "KEYWORD" | "EDUCATION";
 
 export type ManagedOption = {
   id: string;
@@ -19,10 +19,11 @@ export const OPTION_TYPE_LABELS: Record<ManagedOptionType, string> = {
   CTC: "CTC Bands",
   EXPERIENCE: "Experience Bands",
   KEYWORD: "Keywords",
+  EDUCATION: "Education",
 };
 
 export function emptyManagedOptions(): ManagedOptions {
-  return { LOCATION: [], INDUSTRY: [], ROLE: [], CTC: [], EXPERIENCE: [], KEYWORD: [] };
+  return { LOCATION: [], INDUSTRY: [], ROLE: [], CTC: [], EXPERIENCE: [], KEYWORD: [], EDUCATION: [] };
 }
 
 export function parseRange(value: string) {

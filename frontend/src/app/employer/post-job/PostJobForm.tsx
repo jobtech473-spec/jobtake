@@ -27,45 +27,14 @@ const EMPLOYMENT_TYPES = [
   { value: "TEMPORARY", label: "Temporary" },
 ];
 
-const EDUCATION_OPTIONS = [
-  {
-    value: "Post Graduate (PG)",
-    title: "Post Graduate (PG)",
-    desc: "e.g. M.Tech, MBA, MCA, MSc, etc.",
-    icon: GraduationCap,
-  },
-  {
-    value: "Under Graduate (UG)",
-    title: "Under Graduate (UG)",
-    desc: "e.g. B.Tech, B.Sc, B.Com, BA, etc.",
-    icon: GraduationCap,
-  },
-  {
-    value: "Diploma",
-    title: "Diploma",
-    desc: "e.g. Diploma in Mechanical, Electrical, etc.",
-    icon: FileText,
-  },
-   {
-    value: "ITI Pass",
-    title: "ITI Pass",
-    desc: "Industrial Training Institute (ITI)",
-    icon: Wrench,
-  },
-  {
-    value: "12th Pass",
-    title: "12th Pass",
-    desc: "HSC / Intermediate / 12th Pass",
-    badge: "12",
-  },
-  {
-    value: "10th Pass",
-    title: "10th Pass",
-    desc: "SSC / Matriculation / 10th Pass",
-    badge: "10",
-  },
- 
-] as const;
+const EDUCATION_META: Record<string, { desc: string; icon?: typeof GraduationCap; badge?: string }> = {
+  "Post Graduate (PG)": { desc: "e.g. M.Tech, MBA, MCA, MSc, etc.", icon: GraduationCap },
+  "Under Graduate (UG)": { desc: "e.g. B.Tech, B.Sc, B.Com, BA, etc.", icon: GraduationCap },
+  "Diploma": { desc: "e.g. Diploma in Mechanical, Electrical, etc.", icon: FileText },
+  "ITI Pass": { desc: "Industrial Training Institute (ITI)", icon: Wrench },
+  "12th Pass": { desc: "HSC / Intermediate / 12th Pass", badge: "12" },
+  "10th Pass": { desc: "SSC / Matriculation / 10th Pass", badge: "10" },
+};
 
 const DIPLOMA_SPECIALIZATIONS = [
   "Any Specialization",
@@ -286,6 +255,13 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
   const locationOptions = options.LOCATION;
   const industryOptions = options.INDUSTRY;
   const roleOptions = options.ROLE;
+  const educationOptions = options.EDUCATION.map((o) => ({
+    value: o.value,
+    title: o.label,
+    desc: EDUCATION_META[o.label]?.desc ?? "",
+    icon: EDUCATION_META[o.label]?.icon,
+    badge: EDUCATION_META[o.label]?.badge,
+  }));
   const visibleLocationOptions = useMemo(() => {
     const query = location.trim().toLowerCase();
     const rows = query
@@ -686,9 +662,9 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
             </p>
 
             <div className="mt-5 grid gap-5 md:grid-cols-2">
-              {EDUCATION_OPTIONS.map((option) => {
-                const Icon = "icon" in option ? option.icon : null;
-                const badge = "badge" in option ? option.badge : null;
+              {educationOptions.map((option) => {
+                const Icon = option.icon ?? null;
+                const badge = option.badge ?? null;
                 const selected = minEdus.includes(option.value);
 
                 const specialization =
@@ -708,7 +684,7 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
                       }`}
                     >
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
-                        {Icon ? <Icon className="h-6 w-6" /> : <span className="text-lg font-bold leading-none">{badge}</span>}
+                        {Icon ? <Icon className="h-6 w-6" /> : badge ? <span className="text-lg font-bold leading-none">{badge}</span> : <GraduationCap className="h-6 w-6" />}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-base font-bold text-zinc-950">{option.title}</span>

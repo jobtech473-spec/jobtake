@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
 const Schema = z.object({
-  type: z.enum(["LOCATION", "INDUSTRY", "ROLE", "CTC", "EXPERIENCE"]).optional(),
+  type: z.enum(["LOCATION", "INDUSTRY", "ROLE", "CTC", "EXPERIENCE", "KEYWORD"]).optional(),
   label: z.string().min(1).optional(),
   value: z.string().min(1).optional(),
   description: z.string().nullable().optional(),

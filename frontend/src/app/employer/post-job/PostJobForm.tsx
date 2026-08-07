@@ -1,9 +1,14 @@
 "use client";
 import { useMemo, useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, GraduationCap, Info, Loader2, MapPin, Wrench, X, Check, Eye, ChevronDown } from "lucide-react";
+import {
+  FileText, GraduationCap, Info, Loader2, MapPin, Wrench, X, Check, Eye, ChevronDown,
+  ArrowLeft, Briefcase, BadgeDollarSign, TrendingUp, BadgeCheck, GraduationCap as GraduationCapIcon,
+  Building2, Calendar, Wifi, Monitor, Tag, Star,
+} from "lucide-react";
 import { ManagedOptions } from "@/lib/job-option-types";
 import { JobDescriptionEditor } from "@/components/JobDescriptionEditor";
+import { RichText } from "@/components/RichText";
 
 type Cat = { id: string; name: string };
 
@@ -210,6 +215,30 @@ function getSeniorityFromExperience(min: string, max: string) {
   return "EXECUTIVE";
 }
 
+const SENIORITY_LABEL: Record<string, string> = {
+  INTERN: "0-1 Years", ENTRY: "1-2 Years", MID: "2-5 Years", SENIOR: "3-5 Years",
+  STAFF: "8-12 Years", PRINCIPAL: "12-15 Years", DIRECTOR: "15-20 Years", EXECUTIVE: "20+ Years",
+};
+
+function formatExperienceRangeYears(min: string, max: string, fallback: string) {
+  const minN = min ? parseInt(min, 10) : null;
+  const maxN = max ? parseInt(max, 10) : null;
+  if (minN !== null && maxN !== null) return `${minN}-${maxN} Years`;
+  if (minN !== null) return `${minN}+ Years`;
+  if (maxN !== null) return `Up to ${maxN} Years`;
+  return fallback;
+}
+
+function empTypeLabelOf(v: string) {
+  return v === "FULL_TIME" ? "Full-time" : v === "PART_TIME" ? "Part-time" : v === "CONTRACT" ? "Contract" : v === "INTERNSHIP" ? "Internship" : v === "TEMPORARY" ? "Temporary" : "—";
+}
+function workModeLabelOf(v: string) {
+  return v === "REMOTE" ? "Remote" : v === "HYBRID" ? "Hybrid" : "On-site";
+}
+function deptLabelOf(v: string) {
+  return v === "WHITE" ? "Corporate & Professional" : v === "BLUE" ? "Operations & Trades" : v === "PINK" ? "Service & Support" : v === "GREY" ? "Technical & Supervisory" : "MSME & Entrepreneurship";
+}
+
 function isRichTextEmpty(html: string) {
   if (typeof document === "undefined") return !html.trim();
   const div = document.createElement("div");
@@ -301,6 +330,7 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
   const skillRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading]             = useState(false);
   const [error, setError]                 = useState<string | null>(null);
+  const [showPreview, setShowPreview]     = useState(false);
 
   function addSkill(val: string) {
     const t = val.trim();
@@ -852,8 +882,7 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
           </div>
           <button
             type="button"
-            onClick={() => submit("PENDING")}
-            disabled={loading}
+            onClick={() => setShowPreview(true)}
             className="mt-4 w-full inline-flex items-center justify-center gap-2 text-blue-600 text-sm font-semibold hover:underline"
           >
             <Eye className="h-4 w-4" /> Preview Full Job
@@ -899,11 +928,176 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
             data-testid="submit-job"
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2.5 rounded-xl transition"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
-            Preview Job
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Publish Job
           </button>
         </div>
       </div>
+
+      {/* ── PREVIEW OVERLAY (client-only, no network calls) ── */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={() => setShowPreview(false)}>
+          <div
+            className="h-full w-full max-w-3xl overflow-y-auto bg-zinc-50 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 transition"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back to Edit Job
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => submit("PENDING")}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-5 py-2 rounded-xl text-sm transition"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Publish Job
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <h1 className="text-2xl font-black text-zinc-900">Preview Your Job</h1>
+                <p className="text-sm text-zinc-400 mt-0.5">This is how your job post will appear to candidates. Nothing has been saved yet.</p>
+              </div>
+
+              {/* Job Header Card */}
+              <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
+                    {empTypeLabelOf(employmentType || jobType)}
+                  </span>
+                </div>
+
+                <h2 className="text-2xl font-black text-zinc-900">{title || "Untitled Job"}</h2>
+
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="h-6 w-6 rounded bg-zinc-800 flex items-center justify-center text-white text-xs font-black shrink-0">Y</div>
+                  <span className="font-semibold text-zinc-800 text-sm">Your Company</span>
+                  <BadgeCheck className="h-4 w-4 text-blue-500" />
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-4 text-xs text-zinc-500">
+                  <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {remoteJob ? "Remote" : (location || "—")}</span>
+                  <span className="flex items-center gap-1"><Monitor className="h-3.5 w-3.5" /> {remoteJob ? "Remote" : workModeLabelOf(workMode)}</span>
+                </div>
+
+                {!isRichTextEmpty(description) && (
+                  <div className="mt-5">
+                    <h3 className="text-sm font-bold text-zinc-900 mb-2">About the Role</h3>
+                    <RichText value={description} className="text-sm text-zinc-600 leading-relaxed" />
+                  </div>
+                )}
+
+                <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { icon: <TrendingUp className="h-4 w-4 text-blue-500" />, label: "Experience",       value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },
+                    { icon: <Briefcase className="h-4 w-4 text-blue-500" />,  label: "Employment Type", value: empTypeLabelOf(employmentType || jobType) },
+                    { icon: <Wifi className="h-4 w-4 text-blue-500" />,       label: "Work Mode",       value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Department",      value: categoryName || deptLabelOf(collarType) },
+                  ].map(({ icon, label, value }) => (
+                    <div key={label} className="bg-zinc-50 rounded-xl p-3 flex items-start gap-2">
+                      <div className="mt-0.5 shrink-0">{icon}</div>
+                      <div>
+                        <div className="text-[11px] text-zinc-400 font-semibold">{label}</div>
+                        <div className="text-xs font-bold text-zinc-900 mt-0.5">{value}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {!isRichTextEmpty(responsibilities) && (
+                <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
+                  <RichText value={responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
+                </div>
+              )}
+
+              {!isRichTextEmpty(requirements) && (
+                <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-base font-bold text-zinc-900 mb-3">Job Requirements</h3>
+                  <RichText value={requirements} className="text-sm text-zinc-600 leading-relaxed" />
+                </div>
+              )}
+
+              {/* Education */}
+              <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-base font-bold text-zinc-900 mb-4 flex items-center gap-2">
+                  <GraduationCapIcon className="h-4 w-4 text-blue-600" /> Education
+                </h3>
+                <p className="text-sm font-medium text-zinc-700">{minEdus.length ? minEdus.join(", ") : "Not specified"}</p>
+              </div>
+
+              {/* Job Details Grid */}
+              <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                  {[
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Category",       value: categoryName || "—" },
+                    { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: (salaryMinDisplay || salaryMaxDisplay) ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"} LPA` : "Not specified" },
+                    { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
+                    { icon: <Star className="h-4 w-4 text-blue-500" />,        label: "Additional Benefits",value: benefits || "—" },
+                    { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: remoteJob ? "Remote" : (location || "—") },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: deptLabelOf(collarType) },
+                    { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Remote Job",         value: remoteJob ? "Available" : "Not Available" },
+                    { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: "Not yet posted" },
+                    { icon: <TrendingUp className="h-4 w-4 text-blue-500" />,  label: "Experience Level",   value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },
+                    { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Application Deadline",value: "Not Specified" },
+                    { icon: <Briefcase className="h-4 w-4 text-blue-500" />,   label: "Employment Type",    value: empTypeLabelOf(employmentType || jobType) },
+                    { icon: <Briefcase className="h-4 w-4 text-blue-500" />,   label: "Job Type",           value: empTypeLabelOf(jobType) },
+                  ].map(({ icon, label, value }) => (
+                    <div key={label} className="flex items-start gap-2.5">
+                      <div className="mt-0.5 shrink-0">{icon}</div>
+                      <div>
+                        <div className="text-zinc-400 text-xs font-semibold">{label}</div>
+                        <div className="text-zinc-800 font-medium mt-0.5">{value}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Skills */}
+              {skills.length > 0 && (
+                <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-base font-bold text-zinc-900 mb-3">Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map(s => (
+                      <span key={s} className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* About Company (placeholder) */}
+              <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-base font-bold text-zinc-900 mb-4">About Company</h3>
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 text-2xl shrink-0">
+                    <Building2 className="h-7 w-7" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-zinc-900 text-base">Your Company</span>
+                      <BadgeCheck className="h-4 w-4 text-blue-500 shrink-0" />
+                    </div>
+                    <p className="text-sm text-zinc-500 mt-1">Company details will appear here as they do on your public profile.</p>
+                  </div>
+                </div>
+              </div>
+
+              {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</div>}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

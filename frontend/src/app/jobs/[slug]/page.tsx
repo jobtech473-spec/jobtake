@@ -258,7 +258,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
             <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
               <h3 className="text-base font-bold text-zinc-900 mb-1">Apply for this role</h3>
               <p className="text-sm text-zinc-700 mb-4">
-                Sign in or create an account to apply for <span className="font-semibold text-zinc-900">{job.title}</span>
+                {me
+                  ? <>Apply for <span className="font-semibold text-zinc-900">{job.title}</span> in one click.</>
+                  : <>Sign in or create an account to apply for <span className="font-semibold text-zinc-900">{job.title}</span></>}
               </p>
               <ApplyPanel jobId={job.id} jobTitle={job.title} userRole={me?.role || null} hasApplied={hasApplied} />
               <div className="mt-3 flex items-center gap-1.5 text-xs text-zinc-400 justify-center">

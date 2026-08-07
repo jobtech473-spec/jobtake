@@ -342,47 +342,57 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
     else if (e.key === "Backspace" && !skillInput && skills.length) setSkills(s => s.slice(0, -1));
   }
 
-  async function submit(status: "DRAFT" | "PENDING") {
+  function validate(): boolean {
     setError(null);
 
     // Client-side validation
     if (!title.trim() || title.trim().length < 3) {
-      setError("Job title is required (minimum 3 characters)."); return;
+      setError("Job title is required (minimum 3 characters)."); return false;
     }
     if (!categoryName.trim()) {
-      setError("Job Category is required."); return;
+      setError("Job Category is required."); return false;
     }
     if (!employmentType) {
-      setError("Employment Type is required."); return;
+      setError("Employment Type is required."); return false;
     }
     if (!experienceMin || !experienceMax) {
-      setError("Experience (Min and Max) is required."); return;
+      setError("Experience (Min and Max) is required."); return false;
     }
     if (!remoteJob && !location.trim()) {
-      setError("Location is required. Or check 'Remote Job'."); return;
+      setError("Location is required. Or check 'Remote Job'."); return false;
     }
     if (isMsme === null) {
-      setError("Please confirm whether your company is registered as MSME."); return;
+      setError("Please confirm whether your company is registered as MSME."); return false;
     }
     if (experienceMin && experienceMax && parseInt(experienceMin, 10) > parseInt(experienceMax, 10)) {
-      setError("Minimum experience cannot be greater than maximum experience."); return;
+      setError("Minimum experience cannot be greater than maximum experience."); return false;
     }
     if (isRichTextEmpty(description)) {
-      setError("About the Role is required."); return;
+      setError("About the Role is required."); return false;
     }
     if (isRichTextEmpty(responsibilities)) {
-      setError("Roles & Responsibilities is required."); return;
+      setError("Roles & Responsibilities is required."); return false;
     }
     if (isRichTextEmpty(requirements)) {
-      setError("Job Requirements is required."); return;
+      setError("Job Requirements is required."); return false;
     }
     if (!salaryMin || !salaryMax) {
-      setError("CTC Range (Min and Max) is required."); return;
+      setError("CTC Range (Min and Max) is required."); return false;
     }
     if (salaryMin && salaryMax && parseInt(salaryMin, 10) > parseInt(salaryMax, 10)) {
-      setError("Minimum CTC cannot be greater than maximum CTC."); return;
+      setError("Minimum CTC cannot be greater than maximum CTC."); return false;
     }
+    return true;
+  }
 
+  function reviewJob() {
+    if (!validate()) return;
+    setShowPreview(true);
+  }
+
+  async function submit(status: "DRAFT" | "PENDING") {
+    if (status === "PENDING" && !validate()) return;
+    setError(null);
     setLoading(true);
     const seniority = getSeniorityFromExperience(experienceMin, experienceMax);
     const body = {
@@ -924,12 +934,12 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
           <button
             type="button"
             disabled={loading}
-            onClick={() => submit("PENDING")}
+            onClick={reviewJob}
             data-testid="submit-job"
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2.5 rounded-xl transition"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Publish Job
+            <Eye className="h-4 w-4" />
+            Preview Job
           </button>
         </div>
       </div>

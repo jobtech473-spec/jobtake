@@ -229,6 +229,7 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
   const collarType = collarTypes[0] ?? "WHITE"; // primary for API
   const [title, setTitle]                 = useState("");
   const [categoryName, setCategoryName]   = useState("");
+  const [industryName, setIndustryName]   = useState("");
   const [employmentType, setEmploymentType] = useState("");
   const [experienceMin, setExperienceMin] = useState("");
   const [experienceMax, setExperienceMax] = useState("");
@@ -326,7 +327,7 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
       setError("Job title is required (minimum 3 characters)."); return false;
     }
     if (!categoryName.trim()) {
-      setError("Job Category is required."); return false;
+      setError("Job Role is required."); return false;
     }
     if (!employmentType) {
       setError("Employment Type is required."); return false;
@@ -374,7 +375,7 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
     const body = {
       title, description, responsibilities, requirements, benefits,
       location: remoteJob ? "Remote" : location,
-      industry: categoryName,
+      industry: industryName.trim() || undefined,
       workMode: remoteJob ? "REMOTE" : workMode,
       employmentType: employmentType || jobType || "FULL_TIME",
       seniority,
@@ -406,7 +407,8 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
 
   const summaryFields = [
     { label: "Job Title",       value: title },
-    { label: "Category",        value: categoryName },
+    { label: "Type of Industries", value: industryName },
+    { label: "Job Role",        value: categoryName },
     { label: "Location",        value: remoteJob ? "Remote" : location },
     { label: "Employment Type", value: EMPLOYMENT_TYPES.find(e => e.value === (employmentType || jobType))?.label },
     { label: "Experience",      value: formatExperienceRange(experienceMin, experienceMax) },
@@ -502,15 +504,21 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
               )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Job Category <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industries</label>
+              <SelectDropdown
+                value={industryName}
+                onChange={setIndustryName}
+                placeholder="Select type of industry"
+                options={industryOptions.map(o => ({ value: o.value, label: o.label }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Job Role <span className="text-red-500">*</span></label>
               <SelectDropdown
                 value={categoryName}
                 onChange={setCategoryName}
-                placeholder="Select job category"
-                options={[
-                  ...categories.map(c => ({ value: c.name, label: c.name })),
-                  ...industryOptions.map(o => ({ value: o.value, label: o.label })),
-                ]}
+                placeholder="Select job role"
+                options={categories.map(c => ({ value: c.name, label: c.name }))}
               />
             </div>
             <div className="grid md:grid-cols-3 gap-4">
@@ -1024,7 +1032,8 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
               <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                   {[
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Category",       value: categoryName || "—" },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Role",           value: categoryName || "—" },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Type of Industries", value: industryName || "—" },
                     { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: (salaryMinDisplay || salaryMaxDisplay) ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"} LPA` : "Not specified" },
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
                     { icon: <Star className="h-4 w-4 text-blue-500" />,        label: "Additional Benefits",value: benefits || "—" },

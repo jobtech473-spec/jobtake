@@ -219,7 +219,7 @@ export default async function AdminHome() {
           ) : (
             <div className="divide-y divide-zinc-50">
               {recentJobs.map(j => (
-                <div key={j.id} className="flex items-center justify-between gap-4 px-6 py-3.5 hover:bg-zinc-50 transition-colors">
+                <Link key={j.id} href={`/admin/jobs/${j.id}/preview`} className="flex items-center justify-between gap-4 px-6 py-3.5 hover:bg-zinc-50 transition-colors">
                   <div className="min-w-0">
                     <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
                     <div className="text-xs text-zinc-500 mt-0.5">{j.company.name} · by {j.postedBy.name} · {j._count.applications} applications</div>
@@ -227,7 +227,7 @@ export default async function AdminHome() {
                   <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${STATUS_STYLE[j.status] ?? STATUS_STYLE.DRAFT}`}>
                     {j.status.toLowerCase()}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           )}

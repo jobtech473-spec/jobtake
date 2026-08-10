@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Archive,
   Check,
@@ -317,13 +318,13 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
                       <input type="checkbox" className="h-4 w-4 rounded border-zinc-300" aria-label={`Select ${job.title}`} />
                     </td>
                     <td className="px-4 py-4 align-middle">
-                      <div className="flex items-start gap-3">
+                      <Link href={`/admin/jobs/${job.id}/preview`} className="flex items-start gap-3 group">
                         <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
                         <div className="min-w-0">
-                          <div className="truncate font-bold text-zinc-950">{job.title}</div>
+                          <div className="truncate font-bold text-zinc-950 group-hover:text-blue-700 group-hover:underline">{job.title}</div>
                           <div className="mt-0.5 truncate text-xs text-zinc-500">{job.location}</div>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-4 align-middle">
                       <div className="flex items-center gap-3">

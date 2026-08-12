@@ -996,13 +996,6 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   <span className="flex items-center gap-1"><Monitor className="h-3.5 w-3.5" /> {remoteJob ? "Remote" : workModeLabelOf(workMode)}</span>
                 </div>
 
-                {!isRichTextEmpty(description) && (
-                  <div className="mt-5">
-                    <h3 className="text-sm font-bold text-zinc-900 mb-2">About the Role</h3>
-                    <RichText value={description} className="text-sm text-zinc-600 leading-relaxed" />
-                  </div>
-                )}
-
                 <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
                     { icon: <TrendingUp className="h-4 w-4 text-blue-500" />, label: "Experience",       value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },
@@ -1025,6 +1018,13 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
                   <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
                   <RichText value={responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
+                </div>
+              )}
+
+              {!isRichTextEmpty(description) && (
+                <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-base font-bold text-zinc-900 mb-3">About the Role</h3>
+                  <RichText value={description} className="text-sm text-zinc-600 leading-relaxed" />
                 </div>
               )}
 

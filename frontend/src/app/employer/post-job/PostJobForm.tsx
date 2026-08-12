@@ -745,19 +745,19 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
             {[
               {
                 number: 1,
-                label: "About the Role",
-                helper: "Share an overview of the role, key responsibilities and expectations.",
-                value: description,
-                set: setDescription,
-                placeholder: "Write a complete description about the role, responsibilities and expectations...",
-              },
-              {
-                number: 2,
                 label: "Roles & Responsibilities",
                 helper: "Provide a detailed explanation of the key tasks and responsibilities for this position.",
                 value: responsibilities,
                 set: setResponsibilities,
                 placeholder: "Describe the key tasks, daily activities, responsibilities and deliverables...",
+              },
+              {
+                number: 2,
+                label: "About the Role",
+                helper: "Share an overview of the role, key responsibilities and expectations.",
+                value: description,
+                set: setDescription,
+                placeholder: "Write a complete description about the role, responsibilities and expectations...",
               },
               {
                 number: 3,

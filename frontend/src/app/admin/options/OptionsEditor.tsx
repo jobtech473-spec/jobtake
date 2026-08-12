@@ -78,6 +78,42 @@ const TYPES: OptionMeta[] = [
     swatch: "bg-rose-50 text-rose-600",
     icon: GraduationCap,
   },
+  {
+    type: "PG_SPECIALIZATION",
+    singular: "PG Specialization",
+    hint: "Manage postgraduate specializations shown when PG education is selected.",
+    placeholder: "e.g. MBA / PGDM",
+    valuePlaceholder: "MBA / PGDM",
+    swatch: "bg-indigo-50 text-indigo-600",
+    icon: GraduationCap,
+  },
+  {
+    type: "UG_SPECIALIZATION",
+    singular: "UG Specialization",
+    hint: "Manage undergraduate specializations shown when UG education is selected.",
+    placeholder: "e.g. B.Tech/B.E.",
+    valuePlaceholder: "B.Tech/B.E.",
+    swatch: "bg-cyan-50 text-cyan-600",
+    icon: GraduationCap,
+  },
+  {
+    type: "DIPLOMA_SPECIALIZATION",
+    singular: "Diploma Specialization",
+    hint: "Manage diploma specializations shown when Diploma education is selected.",
+    placeholder: "e.g. Diploma in Computer Engineering",
+    valuePlaceholder: "Diploma in Computer Engineering",
+    swatch: "bg-teal-50 text-teal-600",
+    icon: GraduationCap,
+  },
+  {
+    type: "ITI_SPECIALIZATION",
+    singular: "ITI Specialization",
+    hint: "Manage ITI trade specializations shown when ITI education is selected.",
+    placeholder: "e.g. Electrician",
+    valuePlaceholder: "Electrician",
+    swatch: "bg-orange-50 text-orange-600",
+    icon: GraduationCap,
+  },
 ];
 
 type Drafts = Record<ManagedOptionType, { label: string; value: string }>;
@@ -90,6 +126,10 @@ function blankDrafts(): Drafts {
     ROLE: { label: "", value: "" },
     KEYWORD: { label: "", value: "" },
     EDUCATION: { label: "", value: "" },
+    PG_SPECIALIZATION: { label: "", value: "" },
+    UG_SPECIALIZATION: { label: "", value: "" },
+    DIPLOMA_SPECIALIZATION: { label: "", value: "" },
+    ITI_SPECIALIZATION: { label: "", value: "" },
     CTC: { label: "3 - 6 LPA", value: "3-6" },
     EXPERIENCE: { label: "1 - 3 years", value: "1-3" },
   };

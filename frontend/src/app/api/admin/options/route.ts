@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { groupManagedOptions } from "@/lib/job-options";
 
-const OptionType = z.enum(["LOCATION", "INDUSTRY", "ROLE", "CTC", "EXPERIENCE", "KEYWORD", "EDUCATION"]);
+const OptionType = z.enum([
+  "LOCATION", "INDUSTRY", "ROLE", "CTC", "EXPERIENCE", "KEYWORD", "EDUCATION",
+  "PG_SPECIALIZATION", "UG_SPECIALIZATION", "DIPLOMA_SPECIALIZATION", "ITI_SPECIALIZATION",
+]);
 
 const Schema = z.object({
   type: OptionType,

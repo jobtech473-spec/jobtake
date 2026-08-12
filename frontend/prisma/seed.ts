@@ -191,6 +191,22 @@ async function main() {
     });
   }
 
+  const specializationGroups: Record<string, string[]> = {
+    PG_SPECIALIZATION: ["Any postgraduate", "MBA / PGDM", "M.Tech", "MS / M.Sc", "MCA", "M.COM", "M.B.B.S.", "PG Diploma", "M.A.", "CA", "CS", "ICWA (CMA)", "Integrated PG", "LLM", "M.Ed", "MDS", "DM (Doctor of Medicine) Fellowship", "Master of Human Resource Development"],
+    UG_SPECIALIZATION: ["Any graduate", "B.Tech/B.E.", "B.Com", "B.Sc", "Bachelors of Arts", "B.C.A.", "M.B.B.S.", "B.B.A. / B.M.S.", "Bachelors of Dental Surgary", "B.Pharma", "LLB - Bachelors of Laws", "B.Ed", "B.Arch"],
+    DIPLOMA_SPECIALIZATION: ["Any Specialization", "Diploma in Mechanical Engineering", "Diploma in Electrical Engineering", "Diploma in Electronics Engineering", "Diploma in Civil Engineering", "Diploma in Computer Engineering", "Diploma in Automobile Engineering", "Diploma in Chemical Engineering", "Diploma in Information Technology", "Diploma in Pharmacy (D.Pharma)", "Diploma in Hotel Management", "Diploma in Fashion Designing", "Diploma in Interior Designing", "Diploma in Education (D.Ed)", "Post Graduate Diploma"],
+    ITI_SPECIALIZATION: ["Any Specialization", "Attendant Operator (Chemical Plant)", "Civil and Mechanical Draughtsman", "Computer Operator and Programming Assistant", "Cosmetology", "Electrician", "Fashion Design and Technology", "Fitter", "Horticulture", "Information Communication Technology System Maintenance", "Machinist", "Mechanic", "Plumber", "Technician", "Welder"],
+  };
+  for (const [type, labels] of Object.entries(specializationGroups)) {
+    for (let i = 0; i < labels.length; i++) {
+      await prisma.jobOption.upsert({
+        where: { type_value: { type: type as never, value: labels[i] } },
+        update: {},
+        create: { type: type as never, label: labels[i], value: labels[i], sortOrder: i, active: true },
+      });
+    }
+  }
+
   console.log("Seed complete.");
   console.log("Login credentials:");
   console.log("  Admin    : admin@jobtake.com / admin12345");

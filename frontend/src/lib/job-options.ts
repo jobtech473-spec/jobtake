@@ -56,6 +56,30 @@ const FALLBACKS: ManagedOptions = {
     option("EDUCATION", "Under Graduate (UG)", "Under Graduate (UG)", 4),
     option("EDUCATION", "Post Graduate (PG)", "Post Graduate (PG)", 5),
   ],
+  PG_SPECIALIZATION: [
+    "Any postgraduate", "MBA / PGDM", "M.Tech", "MS / M.Sc", "MCA", "M.COM", "M.B.B.S.",
+    "PG Diploma", "M.A.", "CA", "CS", "ICWA (CMA)", "Integrated PG", "LLM", "M.Ed", "MDS",
+    "DM (Doctor of Medicine) Fellowship", "Master of Human Resource Development",
+  ].map((label, i) => option("PG_SPECIALIZATION", label, label, i)),
+  UG_SPECIALIZATION: [
+    "Any graduate", "B.Tech/B.E.", "B.Com", "B.Sc", "Bachelors of Arts", "B.C.A.", "M.B.B.S.",
+    "B.B.A. / B.M.S.", "Bachelors of Dental Surgary", "B.Pharma", "LLB - Bachelors of Laws",
+    "B.Ed", "B.Arch",
+  ].map((label, i) => option("UG_SPECIALIZATION", label, label, i)),
+  DIPLOMA_SPECIALIZATION: [
+    "Any Specialization", "Diploma in Mechanical Engineering", "Diploma in Electrical Engineering",
+    "Diploma in Electronics Engineering", "Diploma in Civil Engineering", "Diploma in Computer Engineering",
+    "Diploma in Automobile Engineering", "Diploma in Chemical Engineering", "Diploma in Information Technology",
+    "Diploma in Pharmacy (D.Pharma)", "Diploma in Hotel Management", "Diploma in Fashion Designing",
+    "Diploma in Interior Designing", "Diploma in Education (D.Ed)", "Post Graduate Diploma",
+  ].map((label, i) => option("DIPLOMA_SPECIALIZATION", label, label, i)),
+  ITI_SPECIALIZATION: [
+    "Any Specialization", "Attendant Operator (Chemical Plant)", "Civil and Mechanical Draughtsman",
+    "Computer Operator and Programming Assistant", "Cosmetology", "Electrician",
+    "Fashion Design and Technology", "Fitter", "Horticulture",
+    "Information Communication Technology System Maintenance", "Machinist", "Mechanic",
+    "Plumber", "Technician", "Welder",
+  ].map((label, i) => option("ITI_SPECIALIZATION", label, label, i)),
 };
 
 function option(type: ManagedOptionType, label: string, value: string, sortOrder: number): ManagedOption {

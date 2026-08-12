@@ -36,79 +36,6 @@ const EDUCATION_META: Record<string, { desc: string; icon?: typeof GraduationCap
   "10th Pass": { desc: "SSC / Matriculation / 10th Pass", badge: "10" },
 };
 
-const DIPLOMA_SPECIALIZATIONS = [
-  "Any Specialization",
-  "Diploma in Mechanical Engineering",
-  "Diploma in Electrical Engineering",
-  "Diploma in Electronics Engineering",
-  "Diploma in Civil Engineering",
-  "Diploma in Computer Engineering",
-  "Diploma in Automobile Engineering",
-  "Diploma in Chemical Engineering",
-  "Diploma in Information Technology",
-  "Diploma in Pharmacy (D.Pharma)",
-  "Diploma in Hotel Management",
-  "Diploma in Fashion Designing",
-  "Diploma in Interior Designing",
-  "Diploma in Education (D.Ed)",
-  "Post Graduate Diploma",
-];
-
-const UG_SPECIALIZATIONS = [
-  "Any graduate",
-  "B.Tech/B.E.",
-  "B.Com",
-  "B.Sc",
-  "Bachelors of Arts",
-  "B.C.A.",
-  "M.B.B.S.",
-  "B.B.A. / B.M.S.",
-  "Bachelors of Dental Surgary",
-  "B.Pharma",
-  "LLB - Bachelors of Laws",
-  "B.Ed",
-  "B.Arch",
-];
-
-const PG_SPECIALIZATIONS = [
-  "Any postgraduate",
-  "MBA / PGDM",
-  "M.Tech",
-  "MS / M.Sc",
-  "MCA",
-  "M.COM",
-  "M.B.B.S.",
-  "PG Diploma",
-  "M.A.",
-  "CA",
-  "CS",
-  "ICWA (CMA)",
-  "Integrated PG",
-  "LLM",
-  "M.Ed",
-  "MDS",
-  "DM (Doctor of Medicine) Fellowship",
-  "Master of Human Resource Development",
-];
-
-const ITI_SPECIALIZATIONS = [
-  "Any Specialization",
-  "Attendant Operator (Chemical Plant)",
-  "Civil and Mechanical Draughtsman",
-  "Computer Operator and Programming Assistant",
-  "Cosmetology",
-  "Electrician",
-  "Fashion Design and Technology",
-  "Fitter",
-  "Horticulture",
-  "Information Communication Technology System Maintenance",
-  "Machinist",
-  "Mechanic",
-  "Plumber",
-  "Technician",
-  "Welder",
-];
-
 const SectionHeader = ({ num, title }: { num: number; title: string }) => (
   <div className="flex items-center gap-3 mb-5">
     <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shrink-0">{num}</div>
@@ -685,10 +612,10 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 const selected = minEdus.includes(option.value);
 
                 const specialization =
-                  option.value === "Under Graduate (UG)" ? { label: "UG Education", options: UG_SPECIALIZATIONS, value: ugSpecialization, set: setUgSpecialization } :
-                  option.value === "Post Graduate (PG)"  ? { label: "PG Education", options: PG_SPECIALIZATIONS, value: pgSpecialization, set: setPgSpecialization } :
-                  option.value === "Diploma"              ? { label: "Diploma Education", options: DIPLOMA_SPECIALIZATIONS, value: diplomaSpecialization, set: setDiplomaSpecialization } :
-                  option.value === "ITI Pass"             ? { label: "ITI Education", options: ITI_SPECIALIZATIONS, value: itiSpecialization, set: setItiSpecialization } :
+                  option.value === "Under Graduate (UG)" ? { label: "UG Education", options: options.UG_SPECIALIZATION, value: ugSpecialization, set: setUgSpecialization } :
+                  option.value === "Post Graduate (PG)"  ? { label: "PG Education", options: options.PG_SPECIALIZATION, value: pgSpecialization, set: setPgSpecialization } :
+                  option.value === "Diploma"              ? { label: "Diploma Education", options: options.DIPLOMA_SPECIALIZATION, value: diplomaSpecialization, set: setDiplomaSpecialization } :
+                  option.value === "ITI Pass"             ? { label: "ITI Education", options: options.ITI_SPECIALIZATION, value: itiSpecialization, set: setItiSpecialization } :
                   null;
 
                 return (
@@ -724,7 +651,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                           value={specialization.value}
                           onChange={specialization.set}
                           placeholder={`Select ${specialization.label.split(" ")[0]} specialization`}
-                          options={specialization.options.map(o => ({ value: o, label: o }))}
+                          options={specialization.options.map(o => ({ value: o.value, label: o.label }))}
                         />
                       </div>
                     )}

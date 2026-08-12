@@ -745,19 +745,19 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
             {[
               {
                 number: 1,
-                label: "Roles & Responsibilities",
-                helper: "Provide a detailed explanation of the key tasks and responsibilities for this position.",
-                value: responsibilities,
-                set: setResponsibilities,
-                placeholder: "Describe the key tasks, daily activities, responsibilities and deliverables...",
-              },
-              {
-                number: 2,
                 label: "About the Role",
                 helper: "Share an overview of the role, key responsibilities and expectations.",
                 value: description,
                 set: setDescription,
                 placeholder: "Write a complete description about the role, responsibilities and expectations...",
+              },
+              {
+                number: 2,
+                label: "Roles & Responsibilities",
+                helper: "Provide a detailed explanation of the key tasks and responsibilities for this position.",
+                value: responsibilities,
+                set: setResponsibilities,
+                placeholder: "Describe the key tasks, daily activities, responsibilities and deliverables...",
               },
               {
                 number: 3,
@@ -1014,17 +1014,17 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 </div>
               </div>
 
-              {!isRichTextEmpty(responsibilities) && (
-                <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
-                  <RichText value={responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
-                </div>
-              )}
-
               {!isRichTextEmpty(description) && (
                 <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
                   <h3 className="text-base font-bold text-zinc-900 mb-3">About the Role</h3>
                   <RichText value={description} className="text-sm text-zinc-600 leading-relaxed" />
+                </div>
+              )}
+
+              {!isRichTextEmpty(responsibilities) && (
+                <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
+                  <RichText value={responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
                 </div>
               )}
 

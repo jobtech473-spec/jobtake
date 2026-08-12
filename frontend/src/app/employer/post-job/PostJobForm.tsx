@@ -240,7 +240,16 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [benefits, setBenefits]           = useState("");
   const [skills, setSkills]               = useState<string[]>([]);
   const [skillInput, setSkillInput]       = useState("");
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
   const skillRef = useRef<HTMLInputElement>(null);
+  const keywordOptions = options.KEYWORD;
+  const visibleSkillSuggestions = useMemo(() => {
+    const query = skillInput.trim().toLowerCase();
+    const rows = query
+      ? keywordOptions.filter((option) => `${option.label} ${option.value}`.toLowerCase().includes(query))
+      : keywordOptions;
+    return rows.filter((option) => !skills.includes(option.label)).slice(0, 8);
+  }, [skillInput, keywordOptions, skills]);
   const [loading, setLoading]             = useState(false);
   const [error, setError]                 = useState<string | null>(null);
   const [showPreview, setShowPreview]     = useState(false);
@@ -712,7 +721,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
             ))}
 
             {/* Skills */}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Skills <span className="text-xs font-normal text-zinc-400">(type &amp; press Enter or comma)</span></label>
               <div
                 className="min-h-[48px] w-full px-3 py-2 border border-zinc-200 rounded-lg focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition flex flex-wrap gap-2 cursor-text bg-white"
@@ -731,11 +740,31 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder:text-zinc-400"
                   value={skillInput} onChange={e => setSkillInput(e.target.value)}
                   onKeyDown={onSkillKey}
-                  onBlur={() => skillInput.trim() && addSkill(skillInput)}
+                  onFocus={() => setShowSkillSuggestions(true)}
+                  onBlur={() => { if (skillInput.trim()) addSkill(skillInput); setShowSkillSuggestions(false); }}
                   placeholder={skills.length === 0 ? "React, TypeScript, Node.js..." : "Add more..."}
                 />
               </div>
               {skills.length > 0 && <p className="text-xs text-zinc-400 mt-1">{skills.length} skill{skills.length > 1 ? "s" : ""} added</p>}
+
+              {showSkillSuggestions && visibleSkillSuggestions.length > 0 && (
+                <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg">
+                  {visibleSkillSuggestions.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        addSkill(option.label);
+                        setShowSkillSuggestions(false);
+                      }}
+                      className="flex w-full items-center px-3 py-2 text-left text-sm text-zinc-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

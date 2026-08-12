@@ -26,9 +26,13 @@ const nextConfig: NextConfig = {
       { source: "/register.php", destination: "/signup", permanent: true },
       { source: "/signup.php", destination: "/signup", permanent: true },
       { source: "/index.php", destination: "/", permanent: true },
+      { source: "/aboutus.php", destination: "/", permanent: true },
       { source: "/aboutus", destination: "/", permanent: true },
       { source: "/about-us", destination: "/", permanent: true },
       { source: "/about", destination: "/", permanent: true },
+      // Catch-all: any other stray old .php URL still indexed by search
+      // engines falls back to the homepage instead of 403/404ing.
+      { source: "/:slug.php", destination: "/", permanent: true },
     ];
   },
 };

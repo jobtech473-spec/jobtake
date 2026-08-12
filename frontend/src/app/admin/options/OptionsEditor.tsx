@@ -341,7 +341,13 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
                           defaultValue={row.label}
                           onBlur={(event) => {
                             const value = event.target.value.trim();
-                            if (value && value !== row.label) patch(row.id, { label: value });
+                            if (!value || value === row.label) return;
+                            if (activeType === "LOCATION") {
+                              const nextValue = `${value}, ${location.region}, ${location.country}`;
+                              patch(row.id, { label: value, value: nextValue });
+                            } else {
+                              patch(row.id, { label: value });
+                            }
                           }}
                           className="h-10 w-full rounded-lg border border-transparent bg-transparent px-2 font-bold text-zinc-900 outline-none transition focus:border-blue-200 focus:bg-blue-50/40"
                         />

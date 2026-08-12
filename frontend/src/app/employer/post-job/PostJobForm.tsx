@@ -527,7 +527,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 value={categoryName}
                 onChange={setCategoryName}
                 placeholder="Select job role"
-                options={categories.map(c => ({ value: c.name, label: c.name }))}
+                options={roleOptions.map(o => ({ value: o.value, label: o.label }))}
               />
             </div>
             <div className="grid md:grid-cols-3 gap-4">

@@ -248,7 +248,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     const rows = query
       ? keywordOptions.filter((option) => `${option.label} ${option.value}`.toLowerCase().includes(query))
       : keywordOptions;
-    return rows.filter((option) => !skills.includes(option.label)).slice(0, 8);
+    return rows.filter((option) => !skills.includes(option.label));
   }, [skillInput, keywordOptions, skills]);
   const [loading, setLoading]             = useState(false);
   const [error, setError]                 = useState<string | null>(null);

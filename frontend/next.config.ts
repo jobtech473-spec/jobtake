@@ -11,6 +11,20 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "10mb" },
   },
+  async redirects() {
+    return [
+      // Old PHP-based site URLs still indexed by search engines — send them
+      // to their modern equivalents instead of 403/404ing.
+      { source: "/employeelogin.php", destination: "/employers/login", permanent: true },
+      { source: "/employerlogin.php", destination: "/employers/login", permanent: true },
+      { source: "/joblogin.php", destination: "/login", permanent: true },
+      { source: "/jobseekerlogin.php", destination: "/login", permanent: true },
+      { source: "/login.php", destination: "/login", permanent: true },
+      { source: "/register.php", destination: "/signup", permanent: true },
+      { source: "/signup.php", destination: "/signup", permanent: true },
+      { source: "/index.php", destination: "/", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

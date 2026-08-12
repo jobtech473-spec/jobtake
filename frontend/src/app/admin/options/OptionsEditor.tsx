@@ -30,6 +30,7 @@ type OptionMeta = {
   valuePlaceholder: string;
   swatch: string;
   icon: ComponentType<{ className?: string }>;
+  parent?: ManagedOptionType;
 };
 
 const TYPES: OptionMeta[] = [
@@ -86,6 +87,7 @@ const TYPES: OptionMeta[] = [
     valuePlaceholder: "MBA / PGDM",
     swatch: "bg-indigo-50 text-indigo-600",
     icon: GraduationCap,
+    parent: "EDUCATION",
   },
   {
     type: "UG_SPECIALIZATION",
@@ -95,6 +97,7 @@ const TYPES: OptionMeta[] = [
     valuePlaceholder: "B.Tech/B.E.",
     swatch: "bg-cyan-50 text-cyan-600",
     icon: GraduationCap,
+    parent: "EDUCATION",
   },
   {
     type: "DIPLOMA_SPECIALIZATION",
@@ -104,6 +107,7 @@ const TYPES: OptionMeta[] = [
     valuePlaceholder: "Diploma in Computer Engineering",
     swatch: "bg-teal-50 text-teal-600",
     icon: GraduationCap,
+    parent: "EDUCATION",
   },
   {
     type: "ITI_SPECIALIZATION",
@@ -113,8 +117,15 @@ const TYPES: OptionMeta[] = [
     valuePlaceholder: "Electrician",
     swatch: "bg-orange-50 text-orange-600",
     icon: GraduationCap,
+    parent: "EDUCATION",
   },
 ];
+
+const TOP_LEVEL_TYPES = TYPES.filter((t) => !t.parent);
+const CHILD_TYPES_BY_PARENT = TYPES.reduce<Record<string, OptionMeta[]>>((acc, t) => {
+  if (t.parent) (acc[t.parent] ??= []).push(t);
+  return acc;
+}, {});
 
 type Drafts = Record<ManagedOptionType, { label: string; value: string }>;
 type StatusFilter = "ALL" | "ACTIVE" | "DISABLED";
@@ -249,7 +260,7 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-4">
-        {statCard("Master Categories", TYPES.length, "All dropdown groups", Database, "bg-blue-50 text-blue-600")}
+        {statCard("Master Categories", TOP_LEVEL_TYPES.length, "All dropdown groups", Database, "bg-blue-50 text-blue-600")}
         {statCard("Total Values", totalOptions.toLocaleString("en-IN"), "Across all categories", ListChecks, "bg-emerald-50 text-emerald-600")}
         {statCard("Disabled Values", disabledOptions, "Not visible in portal", EyeOff, "bg-orange-50 text-orange-500")}
         {statCard("Active Values", activeOptions, "Visible in job forms", CalendarDays, "bg-violet-50 text-violet-600")}
@@ -262,28 +273,60 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
             <p className="mt-2 text-[15px] font-medium text-zinc-800">Select a category to manage its values.</p>
           </div>
           <div className="p-3">
-            {TYPES.map(({ type, icon: Icon }) => {
+            {TOP_LEVEL_TYPES.map(({ type, icon: Icon }) => {
+              const children = CHILD_TYPES_BY_PARENT[type] ?? [];
               const selected = activeType === type;
+              const childActive = children.some((c) => c.type === activeType);
+              const expanded = selected || childActive;
               return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => {
-                    setActiveType(type);
-                    setSearch("");
-                    setStatusFilter("ALL");
-                  }}
-                  className={`flex h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] transition ${
-                    selected ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100" : "text-zinc-900 hover:bg-zinc-50"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate font-semibold">{OPTION_TYPE_LABELS[type]}</span>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-sm font-bold text-zinc-900 shadow-sm">
-                    {options[type]?.length ?? 0}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-zinc-300" />
-                </button>
+                <div key={type}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveType(type);
+                      setSearch("");
+                      setStatusFilter("ALL");
+                    }}
+                    className={`flex h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] transition ${
+                      selected ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100" : "text-zinc-900 hover:bg-zinc-50"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate font-semibold">{OPTION_TYPE_LABELS[type]}</span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-sm font-bold text-zinc-900 shadow-sm">
+                      {options[type]?.length ?? 0}
+                    </span>
+                    <ChevronRight className={`h-4 w-4 text-zinc-300 transition-transform ${children.length && expanded ? "rotate-90" : ""}`} />
+                  </button>
+
+                  {children.length > 0 && expanded && (
+                    <div className="ml-4 mt-1 space-y-1 border-l border-zinc-100 pl-3">
+                      {children.map(({ type: childType, icon: ChildIcon }) => {
+                        const childSelected = activeType === childType;
+                        return (
+                          <button
+                            key={childType}
+                            type="button"
+                            onClick={() => {
+                              setActiveType(childType);
+                              setSearch("");
+                              setStatusFilter("ALL");
+                            }}
+                            className={`flex h-10 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-sm transition ${
+                              childSelected ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100" : "text-zinc-600 hover:bg-zinc-50"
+                            }`}
+                          >
+                            <ChildIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="min-w-0 flex-1 truncate font-medium">{OPTION_TYPE_LABELS[childType]}</span>
+                            <span className="rounded-full bg-white px-1.5 py-0.5 text-xs font-bold text-zinc-900 shadow-sm">
+                              {options[childType]?.length ?? 0}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

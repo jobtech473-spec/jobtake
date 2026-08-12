@@ -324,6 +324,10 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       categoryName: categoryName.trim() || undefined,
       skills,
       collarType: collarType || "WHITE",
+      minEducation: minEdus,
+      educationSpecialization: [pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization]
+        .filter(Boolean)
+        .join(", ") || undefined,
     };
     const res = await fetch("/api/employer/jobs", {
       method: "POST",

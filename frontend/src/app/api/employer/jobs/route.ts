@@ -26,6 +26,8 @@ const Body = z.object({
   categoryName: z.string().optional(),
   skills: z.array(z.string()).default([]),
   companyId: z.string().optional(),
+  minEducation: z.array(z.string()).default([]),
+  educationSpecialization: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -98,6 +100,8 @@ export async function POST(req: NextRequest) {
       salaryCurrency: data.data.salaryCurrency,
       salaryPeriod: data.data.salaryPeriod,
       collarType: data.data.collarType,
+      minEducation: data.data.minEducation,
+      educationSpecialization: data.data.educationSpecialization,
       status: user.role === "ADMIN" ? "PUBLISHED" : "PENDING",
       publishedAt: user.role === "ADMIN" ? new Date() : null,
     },

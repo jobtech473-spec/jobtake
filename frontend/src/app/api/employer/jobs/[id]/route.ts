@@ -24,6 +24,8 @@ const PatchBody = z.object({
   categoryName:    z.string().optional(),
   skills:          z.array(z.string()).optional(),
   status:          z.enum(["DRAFT", "PENDING", "PUBLISHED", "ARCHIVED"]).optional(),
+  minEducation:    z.array(z.string()).optional(),
+  educationSpecialization: z.string().optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

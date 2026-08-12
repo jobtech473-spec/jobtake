@@ -142,26 +142,26 @@ export default async function AdminJobPreviewPage({ params }: { params: Promise<
             <h3 className="text-base font-bold text-zinc-900 mb-4 flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-blue-600" /> Education
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-zinc-400 font-semibold border-b border-zinc-100">
-                    <th className="pb-2 pr-6">Minimum Education</th>
-                    <th className="pb-2 pr-6">Degree / Diploma</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="text-zinc-700 font-medium">
-                    <td className="pt-3 pr-6">
-                      {job.seniority === "INTERN" || job.seniority === "ENTRY" ? "12th Pass / Graduate" : "Graduate"}
-                    </td>
-                    <td className="pt-3 pr-6">
-                      {job.seniority === "SENIOR" || job.seniority === "STAFF" || job.seniority === "PRINCIPAL" ? "Master's Degree" : "Bachelor's Degree"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {job.minEducation.length === 0 ? (
+              <p className="text-sm text-zinc-400">Not specified</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-zinc-400 font-semibold border-b border-zinc-100">
+                      <th className="pb-2 pr-6">Minimum Education</th>
+                      {job.educationSpecialization && <th className="pb-2 pr-6">Specialization</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="text-zinc-700 font-medium">
+                      <td className="pt-3 pr-6">{job.minEducation.join(", ")}</td>
+                      {job.educationSpecialization && <td className="pt-3 pr-6">{job.educationSpecialization}</td>}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
@@ -244,6 +244,7 @@ export default async function AdminJobPreviewPage({ params }: { params: Promise<
                 { label: "Employment Type",  value: empTypeLabel },
                 { label: "Experience Level", value: experienceLabel },
                 { label: "Work Mode",        value: workModeLabel },
+                { label: "Education",        value: job.minEducation.length ? job.minEducation.join(", ") : undefined },
                 { label: "Salary",           value: salaryLabel || "Not specified" },
               ].map(({ label, value }) => (
                 <div key={label}>

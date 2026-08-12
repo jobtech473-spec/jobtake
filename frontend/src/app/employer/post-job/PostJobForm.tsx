@@ -1054,7 +1054,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     { icon: <Star className="h-4 w-4 text-blue-500" />,        label: "Additional Benefits",value: benefits || "—" },
                     { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: remoteJob ? "Remote" : (location || "—") },
                     { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: deptLabelOf(collarType) },
-                    { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Remote Job",         value: remoteJob ? "Available" : "Not Available" },
+                    ...(remoteJob ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),
                     { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: "Not yet posted" },
                     { icon: <TrendingUp className="h-4 w-4 text-blue-500" />,  label: "Experience Level",   value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },
                     { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Application Deadline",value: "Not Specified" },

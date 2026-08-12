@@ -185,7 +185,7 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
                 { icon: <Star className="h-4 w-4 text-blue-500" />,        label: "Additional Benefits",value: job.benefits || "—" },
                 { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: job.location },
                 { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: dept },
-                { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Remote Job",         value: job.workMode === "REMOTE" ? "Available" : "Not Available" },
+                ...(job.workMode === "REMOTE" ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),
                 { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: job.publishedAt ? new Date(job.publishedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—" },
                 { icon: <TrendingUp className="h-4 w-4 text-blue-500" />,  label: "Experience Level",   value: experienceLabel },
                 { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Application Deadline",value: "Not Specified" },

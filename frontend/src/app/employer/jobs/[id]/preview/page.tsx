@@ -157,7 +157,6 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
                   <tr className="text-left text-xs text-zinc-400 font-semibold border-b border-zinc-100">
                     <th className="pb-2 pr-6">Minimum Education</th>
                     <th className="pb-2 pr-6">Degree / Diploma</th>
-                    <th className="pb-2 pr-6">Passing Year</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,7 +167,6 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
                     <td className="pt-3 pr-6">
                       {job.seniority === "SENIOR" || job.seniority === "STAFF" || job.seniority === "PRINCIPAL" ? "Master's Degree" : "Bachelor's Degree"}
                     </td>
-                    <td className="pt-3">2020 or Later</td>
                   </tr>
                 </tbody>
               </table>
@@ -182,7 +180,7 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
                 { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Category",       value: job.category?.name ?? "—" },
                 { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: salaryLabel || "Not specified" },
                 { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: workModeLabel },
-                { icon: <Star className="h-4 w-4 text-blue-500" />,        label: "Additional Benefits",value: job.benefits || "—" },
+                ...(job.benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: job.benefits }] : []),
                 { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: job.location },
                 { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: dept },
                 ...(job.workMode === "REMOTE" ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),

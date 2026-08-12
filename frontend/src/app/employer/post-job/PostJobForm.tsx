@@ -978,7 +978,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Type of Industries", value: industryName || "—" },
                     { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: (salaryMinDisplay || salaryMaxDisplay) ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"} LPA` : "Not specified" },
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
-                    { icon: <Star className="h-4 w-4 text-blue-500" />,        label: "Additional Benefits",value: benefits || "—" },
+                    ...(benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: benefits }] : []),
                     { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: remoteJob ? "Remote" : (location || "—") },
                     { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: deptLabelOf(collarType) },
                     ...(remoteJob ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),

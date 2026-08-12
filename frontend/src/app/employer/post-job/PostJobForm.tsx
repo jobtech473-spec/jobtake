@@ -354,6 +354,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     { label: "Experience",      value: formatExperienceRange(experienceMin, experienceMax) },
     { label: "Work Mode",       value: remoteJob ? "Remote" : workMode.charAt(0) + workMode.slice(1).toLowerCase() },
     { label: "Education",       value: minEdus.length ? minEdus.join(", ") : undefined },
+    { label: "Specialization",  value: [pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization].filter(Boolean).join(", ") || undefined },
     { label: "CTC Range", value: salaryMinDisplay || salaryMaxDisplay ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"}` : undefined },
   ];
 
@@ -972,6 +973,11 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   <GraduationCapIcon className="h-4 w-4 text-blue-600" /> Education
                 </h3>
                 <p className="text-sm font-medium text-zinc-700">{minEdus.length ? minEdus.join(", ") : "Not specified"}</p>
+                {[pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization].filter(Boolean).length > 0 && (
+                  <p className="text-sm text-zinc-500 mt-1">
+                    Specialization: {[pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization].filter(Boolean).join(", ")}
+                  </p>
+                )}
               </div>
 
               {/* Job Details Grid */}

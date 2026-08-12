@@ -36,7 +36,7 @@ export function NavActions({ user }: Props) {
   className="bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-semibold px-5 py-2 rounded-lg inline-flex items-center gap-1.5 transition-colors"
   data-testid="nav-post-job"
 >
-  Post a job <ArrowUpRight className="h-3.5 w-3.5" />
+  Post Job <ArrowUpRight className="h-3.5 w-3.5" />
 </Link>
       </div>
     );

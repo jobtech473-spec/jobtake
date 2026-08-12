@@ -222,7 +222,16 @@ function normalizeExperienceInput(value: string) {
   return String(Math.min(n, 60));
 }
 
-export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[]; options: ManagedOptions; isAdmin: boolean }) {
+type Company = {
+  name: string;
+  logoUrl: string | null;
+  description: string | null;
+  headquarters: string | null;
+  founded: number | null;
+  verified: boolean;
+} | null;
+
+export function PostJobForm({ categories, options, isAdmin, company }: { categories: Cat[]; options: ManagedOptions; isAdmin: boolean; company: Company }) {
   const router = useRouter();
 
   const [collarTypes, setCollarTypes]     = useState<string[]>(["WHITE"]);
@@ -971,9 +980,15 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
                 <h2 className="text-2xl font-black text-zinc-900">{title || "Untitled Job"}</h2>
 
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="h-6 w-6 rounded bg-zinc-800 flex items-center justify-center text-white text-xs font-black shrink-0">Y</div>
-                  <span className="font-semibold text-zinc-800 text-sm">Your Company</span>
-                  <BadgeCheck className="h-4 w-4 text-blue-500" />
+                  {company?.logoUrl ? (
+                    <img src={company.logoUrl} alt="" className="h-6 w-6 rounded object-contain border border-zinc-100" />
+                  ) : (
+                    <div className="h-6 w-6 rounded bg-zinc-800 flex items-center justify-center text-white text-xs font-black shrink-0">
+                      {(company?.name || "Y")[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span className="font-semibold text-zinc-800 text-sm">{company?.name || "Your Company"}</span>
+                  {company?.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-4 text-xs text-zinc-500">
@@ -1071,19 +1086,31 @@ export function PostJobForm({ categories, options, isAdmin }: { categories: Cat[
                 </div>
               )}
 
-              {/* About Company (placeholder) */}
+              {/* About Company */}
               <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
                 <h3 className="text-base font-bold text-zinc-900 mb-4">About Company</h3>
                 <div className="flex items-start gap-4">
-                  <div className="h-14 w-14 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 text-2xl shrink-0">
-                    <Building2 className="h-7 w-7" />
-                  </div>
+                  {company?.logoUrl ? (
+                    <img src={company.logoUrl} alt="" className="h-14 w-14 rounded-xl object-contain border border-zinc-100 shrink-0" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 text-2xl shrink-0">
+                      <Building2 className="h-7 w-7" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-zinc-900 text-base">Your Company</span>
-                      <BadgeCheck className="h-4 w-4 text-blue-500 shrink-0" />
+                      <span className="font-bold text-zinc-900 text-base">{company?.name || "Your Company"}</span>
+                      {company?.verified && <BadgeCheck className="h-4 w-4 text-blue-500 shrink-0" />}
                     </div>
-                    <p className="text-sm text-zinc-500 mt-1">Company details will appear here as they do on your public profile.</p>
+                    {company?.description ? (
+                      <p className="text-sm text-zinc-500 mt-1 leading-relaxed line-clamp-3">{company.description}</p>
+                    ) : (
+                      <p className="text-sm text-zinc-500 mt-1">Company details will appear here as they do on your public profile.</p>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-4 text-xs text-zinc-500">
+                      {company?.founded && <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {company.founded}+ Years</span>}
+                      {company?.headquarters && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {company.headquarters}</span>}
+                    </div>
                   </div>
                 </div>
               </div>

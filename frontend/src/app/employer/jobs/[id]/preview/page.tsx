@@ -326,7 +326,7 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
             className="inline-flex h-12 items-center gap-2 rounded-xl border border-zinc-200 px-5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50">
             <Pencil className="h-4 w-4" /> Edit Job
           </Link>
-          <PostJobButton jobId={id} posted={job.status === "PUBLISHED"} />
+          <PostJobButton jobId={id} status={job.status} />
         </div>
       </div>
     </DashboardShell>

@@ -37,6 +37,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = PatchBody.safeParse(await req.json().catch(() => ({})));
+  if (body.success && body.data.status === "PUBLISHED" && user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Only an admin can publish a job. It will go live once approved." }, { status: 403 });
+  }
   if (!body.success) return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   if (
     body.data.experienceMin !== undefined &&

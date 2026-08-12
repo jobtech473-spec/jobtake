@@ -1,8 +1,20 @@
 "use client";
 import { useRef, useState, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, ArrowLeft, X, Plus } from "lucide-react";
+import { Loader2, Save, ArrowLeft, X, Plus, Upload } from "lucide-react";
 import Link from "next/link";
+
+const MAX_LOGO_BYTES = 400 * 1024;
+const MAX_BANNER_BYTES = 900 * 1024;
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 type Company = {
   id: string;
@@ -82,6 +94,9 @@ export function CompanyEditForm({ company, industryOptions }: { company: Company
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name:          company?.name          ?? "",
@@ -116,6 +131,19 @@ export function CompanyEditForm({ company, industryOptions }: { company: Company
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
+
+  async function handleImageUpload(field: "logoUrl" | "bannerUrl", file: File | undefined, maxBytes: number, label: string) {
+    setUploadError(null);
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setUploadError(`${label} must be an image file.`); return; }
+    if (file.size > maxBytes) { setUploadError(`${label} is too large (max ${Math.round(maxBytes / 1024)}KB).`); return; }
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setForm(f => ({ ...f, [field]: dataUrl }));
+    } catch {
+      setUploadError(`Couldn't read that ${label.toLowerCase()} file. Try a different image.`);
+    }
+  }
 
   function addTo(list: string[], setList: (v: string[]) => void, value: string, clear: () => void) {
     const v = value.trim();
@@ -187,25 +215,49 @@ export function CompanyEditForm({ company, industryOptions }: { company: Company
       <div id="branding" className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-6 scroll-mt-6">
         <h2 className="font-bold text-zinc-900 mb-4">Branding</h2>
         <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Logo URL" value={form.logoUrl} onChange={set("logoUrl")} placeholder="https://..." />
-          <Field label="Banner URL" value={form.bannerUrl} onChange={set("bannerUrl")} placeholder="https://..." />
-        </div>
-        {(form.logoUrl || form.bannerUrl) && (
-          <div className="mt-4 flex gap-4">
-            {form.logoUrl && (
-              <div>
-                <p className="text-xs text-zinc-400 mb-1">Logo Preview</p>
-                <img src={form.logoUrl} alt="logo" className="h-16 w-16 rounded-xl object-contain border border-zinc-200" />
+          <div>
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Logo</label>
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-16 rounded-xl border border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden shrink-0">
+                {form.logoUrl ? <img src={form.logoUrl} alt="logo" className="h-full w-full object-contain" /> : <span className="text-xs text-zinc-400">No logo</span>}
               </div>
-            )}
-            {form.bannerUrl && (
-              <div className="flex-1">
-                <p className="text-xs text-zinc-400 mb-1">Banner Preview</p>
-                <img src={form.bannerUrl} alt="banner" className="h-16 w-full rounded-xl object-cover border border-zinc-200" />
+              <div className="flex flex-col gap-1.5">
+                <button type="button" onClick={() => logoInputRef.current?.click()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
+                  <Upload className="h-3.5 w-3.5" /> {form.logoUrl ? "Change Logo" : "Upload Logo"}
+                </button>
+                {form.logoUrl && (
+                  <button type="button" onClick={() => setForm(f => ({ ...f, logoUrl: "" }))} className="text-xs text-zinc-400 hover:text-red-500 text-left">Remove</button>
+                )}
+                <input
+                  ref={logoInputRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => handleImageUpload("logoUrl", e.target.files?.[0], MAX_LOGO_BYTES, "Logo")}
+                />
               </div>
-            )}
+            </div>
           </div>
-        )}
+          <div>
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Banner</label>
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-28 rounded-xl border border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden shrink-0">
+                {form.bannerUrl ? <img src={form.bannerUrl} alt="banner" className="h-full w-full object-cover" /> : <span className="text-xs text-zinc-400">No banner</span>}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <button type="button" onClick={() => bannerInputRef.current?.click()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
+                  <Upload className="h-3.5 w-3.5" /> {form.bannerUrl ? "Change Banner" : "Upload Banner"}
+                </button>
+                {form.bannerUrl && (
+                  <button type="button" onClick={() => setForm(f => ({ ...f, bannerUrl: "" }))} className="text-xs text-zinc-400 hover:text-red-500 text-left">Remove</button>
+                )}
+                <input
+                  ref={bannerInputRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => handleImageUpload("bannerUrl", e.target.files?.[0], MAX_BANNER_BYTES, "Banner")}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        {uploadError && <p className="mt-3 text-sm text-red-600">{uploadError}</p>}
+        <p className="mt-3 text-xs text-zinc-400">Logo max {Math.round(MAX_LOGO_BYTES / 1024)}KB, banner max {Math.round(MAX_BANNER_BYTES / 1024)}KB. PNG or JPG recommended.</p>
       </div>
 
       {/* About Company */}

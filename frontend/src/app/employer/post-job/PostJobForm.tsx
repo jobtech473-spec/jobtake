@@ -173,6 +173,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [location, setLocation]           = useState("");
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
+  const [openSpecializationFor, setOpenSpecializationFor] = useState<string | null>(null);
   const [remoteJob, setRemoteJob]         = useState(false);
   const [jobType, setJobType]             = useState("FULL_TIME");
   const [isMsme, setIsMsme]               = useState<"YES" | "NO" | null>(null);
@@ -662,14 +663,39 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     </button>
 
                     {selected && specialization && (
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specialization.label}</label>
-                        <SelectDropdown
+                      <div className="md:col-span-2 relative">
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specialization.label} <span className="text-xs font-normal text-zinc-400">(select or type your own)</span></label>
+                        <input
+                          className={inputCls}
                           value={specialization.value}
-                          onChange={specialization.set}
-                          placeholder={`Select ${specialization.label.split(" ")[0]} specialization`}
-                          options={specialization.options.map(o => ({ value: o.value, label: o.label }))}
+                          onChange={(e) => { specialization.set(e.target.value); setOpenSpecializationFor(option.value); }}
+                          onFocus={() => setOpenSpecializationFor(option.value)}
+                          onBlur={() => window.setTimeout(() => setOpenSpecializationFor((cur) => (cur === option.value ? null : cur)), 120)}
+                          placeholder={`e.g. ${specialization.options[0]?.label ?? "Type a specialization"}`}
                         />
+                        {openSpecializationFor === option.value && (
+                          <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white py-2 shadow-xl">
+                            {specialization.options
+                              .filter((o) => !specialization.value.trim() || `${o.label} ${o.value}`.toLowerCase().includes(specialization.value.trim().toLowerCase()))
+                              .map((o) => (
+                                <button
+                                  key={o.id}
+                                  type="button"
+                                  onMouseDown={(event) => {
+                                    event.preventDefault();
+                                    specialization.set(o.label);
+                                    setOpenSpecializationFor(null);
+                                  }}
+                                  className="block w-full px-4 py-2.5 text-left text-sm font-medium text-zinc-800 transition hover:bg-blue-50"
+                                >
+                                  {o.label}
+                                </button>
+                              ))}
+                            <div className="px-4 py-2 text-xs font-medium text-zinc-400 border-t border-zinc-100 mt-1 pt-2">
+                              No match? Just keep typing to use your own.
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

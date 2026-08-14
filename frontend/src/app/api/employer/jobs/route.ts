@@ -28,6 +28,10 @@ const Body = z.object({
   companyId: z.string().optional(),
   minEducation: z.array(z.string()).default([]),
   educationSpecialization: z.string().optional(),
+  pgSpecialization: z.string().optional(),
+  ugSpecialization: z.string().optional(),
+  diplomaSpecialization: z.string().optional(),
+  itiSpecialization: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -73,6 +77,25 @@ export async function POST(req: NextRequest) {
       create: { name: catName, slug: slugify(catName) },
     });
     categoryId = cat.id;
+  }
+
+  // Auto-add any new specialization the employer typed as a child entry
+  // under the matching Education category in Master Data.
+  const specializationEntries: { type: "PG_SPECIALIZATION" | "UG_SPECIALIZATION" | "DIPLOMA_SPECIALIZATION" | "ITI_SPECIALIZATION"; value?: string }[] = [
+    { type: "PG_SPECIALIZATION", value: data.data.pgSpecialization },
+    { type: "UG_SPECIALIZATION", value: data.data.ugSpecialization },
+    { type: "DIPLOMA_SPECIALIZATION", value: data.data.diplomaSpecialization },
+    { type: "ITI_SPECIALIZATION", value: data.data.itiSpecialization },
+  ];
+  for (const { type, value } of specializationEntries) {
+    const label = value?.trim();
+    if (!label) continue;
+    const existingCount = await prisma.jobOption.count({ where: { type } });
+    await prisma.jobOption.upsert({
+      where: { type_value: { type, value: label } },
+      update: {},
+      create: { type, label, value: label, sortOrder: existingCount, active: true },
+    }).catch(() => null);
   }
 
   const base = slugify(data.data.title);

@@ -340,6 +340,10 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       educationSpecialization: [pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization]
         .filter(Boolean)
         .join(", ") || undefined,
+      pgSpecialization: pgSpecialization.trim() || undefined,
+      ugSpecialization: ugSpecialization.trim() || undefined,
+      diplomaSpecialization: diplomaSpecialization.trim() || undefined,
+      itiSpecialization: itiSpecialization.trim() || undefined,
     };
     const res = await fetch("/api/employer/jobs", {
       method: "POST",

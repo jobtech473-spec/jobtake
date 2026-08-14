@@ -103,14 +103,6 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
               <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {job._count.applications} applicants</span>
             </div>
 
-            {/* About the Role */}
-            {job.description && (
-              <div className="mt-5">
-                <h3 className="text-sm font-bold text-zinc-900 mb-2">About the Role</h3>
-                <RichText value={job.description} className="text-sm text-zinc-600 leading-relaxed" />
-              </div>
-            )}
-
             {/* Stats row */}
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
@@ -135,6 +127,14 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
             <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
               <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
               <RichText value={job.responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
+            </div>
+          )}
+
+          {/* About the Role */}
+          {job.description && (
+            <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-base font-bold text-zinc-900 mb-3">About the Role</h3>
+              <RichText value={job.description} className="text-sm text-zinc-600 leading-relaxed" />
             </div>
           )}
 

@@ -154,14 +154,6 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
 
             {/* About the role */}
             <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm space-y-6" data-testid="job-detail">
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-lg font-bold text-zinc-900">About the role</h2>
-                </div>
-                <RichText value={job.description} className="text-zinc-700 text-sm leading-relaxed" />
-              </section>
-
               {(job.responsibilities || job.requirements) && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
@@ -172,6 +164,14 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                   {job.requirements && <RichText value={job.requirements} className="text-zinc-700 text-sm leading-relaxed mt-3" />}
                 </section>
               )}
+
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="h-5 w-5 text-blue-600" />
+                  <h2 className="text-lg font-bold text-zinc-900">About the role</h2>
+                </div>
+                <RichText value={job.description} className="text-zinc-700 text-sm leading-relaxed" />
+              </section>
 
               {/* Job Details block — like reference image */}
               <section className="rounded-xl bg-zinc-50 border border-zinc-100 p-5 space-y-3">

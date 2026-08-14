@@ -122,19 +122,19 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          {/* Roles & Responsibilities */}
-          {job.responsibilities && (
-            <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
-              <RichText value={job.responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
-            </div>
-          )}
-
           {/* About the Role */}
           {job.description && (
             <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
               <h3 className="text-base font-bold text-zinc-900 mb-3">About the Role</h3>
               <RichText value={job.description} className="text-sm text-zinc-600 leading-relaxed" />
+            </div>
+          )}
+
+          {/* Roles & Responsibilities */}
+          {job.responsibilities && (
+            <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-base font-bold text-zinc-900 mb-3">Roles &amp; Responsibilities</h3>
+              <RichText value={job.responsibilities} className="text-sm text-zinc-600 leading-relaxed" />
             </div>
           )}
 

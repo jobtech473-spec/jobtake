@@ -181,6 +181,16 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [ugSpecialization, setUgSpecialization]   = useState("");
   const [pgSpecialization, setPgSpecialization]   = useState("");
   const [itiSpecialization, setItiSpecialization] = useState("");
+  const [diplomaSpecializationCustom, setDiplomaSpecializationCustom] = useState("");
+  const [ugSpecializationCustom, setUgSpecializationCustom]   = useState("");
+  const [pgSpecializationCustom, setPgSpecializationCustom]   = useState("");
+  const [itiSpecializationCustom, setItiSpecializationCustom] = useState("");
+  const combineSpecialization = (picked: string, custom: string) =>
+    [picked.trim(), custom.trim()].filter(Boolean).join(", ");
+  const pgSpecializationEffective = combineSpecialization(pgSpecialization, pgSpecializationCustom);
+  const ugSpecializationEffective = combineSpecialization(ugSpecialization, ugSpecializationCustom);
+  const diplomaSpecializationEffective = combineSpecialization(diplomaSpecialization, diplomaSpecializationCustom);
+  const itiSpecializationEffective = combineSpecialization(itiSpecialization, itiSpecializationCustom);
   const [description, setDescription]     = useState("");
   const [responsibilities, setResponsibilities] = useState("");
   const [requirements, setRequirements]   = useState("");
@@ -337,13 +347,15 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       skills,
       collarType: collarType || "WHITE",
       minEducation: minEdus,
-      educationSpecialization: [pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization]
+      educationSpecialization: [pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective]
         .filter(Boolean)
         .join(", ") || undefined,
-      pgSpecialization: pgSpecialization.trim() || undefined,
-      ugSpecialization: ugSpecialization.trim() || undefined,
-      diplomaSpecialization: diplomaSpecialization.trim() || undefined,
-      itiSpecialization: itiSpecialization.trim() || undefined,
+      // Only the freshly-typed custom text needs to be added to Master Data —
+      // the dropdown-picked value already exists there.
+      pgSpecialization: pgSpecializationCustom.trim() || undefined,
+      ugSpecialization: ugSpecializationCustom.trim() || undefined,
+      diplomaSpecialization: diplomaSpecializationCustom.trim() || undefined,
+      itiSpecialization: itiSpecializationCustom.trim() || undefined,
     };
     const res = await fetch("/api/employer/jobs", {
       method: "POST",
@@ -370,7 +382,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     { label: "Experience",      value: formatExperienceRange(experienceMin, experienceMax) },
     { label: "Work Mode",       value: remoteJob ? "Remote" : workMode.charAt(0) + workMode.slice(1).toLowerCase() },
     { label: "Education",       value: minEdus.length ? minEdus.join(", ") : undefined },
-    { label: "Specialization",  value: [pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization].filter(Boolean).join(", ") || undefined },
+    { label: "Specialization",  value: [pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective].filter(Boolean).join(", ") || undefined },
     { label: "CTC Range", value: salaryMinDisplay || salaryMaxDisplay ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"}` : undefined },
   ];
 
@@ -633,10 +645,10 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 const selected = minEdus.includes(option.value);
 
                 const specialization =
-                  option.value === "Under Graduate (UG)" ? { label: "UG Education", options: options.UG_SPECIALIZATION, value: ugSpecialization, set: setUgSpecialization } :
-                  option.value === "Post Graduate (PG)"  ? { label: "PG Education", options: options.PG_SPECIALIZATION, value: pgSpecialization, set: setPgSpecialization } :
-                  option.value === "Diploma"              ? { label: "Diploma Education", options: options.DIPLOMA_SPECIALIZATION, value: diplomaSpecialization, set: setDiplomaSpecialization } :
-                  option.value === "ITI Pass"             ? { label: "ITI Education", options: options.ITI_SPECIALIZATION, value: itiSpecialization, set: setItiSpecialization } :
+                  option.value === "Under Graduate (UG)" ? { label: "UG Education", options: options.UG_SPECIALIZATION, value: ugSpecialization, set: setUgSpecialization, customValue: ugSpecializationCustom, setCustom: setUgSpecializationCustom } :
+                  option.value === "Post Graduate (PG)"  ? { label: "PG Education", options: options.PG_SPECIALIZATION, value: pgSpecialization, set: setPgSpecialization, customValue: pgSpecializationCustom, setCustom: setPgSpecializationCustom } :
+                  option.value === "Diploma"              ? { label: "Diploma Education", options: options.DIPLOMA_SPECIALIZATION, value: diplomaSpecialization, set: setDiplomaSpecialization, customValue: diplomaSpecializationCustom, setCustom: setDiplomaSpecializationCustom } :
+                  option.value === "ITI Pass"             ? { label: "ITI Education", options: options.ITI_SPECIALIZATION, value: itiSpecialization, set: setItiSpecialization, customValue: itiSpecializationCustom, setCustom: setItiSpecializationCustom } :
                   null;
 
                 return (
@@ -677,12 +689,12 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Or type your own</label>
+                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Or add your own</label>
                           <input
                             className={inputCls}
-                            value={specialization.value}
-                            onChange={(e) => specialization.set(e.target.value)}
-                            placeholder="Type a custom specialization"
+                            value={specialization.customValue}
+                            onChange={(e) => specialization.setCustom(e.target.value)}
+                            placeholder="Type a new specialization"
                           />
                         </div>
                       </div>
@@ -1020,9 +1032,9 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   <GraduationCapIcon className="h-4 w-4 text-blue-600" /> Education
                 </h3>
                 <p className="text-sm font-medium text-zinc-700">{minEdus.length ? minEdus.join(", ") : "Not specified"}</p>
-                {[pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization].filter(Boolean).length > 0 && (
+                {[pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective].filter(Boolean).length > 0 && (
                   <p className="text-sm text-zinc-500 mt-1">
-                    Specialization: {[pgSpecialization, ugSpecialization, diplomaSpecialization, itiSpecialization].filter(Boolean).join(", ")}
+                    Specialization: {[pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective].filter(Boolean).join(", ")}
                   </p>
                 )}
               </div>

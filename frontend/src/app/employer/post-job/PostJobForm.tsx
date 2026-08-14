@@ -923,7 +923,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-5 py-2 rounded-xl text-sm transition"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {isAdmin ? "Publish Job" : "Submit for Review"}
+                {isAdmin ? "Publish Job" : "Post Job"}
               </button>
             </div>
 

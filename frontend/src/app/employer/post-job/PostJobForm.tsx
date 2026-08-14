@@ -161,8 +161,8 @@ type Company = {
 export function PostJobForm({ categories, options, isAdmin, company }: { categories: Cat[]; options: ManagedOptions; isAdmin: boolean; company: Company }) {
   const router = useRouter();
 
-  const [collarTypes, setCollarTypes]     = useState<string[]>(["WHITE"]);
-  const collarType = collarTypes[0] ?? "WHITE"; // primary for API
+  const [collarTypes, setCollarTypes]     = useState<string[]>([]);
+  const collarType = collarTypes[0] ?? ""; // primary for API
   const [title, setTitle]                 = useState("");
   const [categoryName, setCategoryName]   = useState("");
   const [industryName, setIndustryName]   = useState("");
@@ -268,6 +268,9 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     setError(null);
 
     // Client-side validation
+    if (collarTypes.length === 0) {
+      setError("Please select a Job Type / Category."); return false;
+    }
     if (!title.trim() || title.trim().length < 3) {
       setError("Job title is required (minimum 3 characters)."); return false;
     }
@@ -962,7 +965,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     { icon: <TrendingUp className="h-4 w-4 text-blue-500" />, label: "Experience",       value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },
                     { icon: <Briefcase className="h-4 w-4 text-blue-500" />,  label: "Employment Type", value: empTypeLabelOf(employmentType || jobType) },
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,       label: "Work Mode",       value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Department",      value: categoryName || deptLabelOf(collarType) },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Department",      value: categoryName || (collarType ? deptLabelOf(collarType) : "—") },
                   ].map(({ icon, label, value }) => (
                     <div key={label} className="bg-zinc-50 rounded-xl p-3 flex items-start gap-2">
                       <div className="mt-0.5 shrink-0">{icon}</div>
@@ -1019,7 +1022,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
                     ...(benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: benefits }] : []),
                     { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: remoteJob ? "Remote" : (location || "—") },
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: deptLabelOf(collarType) },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: collarType ? deptLabelOf(collarType) : "—" },
                     ...(remoteJob ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),
                     { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: "Not yet posted" },
                     { icon: <TrendingUp className="h-4 w-4 text-blue-500" />,  label: "Experience Level",   value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },

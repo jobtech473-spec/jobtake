@@ -207,38 +207,24 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                     {job.workMode === "REMOTE" ? "Remote" : job.workMode === "ONSITE" ? "On-site" : job.workMode === "HYBRID" ? "Hybrid" : job.workMode}
                   </span>
                 </div>
-                {job.category?.name && (
-                  <div className="flex gap-2 text-sm">
-                    <span className="font-semibold text-zinc-900 w-40 shrink-0">Role Category</span>
-                    <span className="text-zinc-700">{job.category.name}</span>
-                  </div>
-                )}
               </section>
 
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <GraduationCap className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-lg font-bold text-zinc-900">Education</h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {(job.seniority === "INTERN" || job.seniority === "ENTRY" || job.seniority === "MID") ? (
-                    <>
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">Bachelor&apos;s degree or equivalent</span>
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">Any discipline</span>
-                    </>
-                  ) : job.seniority === "SENIOR" ? (
-                    <>
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">Bachelor&apos;s degree in relevant field</span>
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">Master&apos;s degree preferred</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">Bachelor&apos;s / Master&apos;s degree</span>
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">MBA or equivalent preferred</span>
-                    </>
-                  )}
-                </div>
-              </section>
+              {job.minEducation.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <GraduationCap className="h-5 w-5 text-blue-600" />
+                    <h2 className="text-lg font-bold text-zinc-900">Education</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {job.minEducation.map((level) => (
+                      <span key={level} className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">{level}</span>
+                    ))}
+                    {job.educationSpecialization && (
+                      <span className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">{job.educationSpecialization}</span>
+                    )}
+                  </div>
+                </section>
+              )}
 
               {job.jobSkills.length > 0 && (
                 <section>

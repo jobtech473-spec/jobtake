@@ -28,6 +28,7 @@ type Row = {
   featured: boolean;
   location: string;
   company: string;
+  companyLogoUrl: string | null;
   postedBy: string;
   applicants: number;
   createdAt: string;
@@ -328,9 +329,13 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
                     </td>
                     <td className="px-4 py-4 align-middle">
                       <div className="flex items-center gap-3">
-                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white ${COMPANY_COLORS[index % COMPANY_COLORS.length]}`}>
-                          {companyInitial}
-                        </span>
+                        {job.companyLogoUrl ? (
+                          <img src={job.companyLogoUrl} alt="" className="h-6 w-6 shrink-0 rounded-md object-contain border border-zinc-100 bg-white" />
+                        ) : (
+                          <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white ${COMPANY_COLORS[index % COMPANY_COLORS.length]}`}>
+                            {companyInitial}
+                          </span>
+                        )}
                         <div className="min-w-0">
                           <div className="truncate font-medium text-zinc-700">{job.company}</div>
                           <div className="truncate text-xs text-zinc-400">by {job.postedBy}</div>

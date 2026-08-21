@@ -623,7 +623,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
 
         {/* 4. Education Details */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-zinc-950">Education Details</h2>
+          <SectionHeader num={4} title="Education Details" />
           <p className="mt-3 text-sm font-medium text-zinc-500">
             Set the minimum education required for candidates.
           </p>

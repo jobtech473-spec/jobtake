@@ -1,17 +1,27 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, X, Zap } from "lucide-react";
+import { ManagedOption } from "@/lib/job-option-types";
 
 const inputCls = "w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white";
 
-export function SkillsManager({ initialSkills }: { initialSkills: string[] }) {
+export function SkillsManager({ initialSkills, keywordOptions }: { initialSkills: string[]; keywordOptions: ManagedOption[] }) {
   const router = useRouter();
   const [skills, setSkills] = useState<string[]>(initialSkills);
   const [skillInput, setSkillInput] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const visibleSuggestions = useMemo(() => {
+    const query = skillInput.trim().toLowerCase();
+    const rows = query
+      ? keywordOptions.filter((option) => `${option.label} ${option.value}`.toLowerCase().includes(query))
+      : keywordOptions;
+    return rows.filter((option) => !skills.some(s => s.toLowerCase() === option.label.toLowerCase()));
+  }, [skillInput, keywordOptions, skills]);
 
   function addSkill(val: string) {
     const t = val.trim();
@@ -56,10 +66,28 @@ export function SkillsManager({ initialSkills }: { initialSkills: string[] }) {
           {skills.length === 0 && <span className="text-xs text-zinc-400">No skills added yet — add some to boost your profile.</span>}
         </div>
 
-        <div className="flex gap-2">
-          <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
-            onKeyDown={e => { if (["Enter", ",", "Tab"].includes(e.key)) { e.preventDefault(); addSkill(skillInput); } }}
-            className={inputCls + " flex-1"} placeholder="Type a skill and press Enter (e.g. React)" />
+        <div className="relative flex gap-2">
+          <div className="relative flex-1">
+            <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+              onKeyDown={e => { if (["Enter", ",", "Tab"].includes(e.key)) { e.preventDefault(); addSkill(skillInput); } }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => window.setTimeout(() => setShowSuggestions(false), 120)}
+              className={inputCls} placeholder="Type a skill and press Enter (e.g. React)" />
+            {showSuggestions && visibleSuggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-lg">
+                {visibleSuggestions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onMouseDown={(event) => { event.preventDefault(); addSkill(option.label); setShowSuggestions(false); }}
+                    className="flex w-full items-center px-4 py-2 text-left text-sm text-zinc-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={() => addSkill(skillInput)}
             className="px-4 py-3 bg-white border border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 transition">Add</button>
         </div>

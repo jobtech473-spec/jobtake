@@ -14,6 +14,7 @@ import { SkillsManager } from "@/components/profile/SkillsManager";
 import { ExperienceManager } from "@/components/profile/ExperienceManager";
 import { EducationManager } from "@/components/profile/EducationManager";
 import { ResumeManager } from "@/components/profile/ResumeManager";
+import { getManagedOptions } from "@/lib/job-options";
 
 type SP = Promise<{ tab?: string }>;
 
@@ -24,12 +25,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: SP }
   const sp = await searchParams;
   const tab = sp.tab || "overview";
 
-  const [user, userSkills, experiences, educations, resumes] = await Promise.all([
+  const [user, userSkills, experiences, educations, resumes, managedOptions] = await Promise.all([
     prisma.user.findUnique({ where: { id: me.id } }),
     prisma.userSkill.findMany({ where: { userId: me.id }, include: { skill: true }, orderBy: { skill: { name: "asc" } } }),
     prisma.experience.findMany({ where: { userId: me.id }, orderBy: [{ current: "desc" }, { startDate: "desc" }] }),
     prisma.education.findMany({ where: { userId: me.id }, orderBy: [{ startYear: "desc" }] }),
     prisma.resume.findMany({ where: { userId: me.id }, orderBy: { createdAt: "desc" } }),
+    getManagedOptions(true, true),
   ]);
   if (!user) redirect("/login");
 
@@ -105,7 +107,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: SP }
 
       {tab === "skills" && (
         <div className="max-w-2xl">
-          <SkillsManager initialSkills={skillNames} />
+          <SkillsManager initialSkills={skillNames} keywordOptions={managedOptions.KEYWORD} />
         </div>
       )}
 

@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import {
   Briefcase, Bookmark, Eye, Send, Search, SlidersHorizontal,
   Building2, MapPin, Calendar, Clock, ChevronRight, ArrowRight, ArrowLeft,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import { JobPreviewModal } from "@/components/JobPreviewModal";
 
 type App = {
   id: string;
@@ -67,14 +67,6 @@ const LOGO_COLORS = [
 
 type DemoApp = App & { appliedDate: string; nextStepDate: string | null };
 
-const DEMO_APPS: DemoApp[] = [
-  { id: "d1", title: "Product Designer",       company: "Acme Corp",  logoUrl: null, slug: "#", employmentType: "Full-time", location: "Bengaluru, India",  stage: "SCREENING", matchScore: 87, createdAt: new Date(Date.now()-2*86400000).toISOString(), updatedAt: new Date(Date.now()-1*86400000).toISOString(), appliedDate: "01 Jul, 2025", nextStepDate: "Expected by 08 Jul, 2025" },
-  { id: "d2", title: "UI/UX Designer",         company: "InnovateX",  logoUrl: null, slug: "#", employmentType: "Full-time", location: "Remote",            stage: "APPLIED",   matchScore: 72, createdAt: new Date(Date.now()-6*86400000).toISOString(), updatedAt: new Date(Date.now()-6*86400000).toISOString(), appliedDate: "28 Jun, 2025", nextStepDate: null },
-  { id: "d3", title: "Senior Visual Designer", company: "Microsoft",  logoUrl: null, slug: "#", employmentType: "Full-time", location: "Hyderabad, India",  stage: "INTERVIEW", matchScore: 91, createdAt: new Date(Date.now()-14*86400000).toISOString(), updatedAt: new Date(Date.now()-2*86400000).toISOString(), appliedDate: "20 Jun, 2025", nextStepDate: "Expected by 10 Jul, 2025" },
-  { id: "d4", title: "Interaction Designer",   company: "InVision",   logoUrl: null, slug: "#", employmentType: "Full-time", location: "Remote",            stage: "APPLIED",   matchScore: 65, createdAt: new Date(Date.now()-19*86400000).toISOString(), updatedAt: new Date(Date.now()-19*86400000).toISOString(), appliedDate: "15 Jun, 2025", nextStepDate: null },
-  { id: "d5", title: "Product Designer",       company: "Spotify",    logoUrl: null, slug: "#", employmentType: "Full-time", location: "Mumbai, India",     stage: "SCREENING", matchScore: 83, createdAt: new Date(Date.now()-24*86400000).toISOString(), updatedAt: new Date(Date.now()-3*86400000).toISOString(), appliedDate: "10 Jun, 2025", nextStepDate: "Expected by 12 Jul, 2025" },
-];
-
 type Tab = "All Applications" | "In Review" | "No Reply Yet" | "Archived";
 
 export function ApplicationsClient({ applications, savedCount }: { applications: App[]; savedCount: number }) {
@@ -83,10 +75,8 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
   const [filterOpen, setFilterOpen] = useState(false);
   const [employmentType, setEmploymentType] = useState("");
   const [location, setLocation] = useState("");
-  const [preview, setPreview] = useState<App | null>(null);
 
-  const isDemo = applications.length === 0;
-  const rawList = isDemo ? DEMO_APPS : applications.map(a => ({ ...a, appliedDate: new Date(a.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }), nextStepDate: NEXT_STEP[a.stage] ? "Upcoming" : null }));
+  const rawList = applications.map(a => ({ ...a, appliedDate: new Date(a.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }), nextStepDate: NEXT_STEP[a.stage] ? "Upcoming" : null }));
 
   const inReviewCount   = rawList.filter(a => a.stage === "SCREENING" || a.stage === "INTERVIEW").length;
   const noReplyCount    = rawList.filter(a => a.stage === "APPLIED").length;
@@ -137,12 +127,6 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
           </div>
         ))}
       </div>
-
-      {isDemo && (
-        <div className="mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-amber-700 font-medium">
-          <span>👋</span> Demo preview — these are sample applications. Real applications will appear here once you apply to jobs.
-        </div>
-      )}
 
       {/* Table card */}
       <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden" data-testid="applications-table">
@@ -232,7 +216,12 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
           {filtered.length === 0 ? (
             <div className="py-12 text-center">
               <Briefcase className="h-8 w-8 mx-auto text-zinc-200 mb-3" />
-              <p className="text-sm text-zinc-400">No applications match.</p>
+              <p className="text-sm text-zinc-400">
+                {rawList.length === 0 ? "You haven't applied to any jobs yet." : "No applications match."}
+              </p>
+              {rawList.length === 0 && (
+                <Link href="/jobs" className="mt-3 inline-block text-sm font-semibold text-blue-600 hover:underline">Browse jobs →</Link>
+              )}
             </div>
           ) : filtered.map((a, i) => {
             const initials = a.company.split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase();
@@ -243,7 +232,7 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
             const next = NEXT_STEP[a.stage];
             const nextDate = (a as DemoApp).nextStepDate ?? null;
             return (
-              <div onClick={() => setPreview(a)} key={a.id} className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-6 py-4 hover:bg-zinc-50 transition-colors items-center cursor-pointer" data-testid={`app-${a.id}`}>
+              <Link href={`/jobs/${a.slug}`} key={a.id} className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-6 py-4 hover:bg-zinc-50 transition-colors items-center cursor-pointer" data-testid={`app-${a.id}`}>
                 <div className="flex items-center gap-3 min-w-0">
                   {a.logoUrl ? (
                     <img src={a.logoUrl} alt="" className="h-11 w-11 rounded-xl object-contain border border-zinc-100 shrink-0" />
@@ -293,7 +282,7 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
                   )}
                   <ChevronRight className="h-4 w-4 text-zinc-300 shrink-0" />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -310,11 +299,6 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
           </div>
         </div>
       </div>
-
-      <JobPreviewModal
-        job={preview ? { title: preview.title, company: preview.company, logoUrl: preview.logoUrl, employmentType: preview.employmentType, location: preview.location, slug: preview.slug } : null}
-        onClose={() => setPreview(null)}
-      />
     </>
   );
 }

@@ -41,7 +41,7 @@ export function PostJobButton({ jobId, status }: { jobId: string; status: string
     return (
       <span className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-2.5 text-sm font-semibold text-amber-700">
         <Clock className="h-4 w-4" />
-        Pending Admin Approval
+        Pending Approval
       </span>
     );
   }

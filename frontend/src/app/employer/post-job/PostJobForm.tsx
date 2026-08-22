@@ -796,6 +796,17 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 </div>
               )}
             </div>
+
+            {/* Additional Benefits */}
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Additional Benefits</label>
+              <textarea
+                className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none"
+                value={benefits} onChange={e => setBenefits(e.target.value)}
+                placeholder="e.g. Health Insurance, Flexible Hours, Bonus, etc."
+                rows={2} />
+              <p className="mt-1 text-xs text-zinc-400">Separate benefits with commas.</p>
+            </div>
           </div>
         </div>
 
@@ -844,15 +855,6 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   ✓ CTC: {salaryMinDisplay ? formatLPA(salaryMinDisplay.replace(" LPA","")) : "?"} – {salaryMaxDisplay ? formatLPA(salaryMaxDisplay.replace(" LPA","")) : "?"}
                 </p>
               )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Additional Benefits</label>
-              <textarea
-                className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none"
-                value={benefits} onChange={e => setBenefits(e.target.value)}
-                placeholder="e.g. Health Insurance, Flexible Hours, Bonus, etc."
-                rows={2} />
-              <p className="mt-1 text-xs text-zinc-400">Separate benefits with commas.</p>
             </div>
           </div>
         </div>

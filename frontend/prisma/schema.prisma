@@ -259,6 +259,7 @@ model Job {
   salaryCurrency   String         @default("USD")
   salaryPeriod     String         @default("year")
   collarType       String?        @default("WHITE")
+  isMsme           Boolean?
   minEducation     String[]       @default([])
   educationSpecialization String?
   status           JobStatus      @default(PENDING)

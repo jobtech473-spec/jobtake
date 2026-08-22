@@ -367,6 +367,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       categoryName: categoryName.trim() || undefined,
       skills,
       collarType: collarType || "WHITE",
+      isMsme: isMsme === "YES" ? true : isMsme === "NO" ? false : undefined,
       minEducation: minEdus,
       educationSpecialization: [pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective]
         .filter(Boolean)
@@ -396,6 +397,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
 
   const summaryFields = [
     { label: "Job Title",       value: title },
+    { label: "MSME Registered", value: isMsme === "YES" ? "Yes" : isMsme === "NO" ? "No" : undefined },
     { label: "Type of Industries", value: industryName },
     { label: "Job Role",        value: categoryName },
     { label: "Location",        value: remoteJob ? "Remote" : location },
@@ -1067,6 +1069,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     ...(benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: benefits }] : []),
                     { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: remoteJob ? "Remote" : (location || "—") },
                     { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: collarType ? deptLabelOf(collarType) : "—" },
+                    { icon: <BadgeCheck className="h-4 w-4 text-blue-500" />,  label: "MSME Registered",    value: isMsme === "YES" ? "Yes" : isMsme === "NO" ? "No" : "—" },
                     ...(remoteJob ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),
                     { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: "Not yet posted" },
                     { icon: <TrendingUp className="h-4 w-4 text-blue-500" />,  label: "Experience Level",   value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },

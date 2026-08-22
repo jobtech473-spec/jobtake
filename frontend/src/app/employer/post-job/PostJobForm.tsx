@@ -565,7 +565,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               </div>
             </div>
 
-            <div>
+            <div className="pt-5 mt-1 border-t border-zinc-100">
               <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
                 CTC Range <span className="text-red-500">*</span>
                 <span className="ml-2 text-xs font-normal text-zinc-400">Enter in LPA (e.g. 5.5 = 5.5 LPA)</span>

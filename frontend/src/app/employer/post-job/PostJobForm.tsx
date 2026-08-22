@@ -56,36 +56,57 @@ function SelectDropdown({
   placeholder: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const selected = options.find(o => o.value === value);
+  const filteredOptions = search.trim()
+    ? options.filter(o => `${o.label} ${o.sub ?? ""}`.toLowerCase().includes(search.trim().toLowerCase()))
+    : options;
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setOpen(false);
+          setSearch("");
+        }
+      }}
+    >
       <button
         type="button"
         className={`${inputCls} flex items-center justify-between gap-2 text-left`}
-        onClick={() => setOpen(v => !v)}
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onClick={() => setOpen(v => { if (v) setSearch(""); return !v; })}
       >
         <span className={`truncate ${selected ? "text-zinc-900" : "text-zinc-400"}`}>{selected ? selected.label : placeholder}</span>
         <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white py-2 shadow-xl">
-          {options.map(o => (
-            <button
-              key={o.value}
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { onChange(o.value); setOpen(false); }}
-              className="block w-full px-4 py-2.5 text-left transition hover:bg-blue-50"
-            >
-              <span className="block text-sm font-bold text-zinc-950">{o.label}</span>
-              {o.sub && <span className="mt-0.5 block text-xs font-medium text-zinc-600">{o.sub}</span>}
-            </button>
-          ))}
-          {!options.length && (
-            <div className="px-4 py-3 text-sm font-medium text-zinc-500">No options available.</div>
-          )}
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Type to search..."
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+          <div className="max-h-[200px] overflow-y-auto py-1">
+            {filteredOptions.map(o => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => { onChange(o.value); setOpen(false); setSearch(""); }}
+                className="block w-full px-4 py-2.5 text-left transition hover:bg-blue-50"
+              >
+                <span className="block text-sm font-bold text-zinc-950">{o.label}</span>
+                {o.sub && <span className="mt-0.5 block text-xs font-medium text-zinc-600">{o.sub}</span>}
+              </button>
+            ))}
+            {!filteredOptions.length && (
+              <div className="px-4 py-3 text-sm font-medium text-zinc-500">No matching options.</div>
+            )}
+          </div>
         </div>
       )}
     </div>

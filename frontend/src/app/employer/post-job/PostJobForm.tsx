@@ -473,21 +473,21 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industries</label>
-              <SelectDropdown
-                value={industryName}
-                onChange={setIndustryName}
-                placeholder="Select type of industry"
-                options={industryOptions.map(o => ({ value: o.value, label: o.label }))}
-              />
-            </div>
-            <div>
               <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Job Role <span className="text-red-500">*</span></label>
               <SelectDropdown
                 value={categoryName}
                 onChange={setCategoryName}
                 placeholder="Select job role"
                 options={roleOptions.map(o => ({ value: o.value, label: o.label }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industries</label>
+              <SelectDropdown
+                value={industryName}
+                onChange={setIndustryName}
+                placeholder="Select type of industry"
+                options={industryOptions.map(o => ({ value: o.value, label: o.label }))}
               />
             </div>
             <div className="grid md:grid-cols-3 gap-4">

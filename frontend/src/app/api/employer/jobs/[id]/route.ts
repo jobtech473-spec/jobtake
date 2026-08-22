@@ -21,6 +21,7 @@ const PatchBody = z.object({
   salaryCurrency:  z.string().optional(),
   salaryPeriod:    z.enum(["month", "year"]).optional(),
   collarType:      z.enum(["WHITE", "BLUE", "PINK", "GREY", "MSME"]).optional(),
+  hideSalary:      z.boolean().optional(),
   categoryName:    z.string().optional(),
   skills:          z.array(z.string()).optional(),
   status:          z.enum(["DRAFT", "PENDING", "PUBLISHED", "ARCHIVED"]).optional(),

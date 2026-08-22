@@ -84,6 +84,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
             salaryMax: j.salaryMax,
             salaryCurrency: j.salaryCurrency,
             salaryPeriod: j.salaryPeriod,
+            hideSalary: j.hideSalary,
             collarType: (j as any).collarType || null,
             featured: j.featured,
             publishedAt: j.publishedAt?.toISOString() || null,

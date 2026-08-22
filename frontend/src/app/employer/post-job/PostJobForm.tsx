@@ -197,6 +197,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [remoteJob, setRemoteJob]         = useState(false);
   const [jobType, setJobType]             = useState("FULL_TIME");
   const [isMsme, setIsMsme]               = useState<"YES" | "NO" | null>(null);
+  const [hideSalary, setHideSalary]       = useState(false);
   const [minEdus, setMinEdus]             = useState<string[]>([]);
   const [diplomaSpecialization, setDiplomaSpecialization] = useState("");
   const [ugSpecialization, setUgSpecialization]   = useState("");
@@ -364,6 +365,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       salaryMax: salaryMax ? parseInt(salaryMax) : undefined,
       salaryCurrency: "INR",
       salaryPeriod: "year",
+      hideSalary,
       categoryName: categoryName.trim() || undefined,
       skills,
       collarType: collarType || "WHITE",
@@ -606,6 +608,15 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   ✓ CTC: {salaryMinDisplay ? formatLPA(salaryMinDisplay.replace(" LPA","")) : "?"} – {salaryMaxDisplay ? formatLPA(salaryMaxDisplay.replace(" LPA","")) : "?"}
                 </p>
               )}
+              <label className="mt-3 flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hideSalary}
+                  onChange={e => setHideSalary(e.target.checked)}
+                  className="h-4 w-4 rounded accent-blue-600"
+                />
+                <span className="text-sm text-zinc-600">Hide salary details from candidates</span>
+              </label>
             </div>
           </div>
         </div>

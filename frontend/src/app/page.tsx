@@ -44,7 +44,7 @@ export default async function Home() {
         slug: j.slug,
         title: j.title,
         location: j.location,
-        salaryLabel: formatSalary(j.salaryMin, j.salaryMax, j.salaryCurrency, j.salaryPeriod),
+        salaryLabel: j.hideSalary ? "Not disclosed" : formatSalary(j.salaryMin, j.salaryMax, j.salaryCurrency, j.salaryPeriod),
         postedAgo: j.publishedAt ? timeAgo(j.publishedAt) : "recent",
         company: { name: j.company.name, initial: j.company.name[0].toUpperCase() },
       })),
@@ -64,7 +64,7 @@ export default async function Home() {
     location: j.location,
     workMode: j.workMode.charAt(0) + j.workMode.slice(1).toLowerCase(),
     experienceLabel: SENIORITY_LABEL[j.seniority] ?? "Exp not specified",
-    salaryLabel: formatSalary(j.salaryMin, j.salaryMax, j.salaryCurrency, j.salaryPeriod),
+    salaryLabel: j.hideSalary ? "Not disclosed" : formatSalary(j.salaryMin, j.salaryMax, j.salaryCurrency, j.salaryPeriod),
     postedAgo: j.publishedAt ? timeAgo(j.publishedAt) : "recent",
     tags: j.jobSkills.map((js) => js.skill.name).slice(0, 3),
     company: {

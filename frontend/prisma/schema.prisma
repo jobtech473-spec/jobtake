@@ -260,6 +260,7 @@ model Job {
   salaryPeriod     String         @default("year")
   collarType       String?        @default("WHITE")
   isMsme           Boolean?
+  hideSalary       Boolean        @default(false)
   minEducation     String[]       @default([])
   educationSpecialization String?
   status           JobStatus      @default(PENDING)

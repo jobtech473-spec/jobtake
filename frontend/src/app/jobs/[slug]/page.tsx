@@ -137,7 +137,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                   <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 uppercase tracking-wide font-semibold mb-1">
                     <BadgeDollarSign className="h-3 w-3" /> Salary
                   </div>
-                  <div className="text-sm font-bold text-zinc-900">{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod)}</div>
+                  <div className="text-sm font-bold text-zinc-900">{job.hideSalary ? "Not disclosed" : formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod)}</div>
                 </div>
                 {job.seniority && (
                   <div className="bg-zinc-50 rounded-xl p-3">

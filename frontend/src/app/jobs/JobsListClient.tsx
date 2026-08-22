@@ -11,6 +11,7 @@ type Job = {
   seniority: string; experienceMin: number | null; experienceMax: number | null;
   salaryMin: number | null; salaryMax: number | null;
   salaryCurrency: string; salaryPeriod: string;
+  hideSalary: boolean;
   collarType: string | null;
   featured: boolean; publishedAt: string | null;
   company: { name: string; slug: string; logoUrl: string | null };
@@ -320,7 +321,7 @@ export function JobsListClient({
           ) : (
             <div className="space-y-3">
               {jobs.map((j, i) => {
-                const salary = formatSalaryINR(j.salaryMin, j.salaryMax);
+                const salary = j.hideSalary ? null : formatSalaryINR(j.salaryMin, j.salaryMax);
                 return (
                   <Link key={j.id} href={`/jobs/${j.slug}`} className="block bg-white rounded-2xl border border-zinc-200 hover:border-blue-200 hover:shadow-md transition-all duration-200 p-5 group" data-testid={`job-card-${j.id}`}>
                     <div className="flex items-start gap-4">

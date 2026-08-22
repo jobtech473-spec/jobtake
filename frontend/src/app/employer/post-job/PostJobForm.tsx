@@ -541,6 +541,49 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 />
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                CTC Range <span className="text-red-500">*</span>
+                <span className="ml-2 text-xs font-normal text-zinc-400">Enter in LPA (e.g. 5.5 = 5.5 LPA)</span>
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className={inputCls}
+                    value={salaryMinDisplay}
+                    onChange={e => handleSalaryMin(e.target.value)}
+                    onBlur={e => { if (e.target.value) setSalaryMinDisplay(formatLPA(e.target.value)); }}
+                    onFocus={e => { const raw = parseFloat(salaryMin) / 100000; setSalaryMinDisplay(isNaN(raw) ? "" : String(raw)); }}
+                    placeholder="Min CTC"
+                  />
+                </div>
+                <span className="text-zinc-400 text-sm font-medium shrink-0">to</span>
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className={inputCls}
+                    value={salaryMaxDisplay}
+                    onChange={e => handleSalaryMax(e.target.value)}
+                    onBlur={e => { if (e.target.value) setSalaryMaxDisplay(formatLPA(e.target.value)); }}
+                    onFocus={e => { const raw = parseFloat(salaryMax) / 100000; setSalaryMaxDisplay(isNaN(raw) ? "" : String(raw)); }}
+                    placeholder="Max CTC"
+                  />
+                </div>
+              </div>
+              {salaryMin && salaryMax && parseInt(salaryMin, 10) > parseInt(salaryMax, 10) ? (
+                <p className="text-xs text-red-500 mt-1.5 font-medium">
+                  ✕ Minimum CTC cannot be greater than maximum CTC.
+                </p>
+              ) : (salaryMinDisplay || salaryMaxDisplay) && (
+                <p className="text-xs text-emerald-600 mt-1.5 font-medium">
+                  ✓ CTC: {salaryMinDisplay ? formatLPA(salaryMinDisplay.replace(" LPA","")) : "?"} – {salaryMaxDisplay ? formatLPA(salaryMaxDisplay.replace(" LPA","")) : "?"}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -806,55 +849,6 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 placeholder="e.g. Health Insurance, Flexible Hours, Bonus, etc."
                 rows={2} />
               <p className="mt-1 text-xs text-zinc-400">Separate benefits with commas.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 6. Compensation */}
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-          <SectionHeader num={6} title="Compensation" />
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                CTC Range <span className="text-red-500">*</span>
-                <span className="ml-2 text-xs font-normal text-zinc-400">Enter in LPA (e.g. 5.5 = 5.5 LPA)</span>
-              </label>
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    className={inputCls}
-                    value={salaryMinDisplay}
-                    onChange={e => handleSalaryMin(e.target.value)}
-                    onBlur={e => { if (e.target.value) setSalaryMinDisplay(formatLPA(e.target.value)); }}
-                    onFocus={e => { const raw = parseFloat(salaryMin) / 100000; setSalaryMinDisplay(isNaN(raw) ? "" : String(raw)); }}
-                    placeholder="Min CTC"
-                  />
-                </div>
-                <span className="text-zinc-400 text-sm font-medium shrink-0">to</span>
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    className={inputCls}
-                    value={salaryMaxDisplay}
-                    onChange={e => handleSalaryMax(e.target.value)}
-                    onBlur={e => { if (e.target.value) setSalaryMaxDisplay(formatLPA(e.target.value)); }}
-                    onFocus={e => { const raw = parseFloat(salaryMax) / 100000; setSalaryMaxDisplay(isNaN(raw) ? "" : String(raw)); }}
-                    placeholder="Max CTC"
-                  />
-                </div>
-              </div>
-              {salaryMin && salaryMax && parseInt(salaryMin, 10) > parseInt(salaryMax, 10) ? (
-                <p className="text-xs text-red-500 mt-1.5 font-medium">
-                  ✕ Minimum CTC cannot be greater than maximum CTC.
-                </p>
-              ) : (salaryMinDisplay || salaryMaxDisplay) && (
-                <p className="text-xs text-emerald-600 mt-1.5 font-medium">
-                  ✓ CTC: {salaryMinDisplay ? formatLPA(salaryMinDisplay.replace(" LPA","")) : "?"} – {salaryMaxDisplay ? formatLPA(salaryMaxDisplay.replace(" LPA","")) : "?"}
-                </p>
-              )}
             </div>
           </div>
         </div>

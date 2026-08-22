@@ -213,6 +213,12 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const ugSpecializationEffective = combineSpecialization(ugSpecialization, ugSpecializationCustom);
   const diplomaSpecializationEffective = combineSpecialization(diplomaSpecialization, diplomaSpecializationCustom);
   const itiSpecializationEffective = combineSpecialization(itiSpecialization, itiSpecializationCustom);
+  const labeledSpecializations = [
+    pgSpecializationEffective && `PG: ${pgSpecializationEffective}`,
+    ugSpecializationEffective && `UG: ${ugSpecializationEffective}`,
+    diplomaSpecializationEffective && `Diploma: ${diplomaSpecializationEffective}`,
+    itiSpecializationEffective && `ITI: ${itiSpecializationEffective}`,
+  ].filter(Boolean) as string[];
   const [description, setDescription]     = useState("");
   const [responsibilities, setResponsibilities] = useState("");
   const [requirements, setRequirements]   = useState("");
@@ -371,9 +377,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       collarType: collarType || "WHITE",
       isMsme: isMsme === "YES" ? true : isMsme === "NO" ? false : undefined,
       minEducation: minEdus,
-      educationSpecialization: [pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective]
-        .filter(Boolean)
-        .join(", ") || undefined,
+      educationSpecialization: labeledSpecializations.join(", ") || undefined,
       // Only the freshly-typed custom text needs to be added to Master Data —
       // the dropdown-picked value already exists there.
       pgSpecialization: pgSpecializationCustom.trim() || undefined,
@@ -407,7 +411,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     { label: "Experience",      value: formatExperienceRange(experienceMin, experienceMax) },
     { label: "Work Mode",       value: remoteJob ? "Remote" : workMode.charAt(0) + workMode.slice(1).toLowerCase() },
     { label: "Education",       value: minEdus.length ? minEdus.join(", ") : undefined },
-    { label: "Specialization",  value: [pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective].filter(Boolean).join(", ") || undefined },
+    { label: "Specialization",  value: labeledSpecializations.join(", ") || undefined },
     { label: "CTC Range", value: salaryMinDisplay || salaryMaxDisplay ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"}` : undefined },
   ];
 
@@ -1062,9 +1066,9 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                   <GraduationCapIcon className="h-4 w-4 text-blue-600" /> Education
                 </h3>
                 <p className="text-sm font-medium text-zinc-700">{minEdus.length ? minEdus.join(", ") : "Not specified"}</p>
-                {[pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective].filter(Boolean).length > 0 && (
+                {labeledSpecializations.length > 0 && (
                   <p className="text-sm text-zinc-500 mt-1">
-                    Specialization: {[pgSpecializationEffective, ugSpecializationEffective, diplomaSpecializationEffective, itiSpecializationEffective].filter(Boolean).join(", ")}
+                    {labeledSpecializations.join(", ")}
                   </p>
                 )}
               </div>

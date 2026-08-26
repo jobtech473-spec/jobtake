@@ -282,8 +282,8 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
       </div>
 
       <div className="min-w-0 overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
-        <div className="min-w-0 overflow-hidden">
-          <table className="w-full table-fixed text-sm">
+        <div className="min-w-0 overflow-x-auto">
+          <table className="w-full min-w-[900px] table-fixed text-sm">
             <colgroup>
               <col className="w-12" />
               <col className="w-[22%]" />

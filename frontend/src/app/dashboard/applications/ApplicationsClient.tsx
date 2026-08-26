@@ -204,6 +204,9 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
           </div>
         </div>
 
+        {/* Table */}
+        <div className="overflow-x-auto">
+        <div className="min-w-[640px]">
         {/* Table header */}
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50">
           {["Role / Company", "Applied On", "Status", "Next Step"].map(h => (
@@ -285,6 +288,8 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
               </Link>
             );
           })}
+        </div>
+        </div>
         </div>
 
         {/* Pagination */}

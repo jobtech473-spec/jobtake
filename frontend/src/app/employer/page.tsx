@@ -93,6 +93,9 @@ export default async function EmployerHome() {
               <h2 className="font-bold text-zinc-900 text-lg">Recent Job Posts</h2>
             </div>
 
+            {/* Table */}
+            <div className="overflow-x-auto">
+            <div className="min-w-[640px]">
             {/* Table head */}
             <div className="px-6 py-3 grid grid-cols-[2fr_1.5fr_80px_90px_80px] gap-4 text-[11px] uppercase tracking-[0.16em] text-zinc-400 font-semibold border-b border-zinc-100">
               <div>Job Title</div>
@@ -137,6 +140,8 @@ export default async function EmployerHome() {
                 </Link>
               ))
             )}
+            </div>
+            </div>
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-zinc-100 text-center">

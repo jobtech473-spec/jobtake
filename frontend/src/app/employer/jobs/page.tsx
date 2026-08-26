@@ -88,6 +88,8 @@ export default async function EmployerJobsPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+        <div className="min-w-[760px]">
         {/* Table header row */}
         <div className="px-6 py-4 border-b border-zinc-100">
           <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px] items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-zinc-400 font-semibold">
@@ -153,6 +155,8 @@ export default async function EmployerJobsPage() {
             </Link>
           ))
         )}
+        </div>
+        </div>
 
         {/* Footer */}
         {jobs.length > 0 && (

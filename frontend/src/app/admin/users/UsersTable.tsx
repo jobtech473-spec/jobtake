@@ -123,6 +123,8 @@ export function UsersTable({
 
         {/* Table */}
         <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+          <div className="min-w-[720px]">
           <div className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
             <div>User</div>
             <div>Email</div>
@@ -167,6 +169,8 @@ export function UsersTable({
               })}
             </div>
           )}
+          </div>
+          </div>
 
           {/* Pagination */}
           <div className="px-6 py-3.5 border-t border-zinc-100 flex items-center justify-between">

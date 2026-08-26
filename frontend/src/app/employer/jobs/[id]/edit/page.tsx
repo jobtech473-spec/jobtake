@@ -45,6 +45,8 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
           salaryMax: job.salaryMax ?? null,
           skills: job.jobSkills.map(s => s.skill.name),
           categoryName: job.category?.name ?? "",
+          minEducation: job.minEducation,
+          educationSpecialization: job.educationSpecialization ?? "",
         }}
         categories={categories.map(c => ({ id: c.id, name: c.name }))}
         options={options}

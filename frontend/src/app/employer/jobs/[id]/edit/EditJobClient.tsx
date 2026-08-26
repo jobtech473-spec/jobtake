@@ -57,6 +57,7 @@ type JobData = {
   employmentType: string; seniority: string; collarType: string;
   experienceMin: number | null; experienceMax: number | null;
   salaryMin: number | null; salaryMax: number | null; skills: string[]; categoryName: string;
+  minEducation: string[]; educationSpecialization: string;
 };
 
 const SectionHeader = ({ num, title }: { num: number; title: string }) => (
@@ -89,6 +90,8 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
   const [salaryMax, setSalaryMax]           = useState(job.salaryMax ? String(job.salaryMax) : "");
   const [skills, setSkills]                 = useState<string[]>(job.skills);
   const [skillInput, setSkillInput]         = useState("");
+  const [minEdus, setMinEdus]               = useState<string[]>(job.minEducation);
+  const [educationSpecialization, setEducationSpecialization] = useState(job.educationSpecialization);
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState<string | null>(null);
   const skillRef = useRef<HTMLInputElement>(null);
@@ -96,6 +99,7 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
   const locationOptions = options.LOCATION;
   const industryOptions = options.INDUSTRY;
   const roleOptions = options.ROLE;
+  const educationOptions = options.EDUCATION;
   const visibleLocationOptions = useMemo(() => {
     const query = location.trim().toLowerCase();
     const rows = query
@@ -140,6 +144,8 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
         salaryMax: salaryMax ? parseInt(salaryMax) : undefined,
         salaryCurrency: "INR", salaryPeriod: "year",
         categoryName: categoryName.trim() || undefined, skills,
+        minEducation: minEdus,
+        educationSpecialization: educationSpecialization.trim() || undefined,
       }),
     });
     const data = await res.json();
@@ -283,9 +289,43 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
           </div>
         </div>
 
-        {/* 4. Job Description */}
+        {/* 4. Education Details */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-          <SectionHeader num={4} title="Job Description" />
+          <SectionHeader num={4} title="Education Details" />
+          <div>
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Minimum Education</label>
+            <div className="flex flex-wrap gap-2">
+              {educationOptions.map((option) => {
+                const selected = minEdus.includes(option.value);
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setMinEdus(prev => prev.includes(option.value) ? prev.filter(v => v !== option.value) : [...prev, option.value])}
+                    className={`px-4 py-2 rounded-xl border text-sm font-semibold transition ${selected ? "border-blue-400 bg-blue-50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:border-zinc-300"}`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="mt-4">
+            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Specialization</label>
+            <textarea
+              value={educationSpecialization}
+              onChange={e => setEducationSpecialization(e.target.value)}
+              rows={2}
+              className={inputCls + " resize-none"}
+              placeholder="e.g. UG: B.Tech / B.E. in Mechanical Engineering, Diploma: Diploma in Mechanical Engineering"
+            />
+            <p className="mt-1 text-xs text-zinc-400">Edit freely to fix or simplify what candidates will see.</p>
+          </div>
+        </div>
+
+        {/* 5. Job Description */}
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6">
+          <SectionHeader num={5} title="Job Description" />
           <p className="mb-8 text-sm font-medium text-zinc-500">
             Provide a clear and complete job description to attract the right candidates.
           </p>
@@ -331,7 +371,7 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
 
         {/* 5. Skills */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-          <SectionHeader num={5} title="Required Skills" />
+          <SectionHeader num={6} title="Required Skills" />
           <div className="flex flex-wrap gap-2 mb-3 min-h-[36px]">
             {skills.map(s => (
               <span key={s} className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full">
@@ -348,7 +388,7 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
 
         {/* 6. Compensation */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-          <SectionHeader num={6} title="Compensation" />
+          <SectionHeader num={7} title="Compensation" />
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-zinc-700 mb-1.5">

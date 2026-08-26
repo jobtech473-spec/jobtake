@@ -61,11 +61,12 @@ function EmployerSignupForm() {
   return (
     <div className="min-h-screen bg-white">
       {/* Top nav */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-zinc-100">
-        <Logo size={72} />
+      <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-5 border-b border-zinc-100">
+        <span className="sm:hidden shrink-0"><Logo size={38} /></span>
+        <span className="hidden sm:inline-flex shrink-0"><Logo size={72} /></span>
         <div className="flex items-center gap-3 text-sm text-zinc-600">
-          Already have an account?
-          <Link href="/login?role=employer" className="px-4 py-2 rounded-lg border border-orange-400 text-orange-500 font-medium hover:bg-orange-50 transition">
+          <span className="hidden sm:inline">Already have an account?</span>
+          <Link href="/login?role=employer" className="px-3 sm:px-4 py-2 rounded-lg border border-orange-400 text-orange-500 font-medium hover:bg-orange-50 transition">
             Sign in
           </Link>
         </div>
@@ -306,11 +307,12 @@ function CandidateSignupForm() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Top nav */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-zinc-100">
-        <Logo size={72} />
+      <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-5 border-b border-zinc-100">
+        <span className="sm:hidden shrink-0"><Logo size={38} /></span>
+        <span className="hidden sm:inline-flex shrink-0"><Logo size={72} /></span>
         <div className="flex items-center gap-3 text-sm text-zinc-600">
-          Already a member?
-          <Link href="/login" className="px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium hover:bg-blue-50 transition">
+          <span className="hidden sm:inline">Already a member?</span>
+          <Link href="/login" className="px-3 sm:px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium hover:bg-blue-50 transition">
             Sign in
           </Link>
         </div>

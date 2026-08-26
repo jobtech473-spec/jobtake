@@ -55,13 +55,14 @@ function LoginForm() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Top nav */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-zinc-100">
-        <Logo size={72} />
+      <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-5 border-b border-zinc-100">
+        <span className="sm:hidden shrink-0"><Logo size={38} /></span>
+        <span className="hidden sm:inline-flex shrink-0"><Logo size={72} /></span>
         <div className="flex items-center gap-3 text-sm text-zinc-600">
-          {isEmployer ? "Looking for talent?" : "New here?"}
+          <span className="hidden sm:inline">{isEmployer ? "Looking for talent?" : "New here?"}</span>
           <Link
             href={isEmployer ? "/signup?role=employer" : "/signup?role=candidate"}
-            className={`px-4 py-2 rounded-lg border font-medium transition ${
+            className={`text-center px-3 sm:px-4 py-2 rounded-lg border font-medium transition ${
               isEmployer
                 ? "border-orange-400 text-orange-500 hover:bg-orange-50"
                 : "border-blue-500 text-blue-600 hover:bg-blue-50"

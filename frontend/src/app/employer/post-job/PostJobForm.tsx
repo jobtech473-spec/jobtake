@@ -207,8 +207,17 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [ugSpecializationCustom, setUgSpecializationCustom]   = useState("");
   const [pgSpecializationCustom, setPgSpecializationCustom]   = useState("");
   const [itiSpecializationCustom, setItiSpecializationCustom] = useState("");
-  const combineSpecialization = (picked: string, custom: string) =>
-    [picked.trim(), custom.trim()].filter(Boolean).join(", ");
+  const combineSpecialization = (picked: string, custom: string) => {
+    const pickedTrim = picked.trim();
+    const seen = new Set(pickedTrim ? [pickedTrim.toLowerCase()] : []);
+    const customParts = custom.split(",").map(s => s.trim()).filter(Boolean).filter(part => {
+      const key = part.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return [pickedTrim, ...customParts].filter(Boolean).join(", ");
+  };
   const pgSpecializationEffective = combineSpecialization(pgSpecialization, pgSpecializationCustom);
   const ugSpecializationEffective = combineSpecialization(ugSpecialization, ugSpecializationCustom);
   const diplomaSpecializationEffective = combineSpecialization(diplomaSpecialization, diplomaSpecializationCustom);

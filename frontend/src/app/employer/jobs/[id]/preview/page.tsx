@@ -2,7 +2,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
-import { formatSalary, timeAgo } from "@/lib/utils";
+import { formatSalary, timeAgo, splitSpecializationByLevel } from "@/lib/utils";
 import Link from "next/link";
 import {
   ArrowLeft, Pencil, MapPin, Briefcase, BadgeDollarSign,
@@ -164,8 +164,14 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
                   </thead>
                   <tbody>
                     <tr className="text-zinc-700 font-medium">
-                      <td className="pt-3 pr-6">{job.minEducation.join(", ")}</td>
-                      {job.educationSpecialization && <td className="pt-3 pr-6">{job.educationSpecialization}</td>}
+                      <td className="pt-3 pr-6 align-top">{job.minEducation.join(", ")}</td>
+                      {job.educationSpecialization && (
+                        <td className="pt-3 pr-6 align-top">
+                          {splitSpecializationByLevel(job.educationSpecialization).map(part => (
+                            <div key={part}>{part}</div>
+                          ))}
+                        </td>
+                      )}
                     </tr>
                   </tbody>
                 </table>

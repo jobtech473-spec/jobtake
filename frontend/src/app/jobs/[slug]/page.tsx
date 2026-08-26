@@ -8,7 +8,7 @@ import { StickyApplyBar } from "./StickyApplyBar";
 import { NavHider } from "@/components/NavHider";
 import { RichText } from "@/components/RichText";
 import { getCurrentUser } from "@/lib/auth";
-import { formatSalary, timeAgo } from "@/lib/utils";
+import { formatSalary, timeAgo, splitSpecializationByLevel } from "@/lib/utils";
 import {
   MapPin, Briefcase, BadgeDollarSign, Building2,
   BadgeCheck, ArrowLeft, Share2,
@@ -219,9 +219,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                     {job.minEducation.map((level) => (
                       <span key={level} className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">{level}</span>
                     ))}
-                    {job.educationSpecialization && (
-                      <span className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">{job.educationSpecialization}</span>
-                    )}
+                    {job.educationSpecialization && splitSpecializationByLevel(job.educationSpecialization).map((part) => (
+                      <span key={part} className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">{part}</span>
+                    ))}
                   </div>
                 </section>
               )}

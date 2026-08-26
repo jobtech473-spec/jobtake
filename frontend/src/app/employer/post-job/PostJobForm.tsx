@@ -1076,9 +1076,9 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 </h3>
                 <p className="text-sm font-medium text-zinc-700">{minEdus.length ? minEdus.join(", ") : "Not specified"}</p>
                 {labeledSpecializations.length > 0 && (
-                  <p className="text-sm text-zinc-500 mt-1">
-                    {labeledSpecializations.join(", ")}
-                  </p>
+                  <div className="text-sm text-zinc-500 mt-1 space-y-0.5">
+                    {labeledSpecializations.map(part => <div key={part}>{part}</div>)}
+                  </div>
                 )}
               </div>
 

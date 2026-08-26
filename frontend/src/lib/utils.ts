@@ -8,6 +8,10 @@ export function jsonOk<T extends Record<string, unknown>>(data: T, status = 200)
   return NextResponse.json(data, { status });
 }
 
+export function splitSpecializationByLevel(value: string): string[] {
+  return value.split(/,\s*(?=(?:PG|UG|Diploma|ITI):)/).map(s => s.trim()).filter(Boolean);
+}
+
 export function slugify(input: string): string {
   return input
     .toLowerCase()

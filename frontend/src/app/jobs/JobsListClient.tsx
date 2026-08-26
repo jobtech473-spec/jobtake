@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck } from "lucide-react";
+import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck, SlidersHorizontal } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Job = {
@@ -64,6 +64,7 @@ export function JobsListClient({
   const [sortBy, setSortBy] = useState(initialSort);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set(initialSavedIds));
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   async function toggleSave(e: React.MouseEvent, jobId: string) {
     e.preventDefault();
@@ -121,6 +122,7 @@ export function JobsListClient({
     }
     p.delete("page");
     startT(() => router.push(`/jobs?${p.toString()}`));
+    setShowMobileFilters(false);
   }
 
   const pages = Math.max(1, Math.ceil(total / perPage));
@@ -188,11 +190,21 @@ export function JobsListClient({
       </form>
 
       {/* Main layout */}
+      <div className="mt-4 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileFilters(v => !v)}
+          className="flex items-center gap-2 text-sm font-semibold text-zinc-700 border border-zinc-200 bg-white px-4 py-2.5 rounded-xl hover:bg-zinc-50 transition"
+        >
+          <SlidersHorizontal className="h-4 w-4" /> Filters
+        </button>
+      </div>
+
       <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6">
 
         {/* Left sidebar */}
-        <aside className="hidden lg:block">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5 sticky top-28">
+        <aside className={`${showMobileFilters ? "block" : "hidden"} lg:block`}>
+          <div className="bg-white rounded-2xl border border-zinc-200 p-5 lg:sticky lg:top-28">
             <div className="flex items-center justify-between mb-5">
               <span className="font-bold text-zinc-900 text-base">Filters</span>
               <button

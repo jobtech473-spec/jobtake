@@ -200,7 +200,7 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
                 {industryOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Employment Type <span className="text-red-500">*</span></label>
                 <select value={employmentType} onChange={e => setEmploymentType(e.target.value)} className={inputCls}>
@@ -406,16 +406,16 @@ export function EditJobClient({ job, categories, options }: { job: JobData; cate
       </div>
 
       {/* ── FIXED BOTTOM BAR ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-zinc-200 px-6 py-4 flex items-center justify-between gap-3">
-        <p className="text-xs text-zinc-400">Changes will go to preview before publishing.</p>
-        <div className="flex items-center gap-3">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-zinc-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+        <p className="hidden sm:block text-xs text-zinc-400">Changes will go to preview before publishing.</p>
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Link href={`/employer/jobs/${job.id}/preview`}
-            className="px-5 py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition">
+            className="flex-1 sm:flex-none text-center px-3 sm:px-5 py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition whitespace-nowrap">
             Cancel
           </Link>
           <button onClick={save} disabled={loading}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2.5 rounded-xl transition">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-3 sm:px-6 py-2.5 rounded-xl transition whitespace-nowrap">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <Eye className="h-4 w-4 shrink-0" />}
             Save & Preview
           </button>
         </div>

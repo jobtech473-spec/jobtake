@@ -213,7 +213,7 @@ export function AIMatching() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.85, duration: 0.6 }}
-                  className="mt-5 grid grid-cols-4 divide-x divide-zinc-100 border border-zinc-100 rounded-2xl overflow-hidden"
+                  className="mt-5 grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100 border border-zinc-100 rounded-2xl overflow-hidden"
                 >
                   {[
                     { icon: Users,      color: "text-blue-600",   bg: "bg-blue-50",   label: "Smart matches",  sub: "Quality over quantity" },

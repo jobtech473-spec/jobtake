@@ -858,7 +858,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 <input
                   ref={skillRef}
                   className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder:text-zinc-400"
-                  value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                  value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSkillSuggestions(true); }}
                   onKeyDown={onSkillKey}
                   onFocus={() => setShowSkillSuggestions(true)}
                   onBlur={() => { if (skillInput.trim()) addSkill(skillInput); setShowSkillSuggestions(false); }}

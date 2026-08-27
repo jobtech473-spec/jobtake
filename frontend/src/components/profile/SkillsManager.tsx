@@ -68,7 +68,7 @@ export function SkillsManager({ initialSkills, keywordOptions }: { initialSkills
 
         <div className="relative flex gap-2">
           <div className="relative flex-1">
-            <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+            <input value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSuggestions(true); }}
               onKeyDown={e => { if (["Enter", ",", "Tab"].includes(e.key)) { e.preventDefault(); addSkill(skillInput); } }}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => window.setTimeout(() => setShowSuggestions(false), 120)}

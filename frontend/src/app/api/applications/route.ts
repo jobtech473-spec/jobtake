@@ -25,7 +25,10 @@ export async function POST(req: NextRequest) {
     payload.coverLetter = form.get("coverLetter") ? String(form.get("coverLetter")) : undefined;
     payload.resumeId = form.get("resumeId") ? String(form.get("resumeId")) : undefined;
     const f = form.get("resume");
-    if (f && f instanceof File && f.size > 0) resumeFile = f;
+    if (f && f instanceof File && f.size > 0) {
+      if (f.size > 5 * 1024 * 1024) return NextResponse.json({ error: "Resume file too large (max 5MB)" }, { status: 400 });
+      resumeFile = f;
+    }
   } else {
     const json = await req.json().catch(() => ({}));
     const parsed = ApplySchema.safeParse(json);

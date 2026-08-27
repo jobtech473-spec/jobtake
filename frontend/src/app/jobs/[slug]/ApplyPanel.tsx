@@ -18,16 +18,21 @@ export function ApplyPanel({ jobId, jobTitle, userRole, hasApplied }: {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(null);
-    const form = new FormData();
-    form.set("jobId", jobId);
-    if (coverLetter) form.set("coverLetter", coverLetter);
-    if (resume) form.set("resume", resume);
-    const res = await fetch("/api/applications", { method: "POST", body: form });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) { setError(data.error || "Failed to apply"); return; }
-    setDone(true);
-    setTimeout(() => router.refresh(), 600);
+    try {
+      const form = new FormData();
+      form.set("jobId", jobId);
+      if (coverLetter) form.set("coverLetter", coverLetter);
+      if (resume) form.set("resume", resume);
+      const res = await fetch("/api/applications", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error || "Failed to apply"); return; }
+      setDone(true);
+      setTimeout(() => router.refresh(), 600);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (!userRole) {

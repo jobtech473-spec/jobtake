@@ -22,14 +22,19 @@ export function ResumeManager({ initialResumes, compact = false }: { initialResu
 
   async function handleFile(file: File) {
     setUploading(true); setError(null);
-    const form = new FormData();
-    form.append("resume", file);
-    const res = await fetch("/api/dashboard/resume", { method: "POST", body: form });
-    const data = await res.json().catch(() => ({}));
-    setUploading(false);
-    if (!res.ok) { setError(data.error || "Failed to upload resume"); return; }
-    setResumes(prev => [data.resume, ...prev.map(r => ({ ...r, isPrimary: false }))]);
-    router.refresh();
+    try {
+      const form = new FormData();
+      form.append("resume", file);
+      const res = await fetch("/api/dashboard/resume", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error || "Failed to upload resume"); return; }
+      setResumes(prev => [data.resume, ...prev.map(r => ({ ...r, isPrimary: false }))]);
+      router.refresh();
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function remove(id: string) {

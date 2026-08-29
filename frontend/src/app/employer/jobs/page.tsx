@@ -117,9 +117,9 @@ export default async function EmployerJobsPage() {
               className={`px-6 py-4 grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px] items-center gap-4 hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
             >
               {/* Title */}
-              <div>
-                <div className="font-semibold text-zinc-900 text-sm">{j.title}</div>
-                <div className="text-xs text-zinc-400 mt-0.5">{j.category?.name ?? "—"}</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
+                <div className="text-xs text-zinc-400 mt-0.5 truncate">{j.category?.name ?? "—"}</div>
               </div>
 
               {/* Location */}

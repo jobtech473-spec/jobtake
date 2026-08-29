@@ -118,9 +118,9 @@ export default async function EmployerHome() {
                   href={`/employer/jobs/${j.id}/preview`}
                   className={`px-6 py-4 grid grid-cols-[2fr_1.5fr_80px_90px_80px] gap-4 items-center hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
                 >
-                  <div>
-                    <div className="font-semibold text-zinc-900 text-sm">{j.title}</div>
-                    <div className="text-xs text-zinc-400 mt-0.5">{j.category?.name ?? "—"}</div>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
+                    <div className="text-xs text-zinc-400 mt-0.5 truncate">{j.category?.name ?? "—"}</div>
                   </div>
                   <div className="flex items-center gap-1.5 text-sm text-zinc-500 truncate">
                     {j.workMode === "REMOTE"

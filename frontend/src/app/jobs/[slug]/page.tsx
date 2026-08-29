@@ -8,7 +8,7 @@ import { StickyApplyBar } from "./StickyApplyBar";
 import { NavHider } from "@/components/NavHider";
 import { RichText } from "@/components/RichText";
 import { getCurrentUser } from "@/lib/auth";
-import { formatSalary, timeAgo, splitSpecializationByLevel } from "@/lib/utils";
+import { formatEducationSpecialization, formatSalary, timeAgo } from "@/lib/utils";
 import {
   MapPin, Briefcase, BadgeDollarSign, Building2,
   BadgeCheck, ArrowLeft, Share2,
@@ -59,6 +59,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
     job.experienceMax,
     job.seniority === "INTERN" ? "0-1 yrs" : job.seniority === "ENTRY" ? "1-2 yrs" : job.seniority === "MID" ? "2-5 yrs" : job.seniority === "SENIOR" ? "5-8 yrs" : job.seniority === "STAFF" ? "8-12 yrs" : job.seniority === "PRINCIPAL" ? "12-15 yrs" : job.seniority === "DIRECTOR" ? "15-20 yrs" : job.seniority === "EXECUTIVE" ? "20+ yrs" : job.seniority
   );
+  const educationSpecializationText = formatEducationSpecialization(job.educationSpecialization);
 
   return (
     <main className="min-h-screen bg-white">
@@ -215,13 +216,21 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                     <GraduationCap className="h-5 w-5 text-blue-600" />
                     <h2 className="text-lg font-bold text-zinc-900">Education</h2>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {job.minEducation.map((level) => (
-                      <span key={level} className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 text-zinc-700 border border-zinc-200 font-medium">{level}</span>
-                    ))}
-                    {job.educationSpecialization && splitSpecializationByLevel(job.educationSpecialization).map((part) => (
-                      <span key={part} className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">{part}</span>
-                    ))}
+                  <div className={`grid grid-cols-1 gap-x-10 gap-y-5 ${educationSpecializationText ? "md:grid-cols-2" : ""}`}>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-400 mb-3">Minimum Education</p>
+                      <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
+                        {job.minEducation.join(", ")}
+                      </div>
+                    </div>
+                    {educationSpecializationText && (
+                      <div>
+                        <p className="text-sm font-bold text-zinc-400 mb-3">Specialization</p>
+                        <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
+                          {educationSpecializationText}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </section>
               )}

@@ -2,7 +2,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
-import { formatSalary, timeAgo, splitSpecializationByLevel } from "@/lib/utils";
+import { formatEducationSpecialization, formatSalary, timeAgo } from "@/lib/utils";
 import Link from "next/link";
 import {
   ArrowLeft, Pencil, MapPin, Briefcase, BadgeDollarSign,
@@ -52,6 +52,7 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
   const workModeLabel = job.workMode === "REMOTE" ? "Remote" : job.workMode === "HYBRID" ? "Hybrid" : "On-site";
   const dept = job.collarType === "WHITE" ? "Corporate & Professional" : job.collarType === "BLUE" ? "Operations & Trades" : job.collarType === "PINK" ? "Service & Support" : job.collarType === "GREY" ? "Technical & Supervisory" : "MSME & Entrepreneurship";
   const experienceLabel = formatExperienceRange(job.experienceMin, job.experienceMax, SENIORITY_LABEL[job.seniority] ?? job.seniority);
+  const educationSpecializationText = formatEducationSpecialization(job.educationSpecialization);
 
   return (
     <DashboardShell role="EMPLOYER" current="/employer/jobs">
@@ -154,27 +155,21 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
             {job.minEducation.length === 0 ? (
               <p className="text-sm text-zinc-400">Not specified</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs text-zinc-400 font-semibold border-b border-zinc-100">
-                      <th className="pb-2 pr-6">Minimum Education</th>
-                      {job.educationSpecialization && <th className="pb-2 pr-6">Specialization</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="text-zinc-700 font-medium">
-                      <td className="pt-3 pr-6 align-top">{job.minEducation.join(", ")}</td>
-                      {job.educationSpecialization && (
-                        <td className="pt-3 pr-6 align-top">
-                          {splitSpecializationByLevel(job.educationSpecialization).map(part => (
-                            <div key={part}>{part}</div>
-                          ))}
-                        </td>
-                      )}
-                    </tr>
-                  </tbody>
-                </table>
+              <div className={`grid grid-cols-1 gap-x-10 gap-y-5 ${educationSpecializationText ? "sm:grid-cols-2" : ""}`}>
+                <div>
+                  <p className="text-sm font-bold text-zinc-400 mb-3">Minimum Education</p>
+                  <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
+                    {job.minEducation.join(", ")}
+                  </div>
+                </div>
+                {educationSpecializationText && (
+                  <div>
+                    <p className="text-sm font-bold text-zinc-400 mb-3">Specialization</p>
+                    <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
+                      {educationSpecializationText}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

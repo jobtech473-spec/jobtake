@@ -18,9 +18,9 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
     { label: "Overview",        href: "/dashboard",              icon: LayoutDashboard },
     { label: "My Applications", href: "/dashboard/applications", icon: Briefcase },
     { label: "Saved Jobs",      href: "/dashboard/saved",        icon: Bookmark },
+    { label: "Quick Actions",   href: "",                        icon: Settings },
     { label: "Profile",         href: "/dashboard/profile",      icon: UserIcon },
     { label: "Settings",        href: "/dashboard/settings",     icon: Settings },
-    { label: "Quick Actions",   href: "",                        icon: Settings },
   ],
   EMPLOYER: [
     { label: "Overview",        href: "/employer",               icon: LayoutDashboard },

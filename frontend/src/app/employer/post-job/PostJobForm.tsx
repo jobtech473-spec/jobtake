@@ -324,7 +324,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       setError("Job title is required (minimum 3 characters)."); return false;
     }
     if (!categoryName.trim()) {
-      setError("Job Role is required."); return false;
+      setError("Department is required."); return false;
     }
     if (!employmentType) {
       setError("Employment Type is required."); return false;
@@ -415,8 +415,8 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const summaryFields = [
     { label: "Job Title",       value: title },
     { label: "MSME Registered", value: isMsme === "YES" ? "Yes" : isMsme === "NO" ? "No" : undefined },
-    { label: "Type of Industries", value: industryName },
-    { label: "Job Role",        value: categoryName },
+    { label: "Type of Industrie", value: industryName },
+    { label: "Department",      value: categoryName },
     { label: "Location",        value: remoteJob ? "Remote" : location },
     { label: "Employment Type", value: EMPLOYMENT_TYPES.find(e => e.value === (employmentType || jobType))?.label },
     { label: "Experience",      value: formatExperienceRange(experienceMin, experienceMax) },
@@ -513,7 +513,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Job Role <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Department <span className="text-red-500">*</span></label>
               <SelectDropdown
                 value={categoryName}
                 onChange={setCategoryName}
@@ -522,7 +522,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industries</label>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industrie</label>
               <SelectDropdown
                 value={industryName}
                 onChange={setIndustryName}
@@ -1038,7 +1038,8 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     { icon: <TrendingUp className="h-4 w-4 text-blue-500" />, label: "Experience",       value: formatExperienceRangeYears(experienceMin, experienceMax, SENIORITY_LABEL[getSeniorityFromExperience(experienceMin, experienceMax)]) },
                     { icon: <Briefcase className="h-4 w-4 text-blue-500" />,  label: "Employment Type", value: empTypeLabelOf(employmentType || jobType) },
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,       label: "Work Mode",       value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Department",      value: categoryName || (collarType ? deptLabelOf(collarType) : "—") },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Department",      value: categoryName || "—" },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Job Category",    value: collarType ? deptLabelOf(collarType) : "—" },
                   ].map(({ icon, label, value }) => (
                     <div key={label} className="bg-zinc-50 rounded-xl p-3 flex items-start gap-2">
                       <div className="mt-0.5 shrink-0">{icon}</div>
@@ -1103,13 +1104,13 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                   {[
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Role",           value: categoryName || "—" },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: categoryName || "—" },
                     { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Type of Industrie", value: industryName || "—" },
                     { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: (salaryMinDisplay || salaryMaxDisplay) ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"} LPA` : "Not specified" },
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
                     ...(benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: benefits }] : []),
                     { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: remoteJob ? "Remote" : (location || "—") },
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: collarType ? deptLabelOf(collarType) : "—" },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Category",       value: collarType ? deptLabelOf(collarType) : "—" },
                     { icon: <BadgeCheck className="h-4 w-4 text-blue-500" />,  label: "MSME Registered",    value: isMsme === "YES" ? "Yes" : isMsme === "NO" ? "No" : "—" },
                     ...(remoteJob ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),
                     { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: "Not yet posted" },

@@ -9,6 +9,7 @@ import {
 import { ManagedOptions } from "@/lib/job-option-types";
 import { JobDescriptionEditor } from "@/components/JobDescriptionEditor";
 import { RichText } from "@/components/RichText";
+import { formatEducationSpecialization } from "@/lib/utils";
 
 type Cat = { id: string; name: string };
 
@@ -228,6 +229,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     diplomaSpecializationEffective && `Diploma: ${diplomaSpecializationEffective}`,
     itiSpecializationEffective && `ITI: ${itiSpecializationEffective}`,
   ].filter(Boolean) as string[];
+  const educationSpecializationText = formatEducationSpecialization(labeledSpecializations.join(", "));
   const [description, setDescription]     = useState("");
   const [responsibilities, setResponsibilities] = useState("");
   const [requirements, setRequirements]   = useState("");
@@ -420,7 +422,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     { label: "Experience",      value: formatExperienceRange(experienceMin, experienceMax) },
     { label: "Work Mode",       value: remoteJob ? "Remote" : workMode.charAt(0) + workMode.slice(1).toLowerCase() },
     { label: "Education",       value: minEdus.length ? minEdus.join(", ") : undefined },
-    { label: "Specialization",  value: labeledSpecializations.join(", ") || undefined },
+    { label: "Specialization",  value: educationSpecializationText || undefined },
     { label: "CTC Range", value: salaryMinDisplay || salaryMaxDisplay ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"}` : undefined },
   ];
 
@@ -1074,10 +1076,24 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 <h3 className="text-base font-bold text-zinc-900 mb-4 flex items-center gap-2">
                   <GraduationCapIcon className="h-4 w-4 text-blue-600" /> Education
                 </h3>
-                <p className="text-sm font-medium text-zinc-700">{minEdus.length ? minEdus.join(", ") : "Not specified"}</p>
-                {labeledSpecializations.length > 0 && (
-                  <div className="text-sm text-zinc-500 mt-1 space-y-0.5">
-                    {labeledSpecializations.map(part => <div key={part}>{part}</div>)}
+                {minEdus.length === 0 ? (
+                  <p className="text-sm text-zinc-400">Not specified</p>
+                ) : (
+                  <div className={`grid grid-cols-1 gap-x-10 gap-y-5 ${educationSpecializationText ? "sm:grid-cols-2" : ""}`}>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-400 mb-3">Minimum Education</p>
+                      <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
+                        {minEdus.join(", ")}
+                      </div>
+                    </div>
+                    {educationSpecializationText && (
+                      <div>
+                        <p className="text-sm font-bold text-zinc-400 mb-3">Specialization</p>
+                        <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
+                          {educationSpecializationText}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

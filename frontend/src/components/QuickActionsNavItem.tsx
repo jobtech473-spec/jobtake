@@ -12,21 +12,46 @@ const ACTIONS = [
 
 export function QuickActionsNavItem() {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        popupRef.current && !popupRef.current.contains(e.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    const close = () => setOpen(false);
+    document.addEventListener("mousedown", handleClick);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  function toggle() {
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setCoords({ top: rect.top, left: rect.right + 8 });
+    }
+    setOpen(v => !v);
+  }
 
   return (
-    <div className="relative" ref={ref} data-testid="side-quick-actions">
+    <>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen(v => !v)}
+        onClick={toggle}
+        data-testid="side-quick-actions"
         className={`flex w-full items-center gap-3 text-sm px-3 py-2.5 rounded-xl transition-colors font-medium ${
           open ? "bg-blue-600 text-white" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
         }`}
@@ -34,8 +59,12 @@ export function QuickActionsNavItem() {
         <Zap className="h-4 w-4 shrink-0" /> Quick Actions
       </button>
 
-      {open && (
-        <div className="absolute left-full top-0 ml-2 z-50 w-56 rounded-2xl border border-zinc-100 bg-white shadow-xl p-2">
+      {open && coords && (
+        <div
+          ref={popupRef}
+          style={{ position: "fixed", top: coords.top, left: coords.left }}
+          className="z-50 w-56 rounded-2xl border border-zinc-100 bg-white shadow-xl p-2"
+        >
           {ACTIONS.map(({ icon: Icon, label, href }) => (
             <Link
               key={label}
@@ -51,6 +80,6 @@ export function QuickActionsNavItem() {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   Briefcase, Bookmark, Eye, Send, ArrowRight, ChevronRight,
-  Bell, FileText, MapPin, Building2,
+  MapPin, Building2,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -100,25 +100,6 @@ export default async function SeekerDashboard() {
                 <div className="text-[11px] text-zinc-400 mt-0.5">{sub}</div>
               </Link>
             ))}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-5">
-            <h3 className="font-bold text-zinc-900 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { icon: <Briefcase className="h-4 w-4 text-blue-600" />,  label: "Browse Jobs",    href: "/jobs" },
-                { icon: <FileText className="h-4 w-4 text-violet-600" />, label: "Update Resume",  href: "/dashboard/profile" },
-                { icon: <Bell className="h-4 w-4 text-orange-500" />,     label: "Job Alerts",     href: "/dashboard/settings" },
-                { icon: <Bookmark className="h-4 w-4 text-teal-600" />,   label: "Saved Jobs",     href: "/dashboard/saved" },
-              ].map(({ icon, label, href }) => (
-                <Link key={label} href={href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors text-sm font-medium text-zinc-700">
-                  <div className="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shrink-0">{icon}</div>
-                  {label}
-                </Link>
-              ))}
-            </div>
           </div>
 
           {/* My Applications */}

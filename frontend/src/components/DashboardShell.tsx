@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { DashboardMobileNav } from "./DashboardMobileNav";
+import { QuickActionsNavItem } from "./QuickActionsNavItem";
 import { prisma } from "@/lib/prisma";
 
 const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[]> = {
@@ -19,6 +20,7 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
     { label: "Saved Jobs",      href: "/dashboard/saved",        icon: Bookmark },
     { label: "Profile",         href: "/dashboard/profile",      icon: UserIcon },
     { label: "Settings",        href: "/dashboard/settings",     icon: Settings },
+    { label: "Quick Actions",   href: "",                        icon: Settings },
   ],
   EMPLOYER: [
     { label: "Overview",        href: "/employer",               icon: LayoutDashboard },
@@ -72,6 +74,9 @@ export async function DashboardShell({ children, role, current }: { children: Re
       {/* Nav items */}
       <nav className="flex-1 px-3 space-y-0.5">
         {items.map((it) => {
+          if (it.label === "Quick Actions") {
+            return <QuickActionsNavItem key={it.label} />;
+          }
           const active = current === it.href || (current?.startsWith(it.href + "/") && it.href !== `/${role === "EMPLOYER" ? "employer" : role === "ADMIN" ? "admin" : "dashboard"}`);
           return (
             <Link

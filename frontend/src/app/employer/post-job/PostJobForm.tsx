@@ -530,56 +530,32 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 options={industryOptions.map(o => ({ value: o.value, label: o.label }))}
               />
             </div>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Employment Type <span className="text-red-500">*</span></label>
-                <SelectDropdown
-                  value={employmentType}
-                  onChange={setEmploymentType}
-                  placeholder="Select type"
-                  options={EMPLOYMENT_TYPES.map(o => ({ value: o.value, label: o.label }))}
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Experience <span className="text-red-500">*</span></label>
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 max-w-md">
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  step="1"
+                  className={inputCls}
+                  value={experienceMin}
+                  onChange={e => setExperienceMin(normalizeExperienceInput(e.target.value))}
+                  placeholder="Min"
+                />
+                <span className="text-xs font-semibold text-zinc-400">to</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  step="1"
+                  className={inputCls}
+                  value={experienceMax}
+                  onChange={e => setExperienceMax(normalizeExperienceInput(e.target.value))}
+                  placeholder="Max"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Experience <span className="text-red-500">*</span></label>
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    max="60"
-                    step="1"
-                    className={inputCls}
-                    value={experienceMin}
-                    onChange={e => setExperienceMin(normalizeExperienceInput(e.target.value))}
-                    placeholder="Min"
-                  />
-                  <span className="text-xs font-semibold text-zinc-400">to</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="60"
-                    step="1"
-                    className={inputCls}
-                    value={experienceMax}
-                    onChange={e => setExperienceMax(normalizeExperienceInput(e.target.value))}
-                    placeholder="Max"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-zinc-400">Enter years, e.g. 2 to 5.</p>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Work Mode <span className="text-red-500">*</span></label>
-                <SelectDropdown
-                  value={workMode}
-                  onChange={setWorkMode}
-                  placeholder="Select work mode"
-                  options={[
-                    { value: "ONSITE", label: "On-site" },
-                    { value: "REMOTE", label: "Remote" },
-                    { value: "HYBRID", label: "Hybrid" },
-                  ]}
-                />
-              </div>
+              <p className="mt-1 text-xs text-zinc-400">Enter years, e.g. 2 to 5.</p>
             </div>
 
             <div className="pt-5 mt-1 border-t border-zinc-100">
@@ -632,6 +608,31 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 />
                 <span className="text-sm text-zinc-600">Hide salary details from candidates</span>
               </label>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4 pt-5 mt-1 border-t border-zinc-100">
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Employment Type <span className="text-red-500">*</span></label>
+                <SelectDropdown
+                  value={employmentType}
+                  onChange={setEmploymentType}
+                  placeholder="Select type"
+                  options={EMPLOYMENT_TYPES.map(o => ({ value: o.value, label: o.label }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Work Mode <span className="text-red-500">*</span></label>
+                <SelectDropdown
+                  value={workMode}
+                  onChange={setWorkMode}
+                  placeholder="Select work mode"
+                  options={[
+                    { value: "ONSITE", label: "On-site" },
+                    { value: "REMOTE", label: "Remote" },
+                    { value: "HYBRID", label: "Hybrid" },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         </div>

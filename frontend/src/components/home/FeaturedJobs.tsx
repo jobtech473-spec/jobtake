@@ -14,6 +14,7 @@ export type FeaturedJob = {
   salaryLabel: string;
   postedAgo: string;
   tags: string[];
+  isMsme: boolean;
   company: { name: string; logoUrl: string | null; initial: string; category: string; employees: string };
   logoColor: string;
 };
@@ -45,6 +46,11 @@ function JobCard({ job, i }: { job: FeaturedJob; i: number }) {
         </div>
 
         <h3 className="font-display font-semibold text-zinc-950 text-base mt-4 leading-tight">{job.title}</h3>
+        {job.isMsme && (
+          <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200">
+            MSME
+          </span>
+        )}
 
         <div className="mt-2.5 flex items-center gap-4 text-xs text-zinc-700">
           <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {job.location}</span>

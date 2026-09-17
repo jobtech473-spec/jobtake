@@ -67,6 +67,7 @@ export default async function Home() {
     salaryLabel: j.hideSalary ? "Not disclosed" : formatSalary(j.salaryMin, j.salaryMax, j.salaryCurrency, j.salaryPeriod),
     postedAgo: j.publishedAt ? timeAgo(j.publishedAt) : "recent",
     tags: j.jobSkills.map((js) => js.skill.name).slice(0, 3),
+    isMsme: j.isMsme ?? false,
     company: {
       name: j.company.name,
       logoUrl: j.company.logoUrl,

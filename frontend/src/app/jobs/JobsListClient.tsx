@@ -12,6 +12,7 @@ type Job = {
   salaryMin: number | null; salaryMax: number | null;
   salaryCurrency: string; salaryPeriod: string;
   hideSalary: boolean;
+  isMsme: boolean;
   collarType: string | null;
   featured: boolean; publishedAt: string | null;
   company: { name: string; slug: string; logoUrl: string | null };
@@ -357,6 +358,11 @@ export function JobsListClient({
                                 </span>
                               )}
                             </div>
+                            {j.isMsme && (
+                              <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200">
+                                MSME
+                              </span>
+                            )}
 
                             {/* Company + verified */}
                             <div className="flex items-center gap-1.5 mt-0.5">

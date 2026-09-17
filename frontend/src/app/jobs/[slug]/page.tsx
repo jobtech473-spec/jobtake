@@ -109,6 +109,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                   </button>
                 </div>
               </div>
+              {job.isMsme && (
+                <span className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 border border-orange-200">
+                  MSME
+                </span>
+              )}
 
               {/* Company row */}
               <div className="mt-3 flex items-center gap-2">

@@ -3,12 +3,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-type Role = "ADMIN" | "EMPLOYER" | "SEEKER";
 type Status = "ACTIVE" | "SUSPENDED" | "PENDING";
 
-export function UserActionsPanel({ userId, initialRole, initialStatus }: { userId: string; initialRole: Role; initialStatus: Status }) {
+export function UserActionsPanel({ userId, initialStatus }: { userId: string; initialStatus: Status }) {
   const router = useRouter();
-  const [role, setRole] = useState<Role>(initialRole);
   const [status, setStatus] = useState<Status>(initialStatus);
   const [busy, setBusy] = useState(false);
 
@@ -23,16 +21,6 @@ export function UserActionsPanel({ userId, initialRole, initialStatus }: { userI
     <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-5">
       <h3 className="font-bold text-zinc-900 text-sm mb-4">Quick Actions</h3>
       <div className="space-y-2">
-        <select
-          value={role}
-          disabled={busy}
-          onChange={(e) => { const next = e.target.value as Role; setRole(next); patch({ role: next }); }}
-          className="w-full text-xs font-semibold border border-zinc-200 rounded-lg py-2 px-2 outline-none focus:border-blue-400"
-        >
-          <option value="SEEKER">Role: Seeker</option>
-          <option value="EMPLOYER">Role: Employer</option>
-          <option value="ADMIN">Role: Admin</option>
-        </select>
         <button
           disabled={busy}
           onClick={() => { const next: Status = status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED"; setStatus(next); patch({ status: next }); }}

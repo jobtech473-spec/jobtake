@@ -216,7 +216,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
         {/* ── RIGHT: Account meta ── */}
         <div className="space-y-5">
-          <UserActionsPanel userId={user.id} initialRole={user.role} initialStatus={user.status} />
+          <UserActionsPanel userId={user.id} initialStatus={user.status} />
 
           <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-5">
             <h3 className="font-bold text-zinc-900 text-sm mb-4">Account</h3>

@@ -40,7 +40,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
       ? [{ salaryMax: "desc" }, { salaryMin: "desc" }]
       : sort === "relevant"
       ? [{ featured: "desc" }, { viewsCount: "desc" }, { publishedAt: "desc" }]
-      : [{ featured: "desc" }, { publishedAt: "desc" }];
+      : [{ publishedAt: "desc" }];
 
   const me = await getCurrentUser();
 

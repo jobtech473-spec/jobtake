@@ -2,7 +2,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
-import { formatEducationSpecialization, formatSalary } from "@/lib/utils";
+import { formatSalary } from "@/lib/utils";
 import Link from "next/link";
 import {
   ArrowLeft, MapPin, Briefcase, BadgeDollarSign,
@@ -48,7 +48,6 @@ export default async function AdminJobPreviewPage({ params }: { params: Promise<
   const workModeLabel = job.workMode === "REMOTE" ? "Remote" : job.workMode === "HYBRID" ? "Hybrid" : "On-site";
   const dept = job.collarType === "WHITE" ? "Corporate & Professional" : job.collarType === "BLUE" ? "Operations & Trades" : job.collarType === "PINK" ? "Service & Support" : job.collarType === "GREY" ? "Technical & Supervisory" : "MSME & Entrepreneurship";
   const experienceLabel = formatExperienceRange(job.experienceMin, job.experienceMax, SENIORITY_LABEL[job.seniority] ?? job.seniority);
-  const educationSpecializationText = formatEducationSpecialization(job.educationSpecialization);
 
   return (
     <DashboardShell role="ADMIN" current="/admin/jobs">
@@ -146,22 +145,9 @@ export default async function AdminJobPreviewPage({ params }: { params: Promise<
             {job.minEducation.length === 0 ? (
               <p className="text-sm text-zinc-400">Not specified</p>
             ) : (
-              <div className={`grid grid-cols-1 gap-x-10 gap-y-5 ${educationSpecializationText ? "sm:grid-cols-2" : ""}`}>
-                <div>
-                  <p className="text-sm font-bold text-zinc-400 mb-3">Minimum Education</p>
-                  <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
-                    {job.minEducation.join(", ")}
-                  </div>
-                </div>
-                {educationSpecializationText && (
-                  <div>
-                    <p className="text-sm font-bold text-zinc-400 mb-3">Specialization</p>
-                    <div className="border-t border-zinc-100 pt-4 text-base font-medium text-zinc-800">
-                      {educationSpecializationText}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <p className="text-base font-medium text-zinc-800">
+                {job.educationSpecialization?.trim() || job.minEducation.join(", ")}
+              </p>
             )}
           </div>
 

@@ -79,7 +79,7 @@ const COLLAR_META = {
 };
 
 export function CollarSections({ sections }: { sections: CollarSection[] }) {
-  const order: Array<"WHITE" | "BLUE" | "PINK" | "MSME"> = ["WHITE", "BLUE", "PINK", "MSME"];
+  const order: Array<"WHITE" | "BLUE" | "PINK" | "GREY"> = ["WHITE", "BLUE", "PINK", "GREY"];
 
   return (
     <section className="relative py-24 md:py-32" data-testid="collar-sections">

@@ -303,9 +303,11 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [error, setError]                 = useState<string | null>(null);
   const [showPreview, setShowPreview]     = useState(false);
 
+  const MAX_SKILLS = 5;
+
   function addSkill(val: string) {
     const t = val.trim();
-    if (t && !skills.includes(t)) setSkills(s => [...s, t]);
+    if (t && !skills.includes(t) && skills.length < MAX_SKILLS) setSkills(s => [...s, t]);
     setSkillInput("");
   }
   function onSkillKey(e: KeyboardEvent<HTMLInputElement>) {
@@ -845,7 +847,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
 
             {/* Skills */}
             <div className="relative">
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Skills <span className="text-xs font-normal text-zinc-400">(type &amp; press Enter or comma)</span></label>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Skills <span className="text-xs font-normal text-zinc-400">(type &amp; press Enter or comma, max {MAX_SKILLS})</span></label>
               <div
                 className="min-h-[48px] w-full px-3 py-2 border border-zinc-200 rounded-lg focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition flex flex-wrap gap-2 cursor-text bg-white"
                 onClick={() => skillRef.current?.focus()}
@@ -858,19 +860,25 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     </button>
                   </span>
                 ))}
-                <input
-                  ref={skillRef}
-                  className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder:text-zinc-400"
-                  value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSkillSuggestions(true); }}
-                  onKeyDown={onSkillKey}
-                  onFocus={() => setShowSkillSuggestions(true)}
-                  onBlur={() => { if (skillInput.trim()) addSkill(skillInput); setShowSkillSuggestions(false); }}
-                  placeholder={skills.length === 0 ? "React, TypeScript, Node.js..." : "Add more..."}
-                />
+                {skills.length < MAX_SKILLS && (
+                  <input
+                    ref={skillRef}
+                    className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder:text-zinc-400"
+                    value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSkillSuggestions(true); }}
+                    onKeyDown={onSkillKey}
+                    onFocus={() => setShowSkillSuggestions(true)}
+                    onBlur={() => { if (skillInput.trim()) addSkill(skillInput); setShowSkillSuggestions(false); }}
+                    placeholder={skills.length === 0 ? "React, TypeScript, Node.js..." : "Add more..."}
+                  />
+                )}
               </div>
-              {skills.length > 0 && <p className="text-xs text-zinc-400 mt-1">{skills.length} skill{skills.length > 1 ? "s" : ""} added</p>}
+              {skills.length >= MAX_SKILLS ? (
+                <p className="text-xs text-amber-600 mt-1">Maximum {MAX_SKILLS} skills reached.</p>
+              ) : skills.length > 0 && (
+                <p className="text-xs text-zinc-400 mt-1">{skills.length} of {MAX_SKILLS} skills added</p>
+              )}
 
-              {showSkillSuggestions && visibleSkillSuggestions.length > 0 && (
+              {showSkillSuggestions && skills.length < MAX_SKILLS && visibleSkillSuggestions.length > 0 && (
                 <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg">
                   {visibleSkillSuggestions.map((option) => (
                     <button
@@ -879,7 +887,6 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                       onMouseDown={(event) => {
                         event.preventDefault();
                         addSkill(option.label);
-                        setShowSkillSuggestions(false);
                       }}
                       className="flex w-full items-center px-3 py-2 text-left text-sm text-zinc-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                     >

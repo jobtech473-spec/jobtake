@@ -263,6 +263,7 @@ model Job {
   hideSalary       Boolean        @default(false)
   minEducation     String[]       @default([])
   educationSpecialization String?
+  keySkills        String[]       @default([])
   status           JobStatus      @default(PENDING)
   featured         Boolean        @default(false)
   urgent           Boolean        @default(false)

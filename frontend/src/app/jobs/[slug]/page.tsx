@@ -237,13 +237,28 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
 
               {job.jobSkills.length > 0 && (
                 <section>
-                  <h2 className="text-lg font-bold text-zinc-900 mb-3">Skills</h2>
+                  <h2 className="text-lg font-bold text-zinc-900 mb-1">
+                    {job.keySkills.length > 0 ? "Key Skills" : "Skills"}
+                  </h2>
+                  {job.keySkills.length > 0 && (
+                    <p className="text-xs text-zinc-400 mb-3">Skills highlighted with ★ are preferred key skills.</p>
+                  )}
                   <div className="flex flex-wrap gap-2">
-                    {job.jobSkills.map(s => (
-                      <span key={s.skill.id} className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">
-                        {s.skill.name}
-                      </span>
-                    ))}
+                    {[...job.jobSkills].sort((a, b) => {
+                      const aKey = job.keySkills.includes(a.skill.name) ? 0 : 1;
+                      const bKey = job.keySkills.includes(b.skill.name) ? 0 : 1;
+                      return aKey - bKey;
+                    }).map(s => {
+                      const isKey = job.keySkills.includes(s.skill.name);
+                      return (
+                        <span
+                          key={s.skill.id}
+                          className={`text-xs px-3 py-1.5 rounded-full font-medium border ${isKey ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}
+                        >
+                          {isKey && "★ "}{s.skill.name}
+                        </span>
+                      );
+                    })}
                   </div>
                 </section>
               )}

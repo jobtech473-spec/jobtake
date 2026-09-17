@@ -288,6 +288,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   }
   const [benefits, setBenefits]           = useState("");
   const [skills, setSkills]               = useState<string[]>([]);
+  const [keySkills, setKeySkills]         = useState<string[]>([]);
   const [skillInput, setSkillInput]       = useState("");
   const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
   const skillRef = useRef<HTMLInputElement>(null);
@@ -303,12 +304,23 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const [error, setError]                 = useState<string | null>(null);
   const [showPreview, setShowPreview]     = useState(false);
 
-  const MAX_SKILLS = 5;
+  const MAX_KEY_SKILLS = 5;
 
   function addSkill(val: string) {
     const t = val.trim();
-    if (t && !skills.includes(t) && skills.length < MAX_SKILLS) setSkills(s => [...s, t]);
+    if (t && !skills.includes(t)) setSkills(s => [...s, t]);
     setSkillInput("");
+  }
+  function removeSkill(s: string) {
+    setSkills(prev => prev.filter(x => x !== s));
+    setKeySkills(prev => prev.filter(x => x !== s));
+  }
+  function toggleKeySkill(s: string) {
+    setKeySkills(prev => {
+      if (prev.includes(s)) return prev.filter(x => x !== s);
+      if (prev.length >= MAX_KEY_SKILLS) return prev;
+      return [...prev, s];
+    });
   }
   function onSkillKey(e: KeyboardEvent<HTMLInputElement>) {
     if (["Enter", ",", "Tab"].includes(e.key)) { e.preventDefault(); addSkill(skillInput); }
@@ -387,6 +399,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       hideSalary,
       categoryName: categoryName.trim() || undefined,
       skills,
+      keySkills,
       collarType: collarType || "WHITE",
       isMsme: isMsme === "YES" ? true : isMsme === "NO" ? false : undefined,
       minEducation: minEdus,
@@ -847,38 +860,46 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
 
             {/* Skills */}
             <div className="relative">
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Skills <span className="text-xs font-normal text-zinc-400">(type &amp; press Enter or comma, max {MAX_SKILLS})</span></label>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Skills <span className="text-xs font-normal text-zinc-400">(type &amp; press Enter or comma)</span></label>
               <div
                 className="min-h-[48px] w-full px-3 py-2 border border-zinc-200 rounded-lg focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition flex flex-wrap gap-2 cursor-text bg-white"
                 onClick={() => skillRef.current?.focus()}
               >
-                {skills.map(s => (
-                  <span key={s} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">
-                    {s}
-                    <button type="button" onClick={() => setSkills(p => p.filter(x => x !== s))} className="hover:text-red-500 transition-colors">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-                {skills.length < MAX_SKILLS && (
-                  <input
-                    ref={skillRef}
-                    className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder:text-zinc-400"
-                    value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSkillSuggestions(true); }}
-                    onKeyDown={onSkillKey}
-                    onFocus={() => setShowSkillSuggestions(true)}
-                    onBlur={() => { if (skillInput.trim()) addSkill(skillInput); setShowSkillSuggestions(false); }}
-                    placeholder={skills.length === 0 ? "React, TypeScript, Node.js..." : "Add more..."}
-                  />
-                )}
+                {skills.map(s => {
+                  const isKey = keySkills.includes(s);
+                  return (
+                    <span key={s} className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border font-medium ${isKey ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}>
+                      <button
+                        type="button"
+                        onClick={() => toggleKeySkill(s)}
+                        title={isKey ? "Remove from Key Skills" : "Mark as Key Skill"}
+                        className={`transition-colors ${isKey ? "text-amber-500" : "text-zinc-300 hover:text-amber-400"}`}
+                      >
+                        <Star className="h-3 w-3" fill={isKey ? "currentColor" : "none"} />
+                      </button>
+                      {s}
+                      <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  );
+                })}
+                <input
+                  ref={skillRef}
+                  className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder:text-zinc-400"
+                  value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSkillSuggestions(true); }}
+                  onKeyDown={onSkillKey}
+                  onFocus={() => setShowSkillSuggestions(true)}
+                  onBlur={() => { if (skillInput.trim()) addSkill(skillInput); setShowSkillSuggestions(false); }}
+                  placeholder={skills.length === 0 ? "React, TypeScript, Node.js..." : "Add more..."}
+                />
               </div>
-              {skills.length >= MAX_SKILLS ? (
-                <p className="text-xs text-amber-600 mt-1">Maximum {MAX_SKILLS} skills reached.</p>
-              ) : skills.length > 0 && (
-                <p className="text-xs text-zinc-400 mt-1">{skills.length} of {MAX_SKILLS} skills added</p>
-              )}
+              <p className="text-xs text-zinc-400 mt-1">
+                {skills.length > 0 && `${skills.length} skill${skills.length > 1 ? "s" : ""} added — `}
+                Click <Star className="inline h-3 w-3 -mt-0.5 text-amber-500" fill="currentColor" /> to mark up to {MAX_KEY_SKILLS} as Key Skills ({keySkills.length}/{MAX_KEY_SKILLS} starred)
+              </p>
 
-              {showSkillSuggestions && skills.length < MAX_SKILLS && visibleSkillSuggestions.length > 0 && (
+              {showSkillSuggestions && visibleSkillSuggestions.length > 0 && (
                 <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg">
                   {visibleSkillSuggestions.map((option) => (
                     <button
@@ -1140,13 +1161,19 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               {/* Skills */}
               {skills.length > 0 && (
                 <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-base font-bold text-zinc-900 mb-3">Skills</h3>
+                  <h3 className="text-base font-bold text-zinc-900 mb-1">{keySkills.length > 0 ? "Key Skills" : "Skills"}</h3>
+                  {keySkills.length > 0 && (
+                    <p className="text-xs text-zinc-400 mb-3">Skills highlighted with ★ are preferred key skills.</p>
+                  )}
                   <div className="flex flex-wrap gap-2">
-                    {skills.map(s => (
-                      <span key={s} className="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">
-                        {s}
-                      </span>
-                    ))}
+                    {[...skills].sort((a, b) => (keySkills.includes(a) ? 0 : 1) - (keySkills.includes(b) ? 0 : 1)).map(s => {
+                      const isKey = keySkills.includes(s);
+                      return (
+                        <span key={s} className={`text-xs px-3 py-1.5 rounded-full font-medium border ${isKey ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}>
+                          {isKey && "★ "}{s}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}

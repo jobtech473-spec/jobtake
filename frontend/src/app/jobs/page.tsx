@@ -7,7 +7,7 @@ import { JobsListClient } from "./JobsListClient";
 
 export const dynamic = "force-dynamic";
 
-type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; seniority?: string; collarType?: string; page?: string; sort?: string }>;
+type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; seniority?: string; collarType?: string; isMsme?: string; page?: string; sort?: string }>;
 
 export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
@@ -17,6 +17,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const workMode = sp.workMode || "";
   const seniority = sp.seniority || "";
   const collarType = sp.collarType || "";
+  const isMsme = sp.isMsme === "true";
   const sort = sp.sort || "newest";
   const page = Math.max(1, parseInt(sp.page || "1", 10));
   const perPage = 12;
@@ -32,6 +33,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   if (workMode) where.workMode = workMode as Prisma.JobWhereInput["workMode"];
   if (seniority) where.seniority = seniority as Prisma.JobWhereInput["seniority"];
   if (collarType) (where as any).collarType = { equals: collarType };
+  if (isMsme) (where as any).isMsme = true;
 
   const orderBy: Prisma.JobOrderByWithRelationInput[] =
     sort === "salary"

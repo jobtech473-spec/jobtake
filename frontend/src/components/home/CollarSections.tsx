@@ -79,7 +79,7 @@ const COLLAR_META = {
 };
 
 export function CollarSections({ sections }: { sections: CollarSection[] }) {
-  const order: Array<"WHITE" | "BLUE" | "PINK" | "GREY"> = ["WHITE", "BLUE", "PINK", "GREY"];
+  const order: Array<"WHITE" | "BLUE" | "PINK" | "GREY" | "MSME"> = ["WHITE", "BLUE", "PINK", "GREY", "MSME"];
 
   return (
     <section className="relative py-24 md:py-32" data-testid="collar-sections">
@@ -130,7 +130,7 @@ export function CollarSections({ sections }: { sections: CollarSection[] }) {
                 transition={{ delay: i * 0.05, duration: 0.7 }}
               >
                 <Link
-                  href={`/jobs?collarType=${type}`}
+                  href={type === "MSME" ? "/jobs?isMsme=true" : `/jobs?collarType=${type}`}
                   className={`flex flex-col lg:flex-row items-stretch lg:items-center gap-5 rounded-3xl ${meta.bg} border border-white/60 p-5 md:p-6 group hover:shadow-md transition-shadow`}
                 >
                   <div className={`h-14 w-14 shrink-0 rounded-2xl ${meta.iconBg} grid place-items-center text-2xl shadow`}>

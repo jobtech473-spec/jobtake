@@ -38,7 +38,15 @@ export function DashboardMobileNav({ children }: { children: React.ReactNode }) 
                 <X className="h-5 w-5 text-zinc-500" />
               </button>
             </div>
-            <div className="flex flex-1 flex-col" onClickCapture={() => setOpen(false)}>
+            <div
+              className="flex flex-1 flex-col"
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest("a, form button[type='submit']")) {
+                  setOpen(false);
+                }
+              }}
+            >
               {children}
             </div>
           </div>

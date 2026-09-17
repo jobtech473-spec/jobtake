@@ -1,9 +1,9 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Search, Users as UsersIcon, ShieldCheck, UserX, Building2, User as UserIcon,
-  X, Loader2, Mail, Phone, CheckCircle2, ArrowLeft, ArrowRight,
+  ArrowLeft, ArrowRight,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -43,8 +43,6 @@ export function UsersTable({
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<Row | null>(users[0] ?? null);
-  const [busy, setBusy] = useState<string | null>(null);
 
   const filtered = useMemo(() => users.filter(u => {
     if (roleFilter && u.role !== roleFilter) return false;
@@ -58,13 +56,6 @@ export function UsersTable({
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  async function patch(id: string, body: object) {
-    setBusy(id);
-    await fetch(`/api/admin/users/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    setBusy(null);
-    router.refresh();
-  }
 
   return (
     <div className="flex gap-5">
@@ -138,12 +129,11 @@ export function UsersTable({
             <div className="divide-y divide-zinc-50">
               {pageRows.map((u, i) => {
                 const initials = u.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
-                const isSelected = selected?.id === u.id;
                 return (
-                  <div
+                  <Link
                     key={u.id}
-                    onClick={() => setSelected(u)}
-                    className={`grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5 cursor-pointer transition-colors ${isSelected ? "bg-blue-50/60" : "hover:bg-zinc-50"}`}
+                    href={`/admin/users/${u.id}`}
+                    className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5 cursor-pointer transition-colors hover:bg-zinc-50"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {u.avatarUrl ? (
@@ -164,7 +154,7 @@ export function UsersTable({
                       <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLE[u.status]}`}>{u.status.toLowerCase()}</span>
                     </div>
                     <div className="text-xs text-zinc-500">{timeAgo(u.createdAt)}</div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
@@ -196,17 +186,10 @@ export function UsersTable({
         </div>
       </div>
 
-      {/* ── RIGHT — Detail panel ── */}
-      {selected && (
-        <div className="hidden xl:block w-[340px] shrink-0">
-          <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 sticky top-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                {selected.avatarUrl ? (
-                  <img src={selected.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
-                ) : (
-                  <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-                    {selected.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()}
+    </div>
+  );
+}
+
                   </div>
                 )}
                 <div>

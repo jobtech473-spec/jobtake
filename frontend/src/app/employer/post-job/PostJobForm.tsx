@@ -545,41 +545,40 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 options={industryOptions.map(o => ({ value: o.value, label: o.label }))}
               />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Experience <span className="text-red-500">*</span></label>
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 max-w-md">
-                <input
-                  type="number"
-                  min="0"
-                  max="60"
-                  step="1"
-                  className={inputCls}
-                  value={experienceMin}
-                  onChange={e => setExperienceMin(normalizeExperienceInput(e.target.value))}
-                  placeholder="Min"
-                />
-                <span className="text-xs font-semibold text-zinc-400">to</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="60"
-                  step="1"
-                  className={inputCls}
-                  value={experienceMax}
-                  onChange={e => setExperienceMax(normalizeExperienceInput(e.target.value))}
-                  placeholder="Max"
-                />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Experience <span className="text-red-500">*</span></label>
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="60"
+                    step="1"
+                    className={inputCls}
+                    value={experienceMin}
+                    onChange={e => setExperienceMin(normalizeExperienceInput(e.target.value))}
+                    placeholder="Min"
+                  />
+                  <span className="text-xs font-semibold text-zinc-400">to</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="60"
+                    step="1"
+                    className={inputCls}
+                    value={experienceMax}
+                    onChange={e => setExperienceMax(normalizeExperienceInput(e.target.value))}
+                    placeholder="Max"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-zinc-400">Enter years, e.g. 2 to 5.</p>
               </div>
-              <p className="mt-1 text-xs text-zinc-400">Enter years, e.g. 2 to 5.</p>
-            </div>
 
-            <div className="pt-5 mt-1 border-t border-zinc-100">
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                CTC Range <span className="text-red-500">*</span>
-                <span className="ml-2 text-xs font-normal text-zinc-400">Enter in LPA (e.g. 5.5 = 5.5 LPA)</span>
-              </label>
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                  CTC Range <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                   <input
                     type="text"
                     inputMode="decimal"
@@ -590,9 +589,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     onFocus={e => { const raw = parseFloat(salaryMin) / 100000; setSalaryMinDisplay(isNaN(raw) ? "" : String(raw)); }}
                     placeholder="Min CTC"
                   />
-                </div>
-                <span className="text-zinc-400 text-sm font-medium shrink-0">to</span>
-                <div className="relative flex-1">
+                  <span className="text-zinc-400 text-sm font-medium shrink-0">to</span>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -604,25 +601,26 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                     placeholder="Max CTC"
                   />
                 </div>
+                <p className="mt-1 text-xs text-zinc-400">Enter in LPA (e.g. 5.5 = 5.5 LPA)</p>
+                {salaryMin && salaryMax && parseInt(salaryMin, 10) > parseInt(salaryMax, 10) ? (
+                  <p className="text-xs text-red-500 mt-1.5 font-medium">
+                    ✕ Minimum CTC cannot be greater than maximum CTC.
+                  </p>
+                ) : (salaryMinDisplay || salaryMaxDisplay) && (
+                  <p className="text-xs text-emerald-600 mt-1.5 font-medium">
+                    ✓ CTC: {salaryMinDisplay ? formatLPA(salaryMinDisplay.replace(" LPA","")) : "?"} – {salaryMaxDisplay ? formatLPA(salaryMaxDisplay.replace(" LPA","")) : "?"}
+                  </p>
+                )}
+                <label className="mt-2 flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hideSalary}
+                    onChange={e => setHideSalary(e.target.checked)}
+                    className="h-4 w-4 rounded accent-blue-600"
+                  />
+                  <span className="text-sm text-zinc-600">Hide salary details from candidates</span>
+                </label>
               </div>
-              {salaryMin && salaryMax && parseInt(salaryMin, 10) > parseInt(salaryMax, 10) ? (
-                <p className="text-xs text-red-500 mt-1.5 font-medium">
-                  ✕ Minimum CTC cannot be greater than maximum CTC.
-                </p>
-              ) : (salaryMinDisplay || salaryMaxDisplay) && (
-                <p className="text-xs text-emerald-600 mt-1.5 font-medium">
-                  ✓ CTC: {salaryMinDisplay ? formatLPA(salaryMinDisplay.replace(" LPA","")) : "?"} – {salaryMaxDisplay ? formatLPA(salaryMaxDisplay.replace(" LPA","")) : "?"}
-                </p>
-              )}
-              <label className="mt-3 flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hideSalary}
-                  onChange={e => setHideSalary(e.target.checked)}
-                  className="h-4 w-4 rounded accent-blue-600"
-                />
-                <span className="text-sm text-zinc-600">Hide salary details from candidates</span>
-              </label>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4 pt-5 mt-1 border-t border-zinc-100">

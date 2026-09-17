@@ -38,7 +38,6 @@ export function UsersTable({
   users: Row[];
   stats: { totalUsers: number; activeUsers: number; inactiveUsers: number; employers: number; seekers: number };
 }) {
-  const router = useRouter();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -186,110 +185,6 @@ export function UsersTable({
         </div>
       </div>
 
-    </div>
-  );
-}
-
-                  </div>
-                )}
-                <div>
-                  <div className="font-bold text-zinc-900 text-sm">{selected.name}</div>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[selected.status]}`}>{selected.status.toLowerCase()}</span>
-                </div>
-              </div>
-              <button onClick={() => setSelected(null)} className="text-zinc-400 hover:text-zinc-600">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Quick actions */}
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              <select
-                value={selected.role}
-                disabled={busy === selected.id}
-                onChange={(e) => { patch(selected.id, { role: e.target.value }); setSelected(s => s && { ...s, role: e.target.value as Row["role"] }); }}
-                className="col-span-2 text-xs font-semibold border border-zinc-200 rounded-lg py-2 px-2 outline-none focus:border-blue-400"
-              >
-                <option value="SEEKER">Role: Seeker</option>
-                <option value="EMPLOYER">Role: Employer</option>
-                <option value="ADMIN">Role: Admin</option>
-              </select>
-              <button
-                disabled={busy === selected.id}
-                onClick={() => { const next = selected.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED"; patch(selected.id, { status: next }); setSelected(s => s && { ...s, status: next }); }}
-                className={`flex items-center justify-center gap-1.5 border rounded-lg py-2 text-xs font-semibold disabled:opacity-50 ${selected.status === "SUSPENDED" ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50" : "border-red-200 text-red-600 hover:bg-red-50"}`}
-              >
-                {busy === selected.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : selected.status === "SUSPENDED" ? "Reactivate" : "Suspend"}
-              </button>
-              <button
-                disabled={busy === selected.id || selected.status === "PENDING"}
-                onClick={() => { patch(selected.id, { status: "PENDING" }); setSelected(s => s && { ...s, status: "PENDING" }); }}
-                className="flex items-center justify-center gap-1.5 border border-amber-200 text-amber-600 rounded-lg py-2 text-xs font-semibold hover:bg-amber-50 disabled:opacity-50"
-              >
-                Mark Pending
-              </button>
-            </div>
-
-            {/* Info */}
-            <div className="mt-5">
-              <div className="text-xs font-bold text-zinc-900 mb-2">User Information</div>
-              <dl className="space-y-2 text-xs">
-                <div className="flex items-center justify-between gap-2">
-                  <dt className="text-zinc-400 flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</dt>
-                  <dd className="text-zinc-700 font-medium truncate">{selected.email}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <dt className="text-zinc-400 flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> Phone</dt>
-                  <dd className="text-zinc-700 font-medium truncate">{selected.phone ?? "—"}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <dt className="text-zinc-400 flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> Email Verified</dt>
-                  <dd className={`font-medium ${selected.emailVerified ? "text-emerald-600" : "text-zinc-400"}`}>{selected.emailVerified ? "Verified" : "Not verified"}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <dt className="text-zinc-400">Last Login</dt>
-                  <dd className="text-zinc-700 font-medium">{selected.lastLoginAt ? timeAgo(selected.lastLoginAt) : "Never"}</dd>
-                </div>
-              </dl>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-5 grid grid-cols-2 gap-2">
-              <div className="bg-zinc-50 rounded-xl p-3 text-center">
-                <div className="text-lg font-black text-zinc-900">{selected.applicationsCount}</div>
-                <div className="text-[10px] text-zinc-500">Applications</div>
-              </div>
-              <div className="bg-zinc-50 rounded-xl p-3 text-center">
-                <div className="text-lg font-black text-zinc-900">{selected.savedJobsCount}</div>
-                <div className="text-[10px] text-zinc-500">Saved Jobs</div>
-              </div>
-            </div>
-
-            {/* Recent activity */}
-            <div className="mt-5">
-              <div className="text-xs font-bold text-zinc-900 mb-2">Recent Activity</div>
-              <ul className="space-y-2.5 text-xs">
-                <li className="flex items-center justify-between gap-2">
-                  <span className="text-zinc-600">Registered on Jobtake</span>
-                  <span className="text-zinc-400 shrink-0">{timeAgo(selected.createdAt)}</span>
-                </li>
-                {selected.updatedAt !== selected.createdAt && (
-                  <li className="flex items-center justify-between gap-2">
-                    <span className="text-zinc-600">Updated profile information</span>
-                    <span className="text-zinc-400 shrink-0">{timeAgo(selected.updatedAt)}</span>
-                  </li>
-                )}
-                {selected.lastLoginAt && (
-                  <li className="flex items-center justify-between gap-2">
-                    <span className="text-zinc-600">Logged in to dashboard</span>
-                    <span className="text-zinc-400 shrink-0">{timeAgo(selected.lastLoginAt)}</span>
-                  </li>
-                )}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -8,6 +8,10 @@ import { Briefcase, Send, Eye, Bookmark, MapPin, Globe } from "lucide-react";
 import { JobRowActions } from "./JobRowActions";
 import { StopPropagation } from "@/components/StopPropagation";
 
+// Shared by header and rows. Each row is its own grid, so text columns use
+// minmax(0, …) — plain `fr` would grow to fit long text and misalign rows.
+const ROW_COLS = "grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_110px_90px_90px_80px]";
+
 export default async function EmployerJobsPage() {
   const me = await getCurrentUser();
   if (!me || me.role !== "EMPLOYER") redirect("/employers/login");
@@ -92,7 +96,7 @@ export default async function EmployerJobsPage() {
         <div className="min-w-[760px]">
         {/* Table header row */}
         <div className="px-6 py-4 border-b border-zinc-100">
-          <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px] items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-zinc-400 font-semibold">
+          <div className={`grid ${ROW_COLS} items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-zinc-400 font-semibold`}>
             <div>Job Title</div>
             <div>Location</div>
             <div>Status</div>
@@ -114,7 +118,7 @@ export default async function EmployerJobsPage() {
             <Link
               key={j.id}
               href={`/employer/jobs/${j.id}/preview`}
-              className={`px-6 py-4 grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px] items-center gap-4 hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
+              className={`px-6 py-4 grid ${ROW_COLS} items-center gap-4 hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
             >
               {/* Title */}
               <div className="min-w-0">
@@ -123,7 +127,7 @@ export default async function EmployerJobsPage() {
               </div>
 
               {/* Location */}
-              <div className="flex items-center gap-1.5 text-sm text-zinc-600">
+              <div className="flex items-center gap-1.5 text-sm text-zinc-600 min-w-0" title={j.location}>
                 {j.workMode === "REMOTE" ? (
                   <Globe className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
                 ) : (
@@ -137,7 +141,7 @@ export default async function EmployerJobsPage() {
 
               {/* Status */}
               <div>
-                <span className={`text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ${STATUS_STYLE[j.status] ?? STATUS_STYLE.DRAFT}`}>
+                <span className={`inline-block whitespace-nowrap text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ${STATUS_STYLE[j.status] ?? STATUS_STYLE.DRAFT}`}>
                   {j.status.toLowerCase()}
                 </span>
               </div>
@@ -146,7 +150,7 @@ export default async function EmployerJobsPage() {
               <div className="text-sm text-zinc-700 font-medium">{j._count.applications}</div>
 
               {/* Posted */}
-              <div className="text-sm text-zinc-400">{timeAgo(j.createdAt)}</div>
+              <div className="text-sm text-zinc-400 whitespace-nowrap">{timeAgo(j.createdAt)}</div>
 
               {/* Actions */}
               <StopPropagation>

@@ -97,7 +97,7 @@ export default async function EmployerHome() {
             <div className="overflow-x-auto">
             <div className="min-w-[640px]">
             {/* Table head */}
-            <div className="px-6 py-3 grid grid-cols-[2fr_1.5fr_80px_90px_80px] gap-4 text-[11px] uppercase tracking-[0.16em] text-zinc-400 font-semibold border-b border-zinc-100">
+            <div className="px-6 py-3 grid grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_80px_110px_80px] gap-4 text-[11px] uppercase tracking-[0.16em] text-zinc-400 font-semibold border-b border-zinc-100">
               <div>Job Title</div>
               <div>Location</div>
               <div>Applicants</div>
@@ -116,13 +116,13 @@ export default async function EmployerHome() {
                 <Link
                   key={j.id}
                   href={`/employer/jobs/${j.id}/preview`}
-                  className={`px-6 py-4 grid grid-cols-[2fr_1.5fr_80px_90px_80px] gap-4 items-center hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
+                  className={`px-6 py-4 grid grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_80px_110px_80px] gap-4 items-center hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
                 >
                   <div className="min-w-0">
                     <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
                     <div className="text-xs text-zinc-400 mt-0.5 truncate">{j.category?.name ?? "—"}</div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm text-zinc-500 truncate">
+                  <div className="flex items-center gap-1.5 text-sm text-zinc-500 min-w-0" title={j.location}>
                     {j.workMode === "REMOTE"
                       ? <Globe className="h-3.5 w-3.5 shrink-0 text-zinc-300" />
                       : <MapPin className="h-3.5 w-3.5 shrink-0 text-zinc-300" />}
@@ -130,7 +130,7 @@ export default async function EmployerHome() {
                   </div>
                   <div className="text-sm font-semibold text-zinc-700">{j._count.applications}</div>
                   <div>
-                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLE[j.status] ?? STATUS_STYLE.DRAFT}`}>
+                    <span className={`inline-block whitespace-nowrap text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLE[j.status] ?? STATUS_STYLE.DRAFT}`}>
                       {STATUS_LABEL[j.status] ?? j.status}
                     </span>
                   </div>

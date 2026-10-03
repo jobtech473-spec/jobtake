@@ -150,7 +150,8 @@ function EmployerSignupForm() {
                 <label className="block text-sm font-semibold text-zinc-700 mb-1.5">GST Number <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                  <input value={gst} onChange={e => setGst(e.target.value)} placeholder="Enter GST number"
+                  <input required value={gst} onChange={e => setGst(e.target.value.toUpperCase())} placeholder="e.g. 22AAAAA0000A1Z5"
+                    maxLength={15} pattern="[0-9]{2}[A-Za-z]{5}[0-9]{4}[A-Za-z][1-9A-Za-z][Zz][0-9A-Za-z]" title="15-character GST number, e.g. 22AAAAA0000A1Z5"
                     className="w-full pl-9 pr-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition" />
                 </div>
               </div>

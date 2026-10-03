@@ -23,6 +23,9 @@ const Body = z.object({
   country: z.string().optional(),
 });
 
+// Indian GSTIN: 2-digit state code, 10-char PAN, entity code, "Z", checksum.
+const GSTIN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
 function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now();
 }
@@ -32,7 +35,15 @@ export async function POST(req: NextRequest) {
   if (!data.success) return NextResponse.json({ error: "Invalid input", details: data.error.flatten() }, { status: 400 });
 
   const existing = await prisma.user.findUnique({ where: { email: data.data.email } });
-  if (existing) return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+  if (existing) return NextResponse.json({ error: "An account with this email already exists. Please sign in instead." }, { status: 409 });
+
+  // One employer account per GST number.
+  const gstNumber = (data.data.gstNumber ?? "").replace(/\s+/g, "").toUpperCase();
+  if (data.data.role === "EMPLOYER") {
+    if (!GSTIN.test(gstNumber)) return NextResponse.json({ error: "Please enter a valid 15-character GST number." }, { status: 400 });
+    const gstTaken = await prisma.company.findFirst({ where: { gstNumber: { equals: gstNumber, mode: "insensitive" } }, select: { id: true } });
+    if (gstTaken) return NextResponse.json({ error: "An employer account with this GST number already exists. Please sign in instead." }, { status: 409 });
+  }
 
   const passwordHash = await hashPassword(data.data.password);
 
@@ -63,7 +74,7 @@ export async function POST(req: NextRequest) {
         name: data.data.companyName,
         slug: slugify(data.data.companyName),
         industry: data.data.industry || null,
-        gstNumber: data.data.gstNumber || null,
+        gstNumber: gstNumber || null,
         registrationAs: data.data.registrationAs || "COMPANY",
         contactDesignation: data.data.designation || null,
         headquarters: data.data.country || "India",

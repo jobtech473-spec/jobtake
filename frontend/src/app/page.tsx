@@ -7,6 +7,8 @@ import { FeaturedJobs, type FeaturedJob } from "@/components/home/FeaturedJobs";
 import { CollarSections, type CollarSection } from "@/components/home/CollarSections";
 import { formatSalary, timeAgo } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 const LOGO_PALETTE = [
   "from-violet-500 to-fuchsia-500",
   "from-brand-orange to-amber-600",

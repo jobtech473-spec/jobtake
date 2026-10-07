@@ -154,7 +154,9 @@ export default async function EmployerJobsPage() {
 
               {/* Actions */}
               <StopPropagation>
-                <JobRowActions jobId={j.id} jobTitle={j.title} />
+                <div className="flex justify-end">
+                  <JobRowActions jobId={j.id} jobTitle={j.title} />
+                </div>
               </StopPropagation>
             </Link>
           ))

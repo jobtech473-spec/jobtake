@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Star, Loader2, FileDown, Search, SlidersHorizontal, MapPin, Briefcase, X, ExternalLink, Bookmark, ArrowRight, ArrowLeft, MoreVertical } from "lucide-react";
+import { Star, Loader2, FileDown, Search, SlidersHorizontal, MapPin, Briefcase, X, ExternalLink, Bookmark, ArrowRight, ArrowLeft, MoreVertical, Mail, MessageCircle } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -289,6 +289,34 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
                   )}
                 </div>
               )}
+
+              {/* Quick actions */}
+              <div className="mt-3 pt-3 border-t border-zinc-50 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  {a.user.email && (
+                    <a href={`mailto:${a.user.email}`} onClick={e => e.stopPropagation()} title="Email"
+                      className="h-7 w-7 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-700">
+                      <Mail className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                  {a.user.phone && (
+                    <a href={`https://wa.me/${a.user.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} title="WhatsApp"
+                      className="h-7 w-7 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-emerald-600">
+                      <MessageCircle className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </div>
+                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => updateStage(a.id, "SCREENING")} disabled={busy}
+                    className="flex items-center gap-1.5 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition">
+                    <Bookmark className="h-3 w-3" /> Shortlist
+                  </button>
+                  <button onClick={() => updateStage(a.id, "REJECTED")} disabled={busy}
+                    className="flex items-center gap-1.5 border border-red-200 text-red-600 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
+                    ✕ Reject
+                  </button>
+                </div>
+              </div>
             </div>
           );
         })}

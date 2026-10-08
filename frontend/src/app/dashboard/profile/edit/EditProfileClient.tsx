@@ -13,15 +13,18 @@ type Props = {
   initialPhone: string;
   initialLocation: string;
   initialSkills: string[];
+  initialAvatarUrl: string;
 };
 
-export function EditProfileClient({ initialName, initialHeadline, initialBio, initialPhone, initialLocation, initialSkills }: Props) {
+export function EditProfileClient({ initialName, initialHeadline, initialBio, initialPhone, initialLocation, initialSkills, initialAvatarUrl }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [resumeName, setResumeName] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
 
   const [name, setName]         = useState(initialName);
   const [headline, setHeadline] = useState(initialHeadline);
@@ -48,7 +51,19 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
     setResumeName(data.resume.fileName);
   }
 
+  async function handleAvatarUpload(file: File) {
+    setUploadingAvatar(true); setError(null);
+    const form = new FormData();
+    form.append("avatar", file);
+    const res = await fetch("/api/dashboard/avatar", { method: "POST", body: form });
+    const data = await res.json().catch(() => ({}));
+    setUploadingAvatar(false);
+    if (!res.ok) { setError(data.error || "Failed to upload photo"); return; }
+    setAvatarUrl(data.avatarUrl);
+  }
+
   async function handleSave() {
+    if (!avatarUrl) { setError("Profile photo is required."); return; }
     setSaving(true); setError(null);
     const res = await fetch("/api/me", {
       method: "PATCH",
@@ -84,6 +99,34 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
       {success && <div className="mb-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl">Profile updated! Redirecting…</div>}
 
       <div className="max-w-2xl space-y-5">
+
+        {/* Profile Photo */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-2">
+            <User className="h-4 w-4 text-blue-600" />
+            <h2 className="font-bold text-zinc-900 text-sm">Profile Photo <span className="text-red-500">*</span></h2>
+          </div>
+          <div className="p-6 flex items-center gap-5">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="h-20 w-20 rounded-full object-cover border border-zinc-100" />
+            ) : (
+              <div className="h-20 w-20 rounded-full bg-zinc-100 border-2 border-dashed border-zinc-300 flex items-center justify-center shrink-0">
+                <User className="h-8 w-8 text-zinc-300" />
+              </div>
+            )}
+            <div>
+              <label className="cursor-pointer inline-flex items-center gap-2 bg-white border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 transition">
+                {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {avatarUrl ? "Change Photo" : "Upload Photo"}
+                <input type="file" accept=".png,.jpg,.jpeg,.webp" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatarUpload(f); e.target.value = ""; }} />
+              </label>
+              <p className="text-xs text-zinc-400 mt-2">
+                {avatarUrl ? "Employers see this photo on your application." : "Required to save your profile. PNG, JPG or WEBP · Max 3MB"}
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Basic Info */}
         <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden">

@@ -16,7 +16,15 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
     include: {
       applications: {
         include: {
-          user: { select: { id: true, name: true, email: true, headline: true, location: true, phone: true, bio: true } },
+          user: {
+            select: {
+              id: true, name: true, email: true, headline: true, location: true, phone: true, bio: true,
+              avatarUrl: true, yearsExperience: true,
+              experiences: { orderBy: [{ current: "desc" }, { startDate: "desc" }], take: 2, select: { title: true, company: true, current: true } },
+              educations: { orderBy: { startYear: "desc" }, take: 1, select: { degree: true, field: true, school: true } },
+              userSkills: { orderBy: { skill: { name: "asc" } }, take: 8, select: { skill: { select: { name: true } } } },
+            },
+          },
           resume: true,
         },
         orderBy: { createdAt: "desc" },
@@ -31,7 +39,10 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
     stage: a.stage,
     rating: a.rating,
     matchScore: a.matchScore,
-    user: a.user,
+    user: {
+      ...a.user,
+      skills: a.user.userSkills.map(us => us.skill.name),
+    },
     resumeUrl: a.resume?.fileUrl ?? null,
     coverLetter: a.coverLetter,
     createdAt: a.createdAt.toISOString(),

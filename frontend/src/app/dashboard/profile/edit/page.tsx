@@ -26,6 +26,7 @@ export default async function EditProfilePage() {
         initialPhone={user.phone ?? ""}
         initialLocation={user.location ?? ""}
         initialSkills={userSkills.map(us => us.skill.name)}
+        initialAvatarUrl={user.avatarUrl ?? ""}
       />
     </DashboardShell>
   );

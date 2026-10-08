@@ -9,7 +9,13 @@ type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECT
 
 type App = {
   id: string; stage: Stage; rating: number | null; matchScore: number | null;
-  user: { id: string; name: string; email: string; headline: string | null; location: string | null; phone?: string | null; bio?: string | null };
+  user: {
+    id: string; name: string; email: string; headline: string | null; location: string | null;
+    phone?: string | null; bio?: string | null; avatarUrl?: string | null; yearsExperience?: number | null;
+    experiences?: { title: string; company: string; current: boolean }[];
+    educations?: { degree: string; field: string | null; school: string }[];
+    skills?: string[];
+  };
   resumeUrl: string | null; coverLetter: string | null; createdAt: string;
 };
 
@@ -160,8 +166,12 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
         {filtered.map((a, i) => {
           const initials = a.user.name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
           const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-          const exp = expYears(a.user.headline);
+          const exp = a.user.yearsExperience ? `${a.user.yearsExperience} yrs exp` : expYears(a.user.headline);
           const isSelected = selected?.id === a.id;
+          const current = a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0];
+          const previous = a.user.experiences?.find(e => e !== current);
+          const education = a.user.educations?.[0];
+          const skills = a.user.skills ?? [];
           return (
             <div key={a.id} onClick={() => setSelected(a)}
               className={`bg-white border-2 rounded-2xl p-5 cursor-pointer hover:shadow-md transition-all ${isSelected ? "border-blue-400 shadow-sm" : "border-zinc-100 shadow-sm"}`}
@@ -172,7 +182,11 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
                   {isSelected && <div className="h-2 w-2 rounded-full bg-white" />}
                 </div>
                 {/* Avatar */}
-                <div className={`h-12 w-12 rounded-full ${color} flex items-center justify-center text-white font-bold text-sm shrink-0`}>{initials}</div>
+                {a.user.avatarUrl ? (
+                  <img src={a.user.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className={`h-12 w-12 rounded-full ${color} flex items-center justify-center text-white font-bold text-sm shrink-0`}>{initials}</div>
+                )}
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -233,6 +247,36 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
                   </div>
                 </div>
               </div>
+
+              {/* Current / Previous / Education / Skills */}
+              {(current || previous || education || skills.length > 0) && (
+                <div className="mt-3 pt-3 border-t border-zinc-50 pl-16 space-y-1.5 text-xs">
+                  {current && (
+                    <div className="flex gap-2">
+                      <span className="text-zinc-400 font-semibold w-20 shrink-0">Current</span>
+                      <span className="text-zinc-600">{current.title} at {current.company}</span>
+                    </div>
+                  )}
+                  {previous && (
+                    <div className="flex gap-2">
+                      <span className="text-zinc-400 font-semibold w-20 shrink-0">Previous</span>
+                      <span className="text-zinc-600">{previous.title} at {previous.company}</span>
+                    </div>
+                  )}
+                  {education && (
+                    <div className="flex gap-2">
+                      <span className="text-zinc-400 font-semibold w-20 shrink-0">Education</span>
+                      <span className="text-zinc-600">{education.degree}{education.field ? ` in ${education.field}` : ""}, {education.school}</span>
+                    </div>
+                  )}
+                  {skills.length > 0 && (
+                    <div className="flex gap-2">
+                      <span className="text-zinc-400 font-semibold w-20 shrink-0">Key skills</span>
+                      <span className="text-zinc-600">{skills.join(" | ")}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -263,9 +307,13 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
             <div className="p-5 border-b border-zinc-100">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-3">
-                  <div className={`h-12 w-12 rounded-full ${AVATAR_COLORS[list.findIndex(a => a.id === selected.id) % AVATAR_COLORS.length]} flex items-center justify-center text-white font-bold shrink-0`}>
-                    {selected.user.name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()}
-                  </div>
+                  {selected.user.avatarUrl ? (
+                    <img src={selected.user.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className={`h-12 w-12 rounded-full ${AVATAR_COLORS[list.findIndex(a => a.id === selected.id) % AVATAR_COLORS.length]} flex items-center justify-center text-white font-bold shrink-0`}>
+                      {selected.user.name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()}
+                    </div>
+                  )}
                   <div>
                     <div className="font-bold text-zinc-900 text-base">{selected.user.name}</div>
                     <div className="text-xs text-zinc-500">{selected.user.email}</div>
@@ -357,35 +405,72 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
             )}
 
             {/* Skills */}
-            {isDemo && DEMO_SKILLS[selected.user.id] && (
-              <div className="px-5 py-3 border-b border-zinc-50">
-                <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Skills</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {DEMO_SKILLS[selected.user.id].map(s => (
-                    <span key={s} className="text-[11px] font-semibold bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-full">{s}</span>
-                  ))}
+            {isDemo ? (
+              DEMO_SKILLS[selected.user.id] && (
+                <div className="px-5 py-3 border-b border-zinc-50">
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Skills</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {DEMO_SKILLS[selected.user.id].map(s => (
+                      <span key={s} className="text-[11px] font-semibold bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-full">{s}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )
+            ) : (
+              selected.user.skills && selected.user.skills.length > 0 && (
+                <div className="px-5 py-3 border-b border-zinc-50">
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Skills</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selected.user.skills.map(s => (
+                      <span key={s} className="text-[11px] font-semibold bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-full">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )
             )}
 
             {/* Experience */}
-            {isDemo && DEMO_EXP[selected.user.id] && (
-              <div className="px-5 py-3 border-b border-zinc-50">
-                <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Experience</div>
-                <div className="text-xs font-bold text-zinc-800">{DEMO_EXP[selected.user.id].title}</div>
-                <div className="text-xs text-zinc-500">{DEMO_EXP[selected.user.id].company}</div>
-                <div className="text-xs text-zinc-400">{DEMO_EXP[selected.user.id].period}</div>
-              </div>
+            {isDemo ? (
+              DEMO_EXP[selected.user.id] && (
+                <div className="px-5 py-3 border-b border-zinc-50">
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Experience</div>
+                  <div className="text-xs font-bold text-zinc-800">{DEMO_EXP[selected.user.id].title}</div>
+                  <div className="text-xs text-zinc-500">{DEMO_EXP[selected.user.id].company}</div>
+                  <div className="text-xs text-zinc-400">{DEMO_EXP[selected.user.id].period}</div>
+                </div>
+              )
+            ) : (
+              selected.user.experiences && selected.user.experiences.length > 0 && (
+                <div className="px-5 py-3 border-b border-zinc-50 space-y-2">
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-1">Experience</div>
+                  {selected.user.experiences.map((exp, j) => (
+                    <div key={j}>
+                      <div className="text-xs font-bold text-zinc-800">{exp.title}</div>
+                      <div className="text-xs text-zinc-500">{exp.company}{exp.current ? " · Current" : ""}</div>
+                    </div>
+                  ))}
+                </div>
+              )
             )}
 
             {/* Education */}
-            {isDemo && DEMO_EDU[selected.user.id] && (
-              <div className="px-5 py-3 border-b border-zinc-50">
-                <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Education</div>
-                <div className="text-xs font-bold text-zinc-800">{DEMO_EDU[selected.user.id].degree}</div>
-                <div className="text-xs text-zinc-500">{DEMO_EDU[selected.user.id].school}</div>
-                <div className="text-xs text-zinc-400">{DEMO_EDU[selected.user.id].period}</div>
-              </div>
+            {isDemo ? (
+              DEMO_EDU[selected.user.id] && (
+                <div className="px-5 py-3 border-b border-zinc-50">
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Education</div>
+                  <div className="text-xs font-bold text-zinc-800">{DEMO_EDU[selected.user.id].degree}</div>
+                  <div className="text-xs text-zinc-500">{DEMO_EDU[selected.user.id].school}</div>
+                  <div className="text-xs text-zinc-400">{DEMO_EDU[selected.user.id].period}</div>
+                </div>
+              )
+            ) : (
+              selected.user.educations && selected.user.educations.length > 0 && (
+                <div className="px-5 py-3 border-b border-zinc-50">
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-2">Education</div>
+                  <div className="text-xs font-bold text-zinc-800">{selected.user.educations[0].degree}{selected.user.educations[0].field ? ` — ${selected.user.educations[0].field}` : ""}</div>
+                  <div className="text-xs text-zinc-500">{selected.user.educations[0].school}</div>
+                </div>
+              )
             )}
 
             {/* View Full Profile */}

@@ -54,9 +54,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: SP }
             <div className="flex items-start gap-5">
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="h-24 w-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-black ring-4 ring-blue-100">
-                  {initials}
-                </div>
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-blue-100" />
+                ) : (
+                  <div className="h-24 w-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-black ring-4 ring-blue-100">
+                    {initials}
+                  </div>
+                )}
                 <Link href="/dashboard/profile/edit" className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-white border border-zinc-200 shadow flex items-center justify-center hover:bg-zinc-50 transition">
                   <Pencil className="h-3.5 w-3.5 text-zinc-500" />
                 </Link>

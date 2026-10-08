@@ -7,7 +7,7 @@ import { Briefcase, MapPin, Globe, RefreshCw, Loader2 } from "lucide-react";
 import { JobRowActions } from "./JobRowActions";
 import { StopPropagation } from "@/components/StopPropagation";
 
-const ROW_COLS = "grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)_140px_100px_120px_110px]";
+const ROW_COLS = "grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_140px_110px_110px]";
 
 type JobRow = {
   id: string;
@@ -147,7 +147,6 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
             <div>Location</div>
             <div>Total Responses</div>
             <div>Shortlisted</div>
-            <div>Posted</div>
             <div className="text-right">Actions</div>
           </div>
         </div>
@@ -217,9 +216,6 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
                         {j.shortlistedCount}
                       </Link>
                     </StopPropagation>
-
-                    {/* Posted */}
-                    <div className="text-sm text-zinc-700 font-medium whitespace-nowrap">{formattedDate}</div>
 
                     {/* Actions */}
                     <StopPropagation>

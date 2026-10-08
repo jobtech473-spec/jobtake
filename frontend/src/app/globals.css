@@ -196,9 +196,13 @@ select.input { appearance: none; background-image: url("data:image/svg+xml;utf8,
 
 textarea.input { min-height: 110px; resize: vertical; }
 
-/* Make small muted copy readable across the app. */
-:where(.text-xs, .text-sm):where(.text-zinc-400, .text-zinc-500, .text-zinc-600, .text-zinc-700, .text-slate-400, .text-slate-500, .text-slate-600, .text-gray-400, .text-gray-500, .text-gray-600) {
-  color: #09090b;
+/* Make muted/grey copy readable across the app — overrides Tailwind's grey
+   text-color utilities everywhere (not borders/backgrounds, which keep
+   their own shade). */
+.text-zinc-300, .text-zinc-400, .text-zinc-500, .text-zinc-600, .text-zinc-700,
+.text-slate-300, .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700,
+.text-gray-300, .text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700 {
+  color: #09090b !important;
 }
 
 .text-xs {

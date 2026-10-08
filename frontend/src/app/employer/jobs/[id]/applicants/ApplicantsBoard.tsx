@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, FileDown, Search, SlidersHorizontal, MapPin, Bookmark, ArrowRight, ArrowLeft, ExternalLink, Mail, MessageCircle } from "lucide-react";
+import { Loader2, FileDown, Search, SlidersHorizontal, MapPin, Bookmark, ArrowRight, ArrowLeft, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -40,46 +40,9 @@ const STAGE_BADGE: Record<Stage, string> = {
 
 const AVATAR_COLORS = ["bg-blue-600","bg-violet-600","bg-teal-600","bg-rose-500","bg-orange-500","bg-indigo-600"];
 
-const DEMO_APPLICANTS: App[] = [
-  { id: "demo-1", stage: "APPLIED",   rating: null, matchScore: 87, createdAt: new Date(Date.now()-1*86400000).toISOString(), resumeUrl: null, coverLetter: "I am very interested in this role and believe my background in digital marketing aligns well with your requirements.", user: { id: "d1", name: "Priya Sharma",  email: "priya.sharma@gmail.com",  headline: "Digital Marketing Executive", location: "Mumbai, India",    phone: "+91 98765 43210", bio: "Results-driven digital marketing professional with expertise in SEO, PPC, social media marketing and content strategy." } },
-  { id: "demo-2", stage: "SCREENING", rating: 4,    matchScore: 92, createdAt: new Date(Date.now()-2*86400000).toISOString(), resumeUrl: null, coverLetter: null, user: { id: "d2", name: "Rahul Verma",   email: "rahul.v@outlook.com",     headline: "SEO & SEM Specialist",      location: "Bangalore, India", phone: "+91 87654 32109", bio: "5 years of experience in SEO and SEM, driving organic growth for B2B and B2C brands." } },
-  { id: "demo-3", stage: "INTERVIEW", rating: 5,    matchScore: 95, createdAt: new Date(Date.now()-3*86400000).toISOString(), resumeUrl: null, coverLetter: null, user: { id: "d3", name: "Ananya Patel",  email: "ananya.p@yahoo.com",      headline: "Growth Marketer",           location: "Pune, India",      phone: "+91 76543 21098", bio: "Growth marketer with a data-driven approach to user acquisition and retention." } },
-  { id: "demo-4", stage: "OFFER",     rating: 4,    matchScore: 89, createdAt: new Date(Date.now()-5*86400000).toISOString(), resumeUrl: null, coverLetter: null, user: { id: "d4", name: "Karan Mehta",   email: "karan.m@gmail.com",       headline: "Brand & Campaign Manager",  location: "Delhi, India",     phone: "+91 65432 10987", bio: "Brand strategist with 6+ years managing integrated marketing campaigns." } },
-  { id: "demo-5", stage: "APPLIED",   rating: null, matchScore: 72, createdAt: new Date(Date.now()-5*86400000).toISOString(), resumeUrl: null, coverLetter: null, user: { id: "d5", name: "Sneha Joshi",   email: "sneha.joshi@gmail.com",   headline: "Social Media Executive",    location: "Ahmedabad, India", phone: "+91 54321 09876", bio: "Social media enthusiast with 1 year experience in content creation and community management." } },
-  { id: "demo-6", stage: "REJECTED",  rating: 2,    matchScore: 68, createdAt: new Date(Date.now()-6*86400000).toISOString(), resumeUrl: null, coverLetter: null, user: { id: "d6", name: "Nikhil Pande",  email: "nikhil.p@gmail.com",      headline: "Performance Marketing Specialist", location: "Hyderabad, India", phone: "+91 43210 98765", bio: "Performance marketer focused on paid media, analytics and conversion rate optimisation." } },
-];
-
-const DEMO_SKILLS: Record<string, string[]> = {
-  "d1": ["SEO", "Google Ads", "Facebook Ads", "Analytics", "Content Marketing", "Email Marketing"],
-  "d2": ["SEO", "SEM", "Google Analytics", "Ahrefs", "Link Building"],
-  "d3": ["Growth Hacking", "A/B Testing", "Product Analytics", "CRM", "Funnel Optimization"],
-  "d4": ["Brand Strategy", "Campaign Management", "Copywriting", "Media Planning", "PR"],
-  "d5": ["Instagram", "Content Creation", "Canva", "Community Management"],
-  "d6": ["Google Ads", "Meta Ads", "CRO", "Analytics", "Landing Pages"],
-};
-
-const DEMO_EXP: Record<string, { title: string; company: string }> = {
-  "d1": { title: "Digital Marketing Executive", company: "Tech Solutions Pvt. Ltd." },
-  "d2": { title: "SEO Specialist", company: "DigitalBoost Agency" },
-  "d3": { title: "Growth Marketer", company: "StartupXYZ" },
-  "d4": { title: "Brand Manager", company: "FMCG Corp Ltd." },
-  "d5": { title: "Social Media Executive", company: "Creative Studio" },
-  "d6": { title: "Performance Marketer", company: "AdTech Solutions" },
-};
-
-const DEMO_EDU: Record<string, { degree: string; school: string }> = {
-  "d1": { degree: "Bachelor of Business Administration", school: "University of Mumbai" },
-  "d2": { degree: "Bachelor of Computer Applications", school: "Delhi University" },
-  "d3": { degree: "MBA - Marketing", school: "IIM Bangalore" },
-  "d4": { degree: "Bachelor of Management Studies", school: "NMIMS Mumbai" },
-  "d5": { degree: "Bachelor of Arts - Media", school: "Gujarat University" },
-  "d6": { degree: "B.Tech - Computer Science", school: "JNTU Hyderabad" },
-};
-
 export function ApplicantsBoard({ applications, jobId }: { applications: App[]; jobId: string; jobTitle?: string }) {
   const router = useRouter();
-  const isDemo = applications.length === 0;
-  const list = isDemo ? DEMO_APPLICANTS : applications;
+  const list = applications;
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [localStages, setLocalStages] = useState<Record<string, Stage>>({});
@@ -94,7 +57,6 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
 
   async function updateStage(id: string, stage: Stage) {
     setLocalStages(s => ({ ...s, [id]: stage }));
-    if (isDemo) return;
     setBusyId(id);
     await fetch(`/api/employer/applications/${id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stage }),
@@ -108,14 +70,17 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     return m ? `${m[1]} yrs exp` : null;
   };
 
+  if (list.length === 0) {
+    return (
+      <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm py-16 text-center text-zinc-500 text-sm">
+        <Users className="h-8 w-8 mx-auto text-zinc-300 mb-3" />
+        No applicants yet. Candidates who apply to this job will show up here.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
-
-      {isDemo && (
-        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-amber-700 font-medium">
-          <span>👋</span> Demo preview — these are sample applicants. Real applicants will appear here once candidates apply.
-        </div>
-      )}
 
       {/* Search + Filters */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -141,13 +106,10 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         const initials = a.user.name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
         const exp = a.user.yearsExperience ? `${a.user.yearsExperience} yrs exp` : expYears(a.user.headline);
-        const demoExp = DEMO_EXP[a.user.id];
-        const demoEdu = DEMO_EDU[a.user.id];
-        const current = a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0]
-          ?? (demoExp ? { title: demoExp.title, company: demoExp.company, current: true } : undefined);
+        const current = a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0];
         const previous = a.user.experiences?.find(e => e !== current);
-        const education = a.user.educations?.[0] ?? (demoEdu ? { degree: demoEdu.degree, field: null, school: demoEdu.school } : undefined);
-        const skills = a.user.skills ?? DEMO_SKILLS[a.user.id] ?? [];
+        const education = a.user.educations?.[0];
+        const skills = a.user.skills ?? [];
         const stage = localStages[a.id] ?? a.stage;
         const busy = busyId === a.id;
 
@@ -254,16 +216,10 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
                 {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />}
               </div>
               <div className="flex items-center gap-2">
-                {isDemo ? (
-                  <button disabled className="text-xs font-semibold text-zinc-300 px-3 py-1.5 cursor-not-allowed">
-                    View Full Profile
-                  </button>
-                ) : (
-                  <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 px-3 py-1.5 transition">
-                    View Full Profile <ExternalLink className="h-3 w-3" />
-                  </Link>
-                )}
+                <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 px-3 py-1.5 transition">
+                  View Full Profile <ExternalLink className="h-3 w-3" />
+                </Link>
                 <button onClick={() => updateStage(a.id, "SCREENING")} disabled={busy}
                   className="flex items-center gap-1.5 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition">
                   <Bookmark className="h-3 w-3" /> Shortlist

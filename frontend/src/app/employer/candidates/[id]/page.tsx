@@ -8,6 +8,7 @@ import {
   ArrowLeft, Mail, Phone, MapPin, Zap,
   Briefcase, GraduationCap, FileText, Globe, Linkedin, Github,
 } from "lucide-react";
+import { CandidateActionBar } from "./CandidateActionBar";
 
 export default async function CandidateProfilePage({
   params, searchParams,
@@ -45,7 +46,7 @@ export default async function CandidateProfilePage({
   const application = jobId
     ? await prisma.application.findFirst({
         where: { userId: id, jobId },
-        select: { createdAt: true },
+        select: { id: true, stage: true, createdAt: true },
       })
     : null;
 
@@ -63,6 +64,15 @@ export default async function CandidateProfilePage({
       </div>
 
       <div className="max-w-2xl space-y-5">
+        {application && (
+          <CandidateActionBar
+            applicationId={application.id}
+            initialStage={application.stage}
+            email={user.email}
+            phone={user.phone}
+          />
+        )}
+
         {/* Header card */}
         <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
           <div className="flex items-start gap-4 flex-wrap">

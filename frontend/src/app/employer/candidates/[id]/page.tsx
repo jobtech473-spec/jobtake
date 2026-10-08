@@ -42,7 +42,16 @@ export default async function CandidateProfilePage({
   });
   if (!user) notFound();
 
+  const application = jobId
+    ? await prisma.application.findFirst({
+        where: { userId: id, jobId },
+        select: { createdAt: true },
+      })
+    : null;
+
   const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const currentExp = user.experiences.find(e => e.current) ?? user.experiences[0];
+  const latestEdu = user.educations[0];
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs">
@@ -82,6 +91,34 @@ export default async function CandidateProfilePage({
               {user.websiteUrl && <a href={user.websiteUrl} target="_blank" className="text-zinc-400 hover:text-zinc-700"><Globe className="h-4 w-4" /></a>}
               {user.linkedinUrl && <a href={user.linkedinUrl} target="_blank" className="text-zinc-400 hover:text-zinc-700"><Linkedin className="h-4 w-4" /></a>}
               {user.githubUrl && <a href={user.githubUrl} target="_blank" className="text-zinc-400 hover:text-zinc-700"><Github className="h-4 w-4" /></a>}
+            </div>
+          )}
+        </div>
+
+        {/* Candidate Details */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
+          <h3 className="font-bold text-zinc-900 mb-4">Candidate Details</h3>
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Current Designation</span><span className="font-medium text-zinc-900 text-right">{currentExp?.title ?? "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Experience</span><span className="font-medium text-zinc-900 text-right">{user.yearsExperience != null ? `${user.yearsExperience} years` : "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Current Company</span><span className="font-medium text-zinc-900 text-right">{currentExp?.company ?? "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Current Salary</span><span className="font-medium text-zinc-900 text-right">{user.currentSalary != null ? `₹${user.currentSalary} Lac(s)` : "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Current Location</span><span className="font-medium text-zinc-900 text-right">{user.location ?? "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Expected Salary</span><span className="font-medium text-zinc-900 text-right">{user.expectedSalary != null ? `₹${user.expectedSalary} Lac(s)` : "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Latest Education</span><span className="font-medium text-zinc-900 text-right">{latestEdu?.degree ?? "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Notice Period</span><span className="font-medium text-zinc-900 text-right">{user.noticePeriod ?? "—"}</span></div>
+            {application && (
+              <div className="flex justify-between gap-2"><span className="text-zinc-400">Application Date</span><span className="font-medium text-zinc-900 text-right">{new Date(application.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></div>
+            )}
+          </div>
+          {user.preferredLocations.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-zinc-50">
+              <div className="text-sm text-zinc-400 mb-1.5">Preferred Locations</div>
+              <div className="flex flex-wrap gap-1.5">
+                {user.preferredLocations.map(l => (
+                  <span key={l} className="text-xs font-medium bg-zinc-100 text-zinc-700 px-2.5 py-1 rounded-full">{l}</span>
+                ))}
+              </div>
             </div>
           )}
         </div>

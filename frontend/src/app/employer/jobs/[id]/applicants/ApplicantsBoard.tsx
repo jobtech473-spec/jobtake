@@ -12,6 +12,8 @@ type App = {
   user: {
     id: string; name: string; email: string; headline: string | null; location: string | null;
     phone?: string | null; bio?: string | null; avatarUrl?: string | null; yearsExperience?: number | null;
+    noticePeriod?: string | null; currentSalary?: number | null; expectedSalary?: number | null;
+    preferredLocations?: string[];
     experiences?: { title: string; company: string; current: boolean }[];
     educations?: { degree: string; field: string | null; school: string }[];
     skills?: string[];
@@ -194,7 +196,11 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
                     {a.stage === "APPLIED" && <span className="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full uppercase">New</span>}
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${STAGE_BADGE[a.stage]}`}>{STAGE_LABEL[a.stage]}</span>
                   </div>
-                  <div className="text-xs text-zinc-500 mt-0.5">{a.user.headline}{exp ? ` · ${exp}` : ""}</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">
+                    {a.user.headline}{exp ? ` · ${exp}` : ""}
+                    {a.user.currentSalary != null && ` · ₹${a.user.currentSalary} Lac(s)`}
+                    {a.user.noticePeriod && ` · ${a.user.noticePeriod} notice`}
+                  </div>
                   <div className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1">
                     <MapPin className="h-3 w-3" />{a.user.location}
                   </div>
@@ -267,6 +273,12 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
                     <div className="flex gap-2">
                       <span className="text-zinc-400 font-semibold w-20 shrink-0">Education</span>
                       <span className="text-zinc-600">{education.degree}{education.field ? ` in ${education.field}` : ""}, {education.school}</span>
+                    </div>
+                  )}
+                  {a.user.preferredLocations && a.user.preferredLocations.length > 0 && (
+                    <div className="flex gap-2">
+                      <span className="text-zinc-400 font-semibold w-20 shrink-0">Pref. locations</span>
+                      <span className="text-zinc-600">{a.user.preferredLocations.join(", ")}</span>
                     </div>
                   )}
                   {skills.length > 0 && (
@@ -350,6 +362,24 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
                 <div className="text-sm font-semibold text-zinc-800">{new Date(selected.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
                 <div className="text-xs text-zinc-400">{timeAgo(selected.createdAt)}</div>
               </div>
+              {selected.user.currentSalary != null && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-1.5">Current Salary</div>
+                  <div className="text-sm font-semibold text-zinc-800">₹{selected.user.currentSalary} Lac(s)</div>
+                </div>
+              )}
+              {selected.user.expectedSalary != null && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-1.5">Expected Salary</div>
+                  <div className="text-sm font-semibold text-zinc-800">₹{selected.user.expectedSalary} Lac(s)</div>
+                </div>
+              )}
+              {selected.user.noticePeriod && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide font-bold text-zinc-400 mb-1.5">Notice Period</div>
+                  <div className="text-sm font-semibold text-zinc-800">{selected.user.noticePeriod}</div>
+                </div>
+              )}
             </div>
 
             {/* Action buttons */}

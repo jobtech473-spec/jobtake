@@ -19,6 +19,11 @@ const PatchBody = z.object({
   phone:    z.string().optional(),
   location: z.string().optional(),
   skills:   z.array(z.string()).optional(),
+  yearsExperience: z.number().int().min(0).max(60).nullable().optional(),
+  noticePeriod:    z.string().nullable().optional(),
+  currentSalary:   z.number().int().min(0).nullable().optional(),
+  expectedSalary:  z.number().int().min(0).nullable().optional(),
+  preferredLocations: z.array(z.string()).optional(),
 });
 
 export async function PATCH(req: NextRequest) {

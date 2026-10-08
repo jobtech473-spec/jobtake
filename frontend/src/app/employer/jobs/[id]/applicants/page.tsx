@@ -19,7 +19,8 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
           user: {
             select: {
               id: true, name: true, email: true, headline: true, location: true, phone: true, bio: true,
-              avatarUrl: true, yearsExperience: true,
+              avatarUrl: true, yearsExperience: true, noticePeriod: true, currentSalary: true, expectedSalary: true,
+              preferredLocations: true,
               experiences: { orderBy: [{ current: "desc" }, { startDate: "desc" }], take: 2, select: { title: true, company: true, current: true } },
               educations: { orderBy: { startYear: "desc" }, take: 1, select: { degree: true, field: true, school: true } },
               userSkills: { orderBy: { skill: { name: "asc" } }, take: 8, select: { skill: { select: { name: true } } } },

@@ -25,6 +25,10 @@ model User {
   yearsExperience  Int?
   gender           String?
   dateOfBirth      DateTime?
+  noticePeriod     String?
+  currentSalary    Int?
+  expectedSalary   Int?
+  preferredLocations String[]        @default([])
   openToWork       Boolean           @default(true)
   profileVisible   Boolean           @default(true)
   emailNotifications      Boolean   @default(true)

@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, User, MapPin, Phone, FileText, Zap, X, ArrowLeft } from "lucide-react";
+import { Loader2, User, MapPin, Phone, FileText, Zap, X, ArrowLeft, Briefcase, IndianRupee } from "lucide-react";
 import Link from "next/link";
 
 const inputCls = "w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white";
+
+const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
 
 type Props = {
   initialName: string;
@@ -14,9 +16,17 @@ type Props = {
   initialLocation: string;
   initialSkills: string[];
   initialAvatarUrl: string;
+  initialYearsExperience: number | null;
+  initialNoticePeriod: string;
+  initialCurrentSalary: number | null;
+  initialExpectedSalary: number | null;
+  initialPreferredLocations: string[];
 };
 
-export function EditProfileClient({ initialName, initialHeadline, initialBio, initialPhone, initialLocation, initialSkills, initialAvatarUrl }: Props) {
+export function EditProfileClient({
+  initialName, initialHeadline, initialBio, initialPhone, initialLocation, initialSkills, initialAvatarUrl,
+  initialYearsExperience, initialNoticePeriod, initialCurrentSalary, initialExpectedSalary, initialPreferredLocations,
+}: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
@@ -34,10 +44,23 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
   const [skills, setSkills]     = useState<string[]>(initialSkills);
   const [skillInput, setSkillInput] = useState("");
 
+  const [yearsExperience, setYearsExperience] = useState(initialYearsExperience?.toString() ?? "");
+  const [noticePeriod, setNoticePeriod]       = useState(initialNoticePeriod);
+  const [currentSalary, setCurrentSalary]     = useState(initialCurrentSalary?.toString() ?? "");
+  const [expectedSalary, setExpectedSalary]   = useState(initialExpectedSalary?.toString() ?? "");
+  const [preferredLocations, setPreferredLocations] = useState<string[]>(initialPreferredLocations);
+  const [locationInput, setLocationInput] = useState("");
+
   function addSkill(val: string) {
     const t = val.trim();
     if (t && !skills.some(s => s.toLowerCase() === t.toLowerCase())) setSkills(s => [...s, t]);
     setSkillInput("");
+  }
+
+  function addPreferredLocation(val: string) {
+    const t = val.trim();
+    if (t && !preferredLocations.some(l => l.toLowerCase() === t.toLowerCase())) setPreferredLocations(l => [...l, t]);
+    setLocationInput("");
   }
 
   async function handleResumeUpload(file: File) {
@@ -68,7 +91,14 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
     const res = await fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, headline, bio, phone, location, skills }),
+      body: JSON.stringify({
+        name, headline, bio, phone, location, skills,
+        yearsExperience: yearsExperience ? parseInt(yearsExperience, 10) : null,
+        noticePeriod: noticePeriod || null,
+        currentSalary: currentSalary ? parseInt(currentSalary, 10) : null,
+        expectedSalary: expectedSalary ? parseInt(expectedSalary, 10) : null,
+        preferredLocations,
+      }),
     });
     const data = await res.json();
     setSaving(false);
@@ -172,6 +202,68 @@ export function EditProfileClient({ initialName, initialHeadline, initialBio, in
                   <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                   <input value={location} onChange={e => setLocation(e.target.value)} className={inputCls + " pl-10"} placeholder="e.g. Mumbai, India" />
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Career Preferences */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-2">
+            <Briefcase className="h-4 w-4 text-blue-600" />
+            <h2 className="font-bold text-zinc-900 text-sm">Career Preferences</h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">Years of Experience</label>
+                <input type="number" min={0} max={50} value={yearsExperience} onChange={e => setYearsExperience(e.target.value)}
+                  className={inputCls} placeholder="e.g. 5" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">Notice Period</label>
+                <select value={noticePeriod} onChange={e => setNoticePeriod(e.target.value)} className={inputCls}>
+                  <option value="">Select notice period</option>
+                  {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">Current Salary (Lacs PA)</label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input type="number" min={0} value={currentSalary} onChange={e => setCurrentSalary(e.target.value)}
+                    className={inputCls + " pl-10"} placeholder="e.g. 8" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">Expected Salary (Lacs PA)</label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input type="number" min={0} value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)}
+                    className={inputCls + " pl-10"} placeholder="e.g. 12" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">Preferred Locations</label>
+              <div className="flex flex-wrap gap-2 mb-3 min-h-[36px]">
+                {preferredLocations.map(l => (
+                  <span key={l} className="flex items-center gap-1.5 bg-zinc-100 text-zinc-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                    {l}
+                    <button onClick={() => setPreferredLocations(prev => prev.filter(x => x !== l))} className="hover:text-red-500 transition">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+                {preferredLocations.length === 0 && <span className="text-xs text-zinc-400">No preferred locations added yet.</span>}
+              </div>
+              <div className="flex gap-2">
+                <input value={locationInput} onChange={e => setLocationInput(e.target.value)}
+                  onKeyDown={e => { if (["Enter", ",", "Tab"].includes(e.key)) { e.preventDefault(); addPreferredLocation(locationInput); } }}
+                  className={inputCls + " flex-1"} placeholder="Type a city and press Enter (e.g. Pune)" />
+                <button onClick={() => addPreferredLocation(locationInput)}
+                  className="px-4 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition">Add</button>
               </div>
             </div>
           </div>

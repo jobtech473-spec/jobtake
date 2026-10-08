@@ -172,7 +172,7 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
                   className="h-4 w-4 mt-2 rounded border-zinc-300 shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <Link href={`/employer/jobs/${j.id}/preview`} className={`grid ${ROW_COLS} items-center gap-4 cursor-pointer`}>
+                  <Link href={`/employer/jobs/${j.id}/applicants`} className={`grid ${ROW_COLS} items-center gap-4 cursor-pointer`}>
                     {/* Title */}
                     <div className="min-w-0">
                       <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>

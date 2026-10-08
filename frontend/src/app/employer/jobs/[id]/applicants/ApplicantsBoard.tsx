@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Star, Loader2, FileDown, Search, SlidersHorizontal, MapPin, Bookmark, ArrowRight, ArrowLeft, ExternalLink, Mail, MessageCircle } from "lucide-react";
+import { Loader2, FileDown, Search, SlidersHorizontal, MapPin, Bookmark, ArrowRight, ArrowLeft, ExternalLink, Mail, MessageCircle } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -37,10 +37,6 @@ const STAGE_BADGE: Record<Stage, string> = {
   REJECTED:  "bg-red-50 text-red-600",
   WITHDRAWN: "bg-zinc-100 text-zinc-500",
 };
-
-const MATCH_COLOR = (score: number) =>
-  score >= 85 ? "bg-emerald-50 text-emerald-700" :
-  score >= 70 ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-600";
 
 const AVATAR_COLORS = ["bg-blue-600","bg-violet-600","bg-teal-600","bg-rose-500","bg-orange-500","bg-indigo-600"];
 
@@ -87,7 +83,6 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [localStages, setLocalStages] = useState<Record<string, Stage>>({});
-  const [localRatings, setLocalRatings] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
 
   const filtered = list.filter(a =>
@@ -103,17 +98,6 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     setBusyId(id);
     await fetch(`/api/employer/applications/${id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stage }),
-    });
-    setBusyId(null);
-    router.refresh();
-  }
-
-  async function setRating(id: string, rating: number) {
-    setLocalRatings(r => ({ ...r, [id]: rating }));
-    if (isDemo) return;
-    setBusyId(id);
-    await fetch(`/api/employer/applications/${id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rating }),
     });
     setBusyId(null);
     router.refresh();
@@ -165,7 +149,6 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         const education = a.user.educations?.[0] ?? (demoEdu ? { degree: demoEdu.degree, field: null, school: demoEdu.school } : undefined);
         const skills = a.user.skills ?? DEMO_SKILLS[a.user.id] ?? [];
         const stage = localStages[a.id] ?? a.stage;
-        const rating = localRatings[a.id] ?? a.rating ?? 0;
         const busy = busyId === a.id;
 
         return (
@@ -193,19 +176,9 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
                   <MapPin className="h-3 w-3" />{a.user.location}
                 </div>
               </div>
-              {/* Applied + Match */}
+              {/* Applied */}
               <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
                 <div className="text-xs text-zinc-400">Applied {timeAgo(a.createdAt)}</div>
-                {a.matchScore && (
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${MATCH_COLOR(a.matchScore)}`}>{a.matchScore}% Match</span>
-                )}
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <button key={n} disabled={busy} onClick={() => setRating(a.id, n)} data-testid={`rate-${a.id}-${n}`}>
-                      <Star className={`h-3.5 w-3.5 transition-colors ${rating >= n ? "text-amber-400 fill-amber-400" : "text-zinc-200 hover:text-amber-300"}`} />
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 

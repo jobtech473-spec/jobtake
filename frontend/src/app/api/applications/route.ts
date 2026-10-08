@@ -59,14 +59,12 @@ export async function POST(req: NextRequest) {
     resumeId = created.id;
   }
 
-  const matchScore = 70 + Math.floor(Math.random() * 26);
   const app = await prisma.application.create({
     data: {
       jobId: job.id,
       userId: user.id,
       coverLetter: payload.coverLetter,
       resumeId,
-      matchScore,
     },
   });
   await prisma.applicationEvent.create({ data: { applicationId: app.id, toStage: "APPLIED" } });
@@ -77,7 +75,7 @@ export async function POST(req: NextRequest) {
       userId: job.postedById,
       kind: "APPLICATION_RECEIVED",
       title: `New applicant for ${job.title}`,
-      body: `${user.name} applied — ${matchScore}% match`,
+      body: `${user.name} applied for ${job.title}`,
       linkUrl: `/employer/jobs/${job.id}/applicants`,
     },
   });

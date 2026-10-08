@@ -170,10 +170,13 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
           const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
           const exp = a.user.yearsExperience ? `${a.user.yearsExperience} yrs exp` : expYears(a.user.headline);
           const isSelected = selected?.id === a.id;
-          const current = a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0];
+          const demoExp = DEMO_EXP[a.user.id];
+          const demoEdu = DEMO_EDU[a.user.id];
+          const current = a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0]
+            ?? (demoExp ? { title: demoExp.title, company: demoExp.company, current: true } : undefined);
           const previous = a.user.experiences?.find(e => e !== current);
-          const education = a.user.educations?.[0];
-          const skills = a.user.skills ?? [];
+          const education = a.user.educations?.[0] ?? (demoEdu ? { degree: demoEdu.degree, field: null, school: demoEdu.school } : undefined);
+          const skills = a.user.skills ?? DEMO_SKILLS[a.user.id] ?? [];
           return (
             <div key={a.id} onClick={() => setSelected(a)}
               className={`bg-white border-2 rounded-2xl p-5 cursor-pointer hover:shadow-md transition-all ${isSelected ? "border-blue-400 shadow-sm" : "border-zinc-100 shadow-sm"}`}

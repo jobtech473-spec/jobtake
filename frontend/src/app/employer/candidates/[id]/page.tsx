@@ -53,6 +53,7 @@ export default async function CandidateProfilePage({
   const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
   const currentExp = user.experiences.find(e => e.current) ?? user.experiences[0];
   const latestEdu = user.educations[0];
+  const primaryResume = user.resumes.find(r => r.isPrimary) ?? user.resumes[0];
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs">
@@ -70,6 +71,7 @@ export default async function CandidateProfilePage({
             initialStage={application.stage}
             email={user.email}
             phone={user.phone}
+            resumeId={primaryResume?.id ?? null}
           />
         )}
 
@@ -149,18 +151,23 @@ export default async function CandidateProfilePage({
 
         {/* Experience */}
         <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
-          <h3 className="font-bold text-zinc-900 mb-3 flex items-center gap-2"><Briefcase className="h-4 w-4 text-blue-500" /> Experience</h3>
+          <h3 className="font-bold text-zinc-900 mb-4 flex items-center gap-2"><Briefcase className="h-4 w-4 text-blue-500" /> Work Experience</h3>
           {user.experiences.length === 0 ? (
             <p className="text-sm text-zinc-400">No experience added.</p>
           ) : (
             <div className="space-y-4">
-              {user.experiences.map(exp => (
-                <div key={exp.id}>
-                  <div className="font-semibold text-zinc-900 text-sm">{exp.title}</div>
-                  <div className="text-sm text-zinc-500">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</div>
-                  <div className="text-xs text-zinc-400 mt-0.5">
-                    {new Date(exp.startDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} – {exp.current ? "Present" : exp.endDate ? new Date(exp.endDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : "—"}
+              {user.experiences.map((exp, i) => (
+                <div key={exp.id} className={i !== 0 ? "pt-4 border-t border-zinc-50" : ""}>
+                  <div className="font-bold text-zinc-900 text-sm">
+                    {exp.company}
+                    {exp.current && <span className="ml-2 text-xs font-semibold text-emerald-600">(Current Employer)</span>}
                   </div>
+                  <div className="text-sm text-zinc-600 mt-0.5">
+                    {exp.title} &nbsp;|&nbsp; {new Date(exp.startDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} – {exp.current ? "Present" : exp.endDate ? new Date(exp.endDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : "—"}
+                  </div>
+                  {exp.current && user.noticePeriod && (
+                    <div className="text-xs text-zinc-400 mt-0.5">Notice period: {user.noticePeriod}</div>
+                  )}
                   {exp.description && <p className="text-sm text-zinc-600 mt-1.5">{exp.description}</p>}
                 </div>
               ))}

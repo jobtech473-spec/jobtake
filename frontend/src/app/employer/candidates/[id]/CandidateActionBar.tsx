@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, MessageCircle, Bookmark, Loader2 } from "lucide-react";
+import { Mail, MessageCircle, Bookmark, Loader2, Download } from "lucide-react";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
 
@@ -14,12 +14,13 @@ const STAGE_LABEL: Record<Stage, string> = {
 };
 
 export function CandidateActionBar({
-  applicationId, initialStage, email, phone,
+  applicationId, initialStage, email, phone, resumeId,
 }: {
   applicationId: string;
   initialStage: Stage;
   email: string;
   phone: string | null;
+  resumeId: string | null;
 }) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>(initialStage);
@@ -52,6 +53,12 @@ export function CandidateActionBar({
           className="text-sm font-semibold border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 bg-white">
           {STAGES.map(s => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
         </select>
+        {resumeId && (
+          <a href={`/api/resumes/${resumeId}`} target="_blank" rel="noreferrer" title="Download Resume"
+            className="h-9 w-9 rounded-lg border border-zinc-200 hover:bg-zinc-100 flex items-center justify-center text-zinc-500 hover:text-zinc-700">
+            <Download className="h-4 w-4" />
+          </a>
+        )}
         {busy && <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />}
       </div>
       <div className="flex items-center gap-2">

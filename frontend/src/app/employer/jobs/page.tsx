@@ -10,33 +10,35 @@ import { StopPropagation } from "@/components/StopPropagation";
 
 // Shared by header and rows. Each row is its own grid, so text columns use
 // minmax(0, …) — plain `fr` would grow to fit long text and misalign rows.
-const ROW_COLS = "grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_110px_90px_90px_80px]";
+const ROW_COLS = "grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_120px_100px_90px_80px]";
 
 export default async function EmployerJobsPage() {
   const me = await getCurrentUser();
   if (!me || me.role !== "EMPLOYER") redirect("/employers/login");
 
-  const jobs = await prisma.job.findMany({
+  const jobsRaw = await prisma.job.findMany({
     where: { postedById: me.id },
     orderBy: { createdAt: "desc" },
     include: {
-      _count: { select: { applications: true } },
+      applications: { select: { stage: true, createdAt: true } },
       company: { select: { name: true } },
       category: { select: { name: true } },
     },
   });
 
+  const NEW_WINDOW_MS = 48 * 60 * 60 * 1000;
+  const now = Date.now();
+  const jobs = jobsRaw.map(j => ({
+    ...j,
+    totalResponses: j.applications.length,
+    newResponses: j.applications.filter(a => now - a.createdAt.getTime() < NEW_WINDOW_MS).length,
+    shortlistedCount: j.applications.filter(a => a.stage === "SCREENING").length,
+  }));
+
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter(j => j.status === "PUBLISHED").length;
-  const totalApplicants = jobs.reduce((sum, j) => sum + j._count.applications, 0);
-  const shortlisted = 0; // placeholder
-
-  const STATUS_STYLE: Record<string, string> = {
-    PUBLISHED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    PENDING:   "bg-amber-50  text-amber-700  border border-amber-200",
-    DRAFT:     "bg-zinc-100  text-zinc-600   border border-zinc-200",
-    CLOSED:    "bg-red-50    text-red-600    border border-red-200",
-  };
+  const totalApplicants = jobs.reduce((sum, j) => sum + j.totalResponses, 0);
+  const shortlisted = jobs.reduce((sum, j) => sum + j.shortlistedCount, 0);
 
   return (
     <DashboardShell role="EMPLOYER" current="/employer/jobs">
@@ -99,8 +101,8 @@ export default async function EmployerJobsPage() {
           <div className={`grid ${ROW_COLS} items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-zinc-400 font-semibold`}>
             <div>Job Title</div>
             <div>Location</div>
-            <div>Status</div>
-            <div>Applicants</div>
+            <div>Total Responses</div>
+            <div>Shortlisted</div>
             <div>Posted</div>
             <div className="text-right">Actions</div>
           </div>
@@ -139,15 +141,18 @@ export default async function EmployerJobsPage() {
                 </span>
               </div>
 
-              {/* Status */}
-              <div>
-                <span className={`inline-block whitespace-nowrap text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ${STATUS_STYLE[j.status] ?? STATUS_STYLE.DRAFT}`}>
-                  {j.status.toLowerCase()}
-                </span>
+              {/* Total Responses */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-700 font-medium">{j.totalResponses}</span>
+                {j.newResponses > 0 && (
+                  <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 whitespace-nowrap">
+                    {j.newResponses} New
+                  </span>
+                )}
               </div>
 
-              {/* Applicants */}
-              <div className="text-sm text-zinc-700 font-medium">{j._count.applications}</div>
+              {/* Shortlisted */}
+              <div className="text-sm text-zinc-700 font-medium">{j.shortlistedCount}</div>
 
               {/* Posted */}
               <div className="text-sm text-zinc-400 whitespace-nowrap">{timeAgo(j.createdAt)}</div>

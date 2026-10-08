@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { timeAgo } from "@/lib/utils";
 import { Briefcase, Send, Eye, Bookmark, MapPin, Globe } from "lucide-react";
 import { JobRowActions } from "./JobRowActions";
 import { StopPropagation } from "@/components/StopPropagation";
@@ -116,55 +115,67 @@ export default async function EmployerJobsPage() {
             <Link href="/employer/post-job" className="text-blue-600 font-semibold hover:underline">Post your first job →</Link>
           </div>
         ) : (
-          jobs.map((j, i) => (
+          jobs.map((j, i) => {
+            const postedDate = j.publishedAt ?? j.createdAt;
+            const formattedDate = new Date(postedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+            const jobCode = `JT-${j.id.slice(-6).toUpperCase()}`;
+            return (
             <Link
               key={j.id}
               href={`/employer/jobs/${j.id}/preview`}
-              className={`px-6 py-4 grid ${ROW_COLS} items-center gap-4 hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
+              className={`block px-6 py-4 hover:bg-zinc-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-zinc-100" : ""}`}
             >
-              {/* Title */}
-              <div className="min-w-0">
-                <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
-                <div className="text-xs text-zinc-400 mt-0.5 truncate">{j.category?.name ?? "—"}</div>
-              </div>
-
-              {/* Location */}
-              <div className="flex items-center gap-1.5 text-sm text-zinc-600 min-w-0" title={j.location}>
-                {j.workMode === "REMOTE" ? (
-                  <Globe className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                ) : (
-                  <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                )}
-                <span className="truncate">
-                  {j.location}
-                  {j.workMode !== "ONSITE" && ` · ${j.workMode.charAt(0) + j.workMode.slice(1).toLowerCase()}`}
-                </span>
-              </div>
-
-              {/* Total Responses */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-zinc-700 font-medium">{j.totalResponses}</span>
-                {j.newResponses > 0 && (
-                  <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 whitespace-nowrap">
-                    {j.newResponses} New
-                  </span>
-                )}
-              </div>
-
-              {/* Shortlisted */}
-              <div className="text-sm text-zinc-700 font-medium">{j.shortlistedCount}</div>
-
-              {/* Posted */}
-              <div className="text-sm text-zinc-400 whitespace-nowrap">{timeAgo(j.createdAt)}</div>
-
-              {/* Actions */}
-              <StopPropagation>
-                <div className="flex justify-end">
-                  <JobRowActions jobId={j.id} jobTitle={j.title} />
+              <div className={`grid ${ROW_COLS} items-center gap-4`}>
+                {/* Title */}
+                <div className="min-w-0">
+                  <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
+                  <div className="text-xs text-zinc-400 mt-0.5 truncate">{j.category?.name ?? "—"}</div>
                 </div>
-              </StopPropagation>
+
+                {/* Location */}
+                <div className="flex items-center gap-1.5 text-sm text-zinc-600 min-w-0" title={j.location}>
+                  {j.workMode === "REMOTE" ? (
+                    <Globe className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                  ) : (
+                    <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {j.location}
+                    {j.workMode !== "ONSITE" && ` · ${j.workMode.charAt(0) + j.workMode.slice(1).toLowerCase()}`}
+                  </span>
+                </div>
+
+                {/* Total Responses */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-zinc-700 font-medium">{j.totalResponses}</span>
+                  {j.newResponses > 0 && (
+                    <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 whitespace-nowrap">
+                      {j.newResponses} New
+                    </span>
+                  )}
+                </div>
+
+                {/* Shortlisted */}
+                <div className="text-sm text-zinc-700 font-medium">{j.shortlistedCount}</div>
+
+                {/* Posted */}
+                <div className="text-sm text-zinc-700 font-medium whitespace-nowrap">{formattedDate}</div>
+
+                {/* Actions */}
+                <StopPropagation>
+                  <div className="flex justify-end">
+                    <JobRowActions jobId={j.id} jobTitle={j.title} />
+                  </div>
+                </StopPropagation>
+              </div>
+
+              {/* Meta line */}
+              <div className="mt-2 text-right text-[11px] text-zinc-400">
+                posted by {me.name ?? "You"} &nbsp;&middot;&nbsp; {jobCode} &nbsp;&middot;&nbsp; {formattedDate}
+              </div>
             </Link>
-          ))
+            );
+          })
         )}
         </div>
         </div>

@@ -1,0 +1,161 @@
+import { DashboardShell } from "@/components/DashboardShell";
+import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
+import { timeAgo } from "@/lib/utils";
+import {
+  ArrowLeft, Mail, Phone, MapPin, Zap,
+  Briefcase, GraduationCap, FileText, Globe, Linkedin, Github,
+} from "lucide-react";
+
+export default async function CandidateProfilePage({
+  params, searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ job?: string }>;
+}) {
+  const me = await getCurrentUser();
+  if (!me || (me.role !== "EMPLOYER" && me.role !== "ADMIN")) redirect("/employers/login");
+
+  const { id } = await params;
+  const { job: jobId } = await searchParams;
+  const backHref = jobId ? `/employer/jobs/${jobId}/applicants` : "/employer/jobs";
+
+  // An employer may only view a candidate who has applied to one of their own jobs.
+  if (me.role !== "ADMIN") {
+    const hasApplied = await prisma.application.findFirst({
+      where: { userId: id, job: { postedById: me.id } },
+      select: { id: true },
+    });
+    if (!hasApplied) notFound();
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id, role: "SEEKER" },
+    include: {
+      experiences: { orderBy: [{ current: "desc" }, { startDate: "desc" }] },
+      educations: { orderBy: { startYear: "desc" } },
+      resumes: { orderBy: { createdAt: "desc" } },
+      userSkills: { include: { skill: true }, orderBy: { skill: { name: "asc" } } },
+    },
+  });
+  if (!user) notFound();
+
+  const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+
+  return (
+    <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs">
+      <div className="mb-6">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 transition mb-1">
+          <ArrowLeft className="h-4 w-4" /> Back to Applicants
+        </Link>
+        <h1 className="text-2xl font-black text-zinc-900">Candidate Profile</h1>
+      </div>
+
+      <div className="max-w-2xl space-y-5">
+        {/* Header card */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
+          <div className="flex items-start gap-4 flex-wrap">
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-black text-xl">
+                {initials}
+              </div>
+            )}
+            <div className="flex-1 min-w-[200px]">
+              <h2 className="text-xl font-black text-zinc-900">{user.name}</h2>
+              {user.headline && <p className="text-sm text-zinc-500 mt-1">{user.headline}</p>}
+              {user.bio && <p className="text-sm text-zinc-600 mt-2 leading-relaxed">{user.bio}</p>}
+            </div>
+          </div>
+
+          <div className="mt-5 grid sm:grid-cols-2 gap-3 text-sm text-zinc-600">
+            <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-zinc-400" /> {user.email}</div>
+            <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-zinc-400" /> {user.phone || "Not provided"}</div>
+            <div className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-zinc-400" /> {user.location || "Not provided"}</div>
+          </div>
+
+          {(user.websiteUrl || user.linkedinUrl || user.githubUrl) && (
+            <div className="mt-4 flex items-center gap-3">
+              {user.websiteUrl && <a href={user.websiteUrl} target="_blank" className="text-zinc-400 hover:text-zinc-700"><Globe className="h-4 w-4" /></a>}
+              {user.linkedinUrl && <a href={user.linkedinUrl} target="_blank" className="text-zinc-400 hover:text-zinc-700"><Linkedin className="h-4 w-4" /></a>}
+              {user.githubUrl && <a href={user.githubUrl} target="_blank" className="text-zinc-400 hover:text-zinc-700"><Github className="h-4 w-4" /></a>}
+            </div>
+          )}
+        </div>
+
+        {/* Skills */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
+          <h3 className="font-bold text-zinc-900 mb-3 flex items-center gap-2"><Zap className="h-4 w-4 text-amber-500" /> Skills</h3>
+          {user.userSkills.length === 0 ? (
+            <p className="text-sm text-zinc-400">No skills added.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {user.userSkills.map(us => (
+                <span key={us.skillId} className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full">{us.skill.name}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Experience */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
+          <h3 className="font-bold text-zinc-900 mb-3 flex items-center gap-2"><Briefcase className="h-4 w-4 text-blue-500" /> Experience</h3>
+          {user.experiences.length === 0 ? (
+            <p className="text-sm text-zinc-400">No experience added.</p>
+          ) : (
+            <div className="space-y-4">
+              {user.experiences.map(exp => (
+                <div key={exp.id}>
+                  <div className="font-semibold text-zinc-900 text-sm">{exp.title}</div>
+                  <div className="text-sm text-zinc-500">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</div>
+                  <div className="text-xs text-zinc-400 mt-0.5">
+                    {new Date(exp.startDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} – {exp.current ? "Present" : exp.endDate ? new Date(exp.endDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : "—"}
+                  </div>
+                  {exp.description && <p className="text-sm text-zinc-600 mt-1.5">{exp.description}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Education */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
+          <h3 className="font-bold text-zinc-900 mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-violet-500" /> Education</h3>
+          {user.educations.length === 0 ? (
+            <p className="text-sm text-zinc-400">No education added.</p>
+          ) : (
+            <div className="space-y-4">
+              {user.educations.map(ed => (
+                <div key={ed.id}>
+                  <div className="font-semibold text-zinc-900 text-sm">{ed.degree}{ed.field ? ` — ${ed.field}` : ""}</div>
+                  <div className="text-sm text-zinc-500">{ed.school}</div>
+                  <div className="text-xs text-zinc-400 mt-0.5">{ed.startYear} – {ed.endYear ?? "Present"}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Resumes */}
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
+          <h3 className="font-bold text-zinc-900 mb-3 flex items-center gap-2"><FileText className="h-4 w-4 text-rose-500" /> Resumes</h3>
+          {user.resumes.length === 0 ? (
+            <p className="text-sm text-zinc-400">No resume uploaded.</p>
+          ) : (
+            <div className="space-y-2">
+              {user.resumes.map(r => (
+                <a key={r.id} href={r.fileUrl} target="_blank" className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition text-sm">
+                  <span className="text-zinc-700 font-medium truncate">{r.fileName}{r.isPrimary && <span className="ml-2 text-[10px] font-semibold text-blue-600">PRIMARY</span>}</span>
+                  <span className="text-zinc-400 text-xs shrink-0 ml-2">{(r.fileSize / 1024).toFixed(0)} KB</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardShell>
+  );
+}

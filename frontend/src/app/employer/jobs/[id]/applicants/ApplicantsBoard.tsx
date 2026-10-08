@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Star, Loader2, FileDown, Search, SlidersHorizontal, MapPin, Briefcase, X, ExternalLink, Bookmark, ArrowRight, ArrowLeft, MoreVertical } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -389,9 +390,16 @@ export function ApplicantsBoard({ applications, jobId, jobTitle }: { application
 
             {/* View Full Profile */}
             <div className="px-5 py-4">
-              <button className="w-full flex items-center justify-center gap-2 border border-zinc-200 text-zinc-700 font-semibold text-sm py-2.5 rounded-xl hover:bg-zinc-50 transition">
-                View Full Profile <ExternalLink className="h-3.5 w-3.5" />
-              </button>
+              {isDemo ? (
+                <button disabled className="w-full flex items-center justify-center gap-2 border border-zinc-200 text-zinc-300 font-semibold text-sm py-2.5 rounded-xl cursor-not-allowed">
+                  View Full Profile <ExternalLink className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <Link href={`/employer/candidates/${selected.user.id}?job=${jobId}`} target="_blank"
+                  className="w-full flex items-center justify-center gap-2 border border-zinc-200 text-zinc-700 font-semibold text-sm py-2.5 rounded-xl hover:bg-zinc-50 transition">
+                  View Full Profile <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              )}
               {busy && <div className="text-xs text-zinc-400 flex items-center gap-1.5 justify-center mt-2"><Loader2 className="h-3 w-3 animate-spin" /> Saving…</div>}
             </div>
 

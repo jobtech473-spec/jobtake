@@ -161,7 +161,6 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
           filtered.map((j, i) => {
             const postedDate = j.publishedAt ?? j.createdAt;
             const formattedDate = new Date(postedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-            const jobCode = `JT-${j.id.slice(-6).toUpperCase()}`;
             const isChecked = selected.has(j.id);
             return (
               <div key={j.id} className={`flex items-start gap-2 px-6 py-4 hover:bg-zinc-50 transition-colors ${i !== 0 ? "border-t border-zinc-100" : ""}`}>
@@ -227,7 +226,7 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
 
                   {/* Meta line */}
                   <div className="mt-2 text-right text-[11px] text-zinc-400">
-                    posted by {employerName} &nbsp;&middot;&nbsp; {jobCode} &nbsp;&middot;&nbsp; {formattedDate}
+                    posted by {employerName} &nbsp;&middot;&nbsp; {formattedDate}
                   </div>
                 </div>
               </div>

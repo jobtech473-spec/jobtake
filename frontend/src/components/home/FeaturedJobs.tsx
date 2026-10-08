@@ -33,9 +33,13 @@ function JobCard({ job, i }: { job: FeaturedJob; i: number }) {
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${job.logoColor} grid place-items-center text-white font-bold text-sm shrink-0`}>
-              {job.company.initial}
-            </div>
+            {job.company.logoUrl ? (
+              <img src={job.company.logoUrl} alt="" className="h-10 w-10 rounded-xl object-contain border border-zinc-100 bg-white shrink-0" />
+            ) : (
+              <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${job.logoColor} grid place-items-center text-white font-bold text-sm shrink-0`}>
+                {job.company.initial}
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-1 text-sm font-semibold text-zinc-900">
                 {job.company.name} <BadgeCheck className="h-3.5 w-3.5 text-blue-500" />

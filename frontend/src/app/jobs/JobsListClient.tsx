@@ -339,9 +339,13 @@ export function JobsListClient({
                   <Link key={j.id} href={`/jobs/${j.slug}`} className="block bg-white rounded-2xl border border-zinc-200 hover:border-blue-200 hover:shadow-md transition-all duration-200 p-5 group" data-testid={`job-card-${j.id}`}>
                     <div className="flex items-start gap-4">
                       {/* Avatar */}
-                      <div className={`h-12 w-12 rounded-xl ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-white font-bold text-lg shrink-0`}>
-                        {j.company.name[0].toUpperCase()}
-                      </div>
+                      {j.company.logoUrl ? (
+                        <img src={j.company.logoUrl} alt="" className="h-12 w-12 rounded-xl object-contain border border-zinc-100 bg-white shrink-0" />
+                      ) : (
+                        <div className={`h-12 w-12 rounded-xl ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-white font-bold text-lg shrink-0`}>
+                          {j.company.name[0].toUpperCase()}
+                        </div>
+                      )}
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">

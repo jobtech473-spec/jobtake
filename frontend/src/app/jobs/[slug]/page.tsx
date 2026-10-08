@@ -126,12 +126,15 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
 
               {/* Company row */}
               <div className="mt-3 flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white text-xs font-black shrink-0">
-                  {companyInitial}
-                </div>
+                {job.company.logoUrl ? (
+                  <img src={job.company.logoUrl} alt="" className="h-8 w-8 rounded-lg object-contain border border-zinc-100 bg-white shrink-0" />
+                ) : (
+                  <div className="h-8 w-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white text-xs font-black shrink-0">
+                    {companyInitial}
+                  </div>
+                )}
                 <span className="font-semibold text-zinc-800 text-sm">{job.company.name}</span>
                 <BadgeCheck className="h-4 w-4 text-blue-500" />
-                <span className="text-xs text-zinc-400">★ 4.8 (323 reviews)</span>
               </div>
 
               {/* Stats row */}
@@ -285,9 +288,13 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
             <div className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
               <h3 className="text-base font-bold text-zinc-900 mb-4">About the company</h3>
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-12 w-12 rounded-xl bg-zinc-900 flex items-center justify-center text-white font-black text-lg shrink-0">
-                  {companyInitial}
-                </div>
+                {job.company.logoUrl ? (
+                  <img src={job.company.logoUrl} alt="" className="h-12 w-12 rounded-xl object-contain border border-zinc-100 bg-white shrink-0" />
+                ) : (
+                  <div className="h-12 w-12 rounded-xl bg-zinc-900 flex items-center justify-center text-white font-black text-lg shrink-0">
+                    {companyInitial}
+                  </div>
+                )}
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-zinc-900 text-sm">{job.company.name}</span>
@@ -325,9 +332,13 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
               <h3 className="text-base font-bold text-zinc-900 mb-4">Similar roles</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white text-xs font-black shrink-0">
-                    {companyInitial}
-                  </div>
+                  {job.company.logoUrl ? (
+                    <img src={job.company.logoUrl} alt="" className="h-8 w-8 rounded-lg object-contain border border-zinc-100 bg-white shrink-0" />
+                  ) : (
+                    <div className="h-8 w-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white text-xs font-black shrink-0">
+                      {companyInitial}
+                    </div>
+                  )}
                   <div>
                     <div className="text-sm font-semibold text-zinc-900">Similar Position</div>
                     <div className="text-xs text-zinc-700">{job.company.name} · {job.location}</div>

@@ -414,6 +414,16 @@ model Testimonial {
   createdAt DateTime @default(now())
 }
 
+model PartnerLogo {
+  id         String   @id @default(cuid())
+  name       String
+  logoUrl    String
+  websiteUrl String?
+  sortOrder  Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
 model Asset {
   id           String   @id @default(cuid())
   kind         String

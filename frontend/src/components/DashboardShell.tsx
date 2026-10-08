@@ -7,6 +7,7 @@ import {
   LayoutDashboard, Briefcase, Bookmark, User as UserIcon,
   FileText, ShieldCheck, Building2, Users as UsersIcon,
   ListChecks, Settings, ExternalLink, Plus, Database,
+  Image as ImageIcon, Quote,
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { DashboardMobileNav } from "./DashboardMobileNav";
@@ -36,6 +37,8 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
     { label: "Users",           href: "/admin/users",            icon: UsersIcon },
     { label: "Master Data",     href: "/admin/options",          icon: Database },
     { label: "Homepage Stats",  href: "/admin/stats",            icon: ListChecks },
+    { label: "Company Logos",   href: "/admin/partner-logos",    icon: ImageIcon },
+    { label: "Testimonials",    href: "/admin/testimonials",     icon: Quote },
   ],
 };
 

@@ -19,7 +19,7 @@ const LOGO_PALETTE = [
 ];
 
 export default async function Home() {
-  const [featuredRaw, totalJobs, collarJobsRaw] = await Promise.all([
+  const [featuredRaw, totalJobs, collarJobsRaw, partnerLogos] = await Promise.all([
     prisma.job.findMany({
       where: { status: "PUBLISHED", featured: true },
       orderBy: { publishedAt: "desc" },
@@ -32,6 +32,7 @@ export default async function Home() {
       orderBy: { publishedAt: "desc" },
       include: { company: { select: { name: true } } },
     }),
+    prisma.partnerLogo.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
   ]);
 
   const COLLAR_TYPES = ["WHITE", "BLUE", "PINK", "GREY", "MSME"] as const;
@@ -87,7 +88,7 @@ export default async function Home() {
     <main data-testid="home-page">
       <PublicNav />
       <Hero />
-      <LogoWall />
+      <LogoWall logos={partnerLogos} />
       <FeaturedJobs jobs={featured} />
       <CollarSections sections={collarSections} />
 

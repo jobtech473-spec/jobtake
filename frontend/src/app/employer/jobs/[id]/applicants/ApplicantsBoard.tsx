@@ -117,15 +117,19 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
           <div key={a.id} className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm" data-testid={`applicant-${a.id}`}>
             <div className="flex items-start gap-4">
               {/* Avatar */}
-              {a.user.avatarUrl ? (
-                <img src={a.user.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover shrink-0" />
-              ) : (
-                <div className={`h-12 w-12 rounded-full ${color} flex items-center justify-center text-white font-bold text-sm shrink-0`}>{initials}</div>
-              )}
+              <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank" className="shrink-0">
+                {a.user.avatarUrl ? (
+                  <img src={a.user.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
+                ) : (
+                  <div className={`h-12 w-12 rounded-full ${color} flex items-center justify-center text-white font-bold text-sm`}>{initials}</div>
+                )}
+              </Link>
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-zinc-900 text-sm">{a.user.name}</span>
+                  <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank" className="font-bold text-zinc-900 text-sm hover:text-blue-600 hover:underline">
+                    {a.user.name}
+                  </Link>
                   {stage === "APPLIED" && <span className="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full uppercase">New</span>}
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${STAGE_BADGE[stage]}`}>{STAGE_LABEL[stage]}</span>
                 </div>

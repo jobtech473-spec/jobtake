@@ -72,6 +72,7 @@ export default async function Home() {
     postedAgo: j.publishedAt ? timeAgo(j.publishedAt) : "recent",
     tags: j.jobSkills.map((js) => js.skill.name).slice(0, 3),
     isMsme: j.isMsme ?? false,
+    collarType: (j as any).collarType ?? null,
     company: {
       name: j.company.name,
       logoUrl: j.company.logoUrl,

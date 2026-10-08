@@ -109,9 +109,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                   </button>
                 </div>
               </div>
-              {job.isMsme && (
-                <span className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 border border-orange-200">
-                  MSME
+              {(job.isMsme || job.collarType === "PINK") && (
+                <span className="inline-flex gap-1.5 mt-2">
+                  {job.isMsme && (
+                    <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 border border-orange-200">
+                      MSME
+                    </span>
+                  )}
+                  {job.collarType === "PINK" && (
+                    <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-pink-100 text-pink-600 border border-pink-200">
+                      Diversity
+                    </span>
+                  )}
                 </span>
               )}
 

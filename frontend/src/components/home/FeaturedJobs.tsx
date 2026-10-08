@@ -15,6 +15,7 @@ export type FeaturedJob = {
   postedAgo: string;
   tags: string[];
   isMsme: boolean;
+  collarType: string | null;
   company: { name: string; logoUrl: string | null; initial: string; category: string; employees: string };
   logoColor: string;
 };
@@ -47,8 +48,13 @@ function JobCard({ job, i }: { job: FeaturedJob; i: number }) {
 
         <h3 className="font-display font-semibold text-zinc-950 text-base mt-4 leading-tight">{job.title}</h3>
         {job.isMsme && (
-          <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200">
+          <span className="inline-block mt-1 mr-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200">
             MSME
+          </span>
+        )}
+        {job.collarType === "PINK" && (
+          <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-pink-100 text-pink-600 border border-pink-200">
+            Diversity
           </span>
         )}
 

@@ -359,8 +359,13 @@ export function JobsListClient({
                               )}
                             </div>
                             {j.isMsme && (
-                              <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200">
+                              <span className="inline-block mt-1 mr-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200">
                                 MSME
+                              </span>
+                            )}
+                            {j.collarType === "PINK" && (
+                              <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-pink-100 text-pink-600 border border-pink-200">
+                                Diversity
                               </span>
                             )}
 

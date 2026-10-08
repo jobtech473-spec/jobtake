@@ -24,7 +24,7 @@ const PatchBody = z.object({
   hideSalary:      z.boolean().optional(),
   categoryName:    z.string().optional(),
   skills:          z.array(z.string()).optional(),
-  status:          z.enum(["DRAFT", "PENDING", "PUBLISHED", "ARCHIVED"]).optional(),
+  status:          z.enum(["DRAFT", "PENDING", "PUBLISHED", "CLOSED", "REJECTED"]).optional(),
   minEducation:    z.array(z.string()).optional(),
   educationSpecialization: z.string().optional(),
 });

@@ -200,17 +200,23 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
                     </div>
 
                     {/* Total Responses */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-zinc-700 font-medium">{j.totalResponses}</span>
-                      {j.newResponses > 0 && (
-                        <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 whitespace-nowrap">
-                          {j.newResponses} New
-                        </span>
-                      )}
-                    </div>
+                    <StopPropagation>
+                      <Link href={`/employer/jobs/${j.id}/applicants`} className="flex items-center gap-2 w-fit hover:underline">
+                        <span className="text-sm text-zinc-700 font-medium">{j.totalResponses}</span>
+                        {j.newResponses > 0 && (
+                          <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 whitespace-nowrap">
+                            {j.newResponses} New
+                          </span>
+                        )}
+                      </Link>
+                    </StopPropagation>
 
                     {/* Shortlisted */}
-                    <div className="text-sm text-zinc-700 font-medium">{j.shortlistedCount}</div>
+                    <StopPropagation>
+                      <Link href={`/employer/jobs/${j.id}/applicants`} className="text-sm text-zinc-700 font-medium hover:underline w-fit block">
+                        {j.shortlistedCount}
+                      </Link>
+                    </StopPropagation>
 
                     {/* Posted */}
                     <div className="text-sm text-zinc-700 font-medium whitespace-nowrap">{formattedDate}</div>

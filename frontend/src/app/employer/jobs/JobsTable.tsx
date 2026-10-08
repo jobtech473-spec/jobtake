@@ -173,8 +173,8 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
                   onClick={e => e.stopPropagation()}
                   className="h-4 w-4 mt-2 rounded border-zinc-300 shrink-0"
                 />
-                <Link href={`/employer/jobs/${j.id}/preview`} className="flex-1 min-w-0 cursor-pointer">
-                  <div className={`grid ${ROW_COLS} items-center gap-4`}>
+                <div className="flex-1 min-w-0">
+                  <Link href={`/employer/jobs/${j.id}/preview`} className={`grid ${ROW_COLS} items-center gap-4 cursor-pointer`}>
                     {/* Title */}
                     <div className="min-w-0">
                       <div className="font-semibold text-zinc-900 text-sm truncate">{j.title}</div>
@@ -221,13 +221,13 @@ export function JobsTable({ jobs, employerName }: { jobs: JobRow[]; employerName
                         <JobRowActions jobId={j.id} jobTitle={j.title} />
                       </div>
                     </StopPropagation>
-                  </div>
+                  </Link>
 
                   {/* Meta line */}
                   <div className="mt-2 text-right text-[11px] text-zinc-400">
                     posted by {employerName} &nbsp;&middot;&nbsp; {jobCode} &nbsp;&middot;&nbsp; {formattedDate}
                   </div>
-                </Link>
+                </div>
               </div>
             );
           })

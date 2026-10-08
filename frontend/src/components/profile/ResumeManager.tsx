@@ -56,7 +56,7 @@ export function ResumeManager({ initialResumes, compact = false }: { initialResu
           <div className="h-12 w-12 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center">
             <FileText className="h-6 w-6 text-zinc-400" />
           </div>
-          <a href={primary.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-zinc-700 hover:text-blue-600 hover:underline">{primary.fileName}</a>
+          <a href={`/api/resumes/${primary.id}`} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-zinc-700 hover:text-blue-600 hover:underline">{primary.fileName}</a>
           <div className="text-xs text-zinc-400">{fmtSize(primary.fileSize)} • Updated on {new Date(primary.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}</div>
         </div>
       ) : (
@@ -79,7 +79,7 @@ export function ResumeManager({ initialResumes, compact = false }: { initialResu
           <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Previous versions</div>
           {resumes.filter(r => !r.isPrimary).map(r => (
             <div key={r.id} className="flex items-center justify-between text-sm text-zinc-600 py-1.5">
-              <a href={r.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline truncate">{r.fileName}</a>
+              <a href={`/api/resumes/${r.id}`} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline truncate">{r.fileName}</a>
               <button onClick={() => remove(r.id)} className="text-zinc-400 hover:text-red-500 shrink-0 ml-2"><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
           ))}

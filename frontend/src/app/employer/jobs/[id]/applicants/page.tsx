@@ -44,7 +44,7 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
       ...a.user,
       skills: a.user.userSkills.map(us => us.skill.name),
     },
-    resumeUrl: a.resume?.fileUrl ?? null,
+    resumeUrl: a.resume ? `/api/resumes/${a.resume.id}` : null,
     coverLetter: a.coverLetter,
     createdAt: a.createdAt.toISOString(),
   }));

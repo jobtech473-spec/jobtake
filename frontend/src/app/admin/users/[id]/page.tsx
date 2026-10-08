@@ -156,7 +156,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 ) : (
                   <div className="space-y-2">
                     {user.resumes.map(r => (
-                      <a key={r.id} href={r.fileUrl} target="_blank" className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition text-sm">
+                      <a key={r.id} href={`/api/resumes/${r.id}`} target="_blank" className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition text-sm">
                         <span className="text-zinc-700 font-medium truncate">{r.fileName}{r.isPrimary && <span className="ml-2 text-[10px] font-semibold text-blue-600">PRIMARY</span>}</span>
                         <span className="text-zinc-400 text-xs shrink-0 ml-2">{(r.fileSize / 1024).toFixed(0)} KB</span>
                       </a>

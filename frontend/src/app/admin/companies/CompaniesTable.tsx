@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Search, Building2, ShieldCheck, Clock, Star, Briefcase,
-  X, Loader2, ExternalLink, MapPin, Users as UsersIcon, Mail, Phone,
+  X, Loader2, ExternalLink, MapPin, Users as UsersIcon, Mail, Phone, FileText,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -21,6 +21,8 @@ type Company = {
   featured: boolean;
   createdAt: string;
   jobsCount: number;
+  gstNumber: string | null;
+  gstCertificateUrl: string | null;
   owner: { name: string; email: string; phone: string | null };
 };
 
@@ -247,7 +249,17 @@ export function CompaniesTable({
                   <dt className="text-zinc-400 flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> HQ</dt>
                   <dd className="text-zinc-700 font-medium truncate">{selected.headquarters ?? "—"}</dd>
                 </div>
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-zinc-400 flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> GST Number</dt>
+                  <dd className="text-zinc-700 font-medium truncate">{selected.gstNumber ?? "—"}</dd>
+                </div>
               </dl>
+              {selected.gstCertificateUrl && (
+                <a href={selected.gstCertificateUrl} target="_blank" rel="noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline">
+                  <FileText className="h-3.5 w-3.5" /> View GST Certificate
+                </a>
+              )}
             </div>
 
             {/* Owner */}

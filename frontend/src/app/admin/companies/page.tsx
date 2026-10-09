@@ -38,6 +38,8 @@ export default async function AdminCompanies() {
           featured: c.featured,
           createdAt: c.createdAt.toISOString(),
           jobsCount: c._count.jobs,
+          gstNumber: c.gstNumber,
+          gstCertificateUrl: c.gstCertificateUrl,
           owner: c.owner,
         }))}
         stats={{ totalCompanies, activeCompanies, pendingCompanies, verifiedCompanies, featuredCompanies }}

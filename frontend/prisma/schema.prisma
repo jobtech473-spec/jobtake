@@ -177,6 +177,7 @@ model Company {
   headquarters       String?
   branchOffices      String[]         @default([])
   gstNumber          String?
+  gstCertificateUrl  String?
   registrationAs     String?
   contactDesignation String?
   missionVision      String?

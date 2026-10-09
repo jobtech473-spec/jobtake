@@ -9,6 +9,17 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
+const MAX_GST_CERT_BYTES = 2 * 1024 * 1024;
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 const INDUSTRY_OPTIONS = [
   "IT & Software", "Manufacturing", "Healthcare", "Finance & Banking",
   "Retail & FMCG", "Construction", "Logistics", "Education",
@@ -29,6 +40,9 @@ function EmployerSignupForm() {
   const [company, setCompany] = useState("");
   const [industry, setIndustry] = useState("");
   const [gst, setGst] = useState("");
+  const [gstCert, setGstCert] = useState("");
+  const [gstCertName, setGstCertName] = useState("");
+  const [gstCertError, setGstCertError] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [regAs, setRegAs] = useState<"company" | "consultant">("company");
   const [designation, setDesignation] = useState("");
@@ -37,16 +51,33 @@ function EmployerSignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  async function handleGstCertUpload(file: File | undefined) {
+    setGstCertError(null);
+    if (!file) return;
+    const isPdf = file.type === "application/pdf";
+    const isImage = file.type.startsWith("image/");
+    if (!isPdf && !isImage) { setGstCertError("Upload a PDF, JPG or PNG file."); return; }
+    if (file.size > MAX_GST_CERT_BYTES) { setGstCertError(`File is too large (max ${Math.round(MAX_GST_CERT_BYTES / (1024 * 1024))}MB).`); return; }
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setGstCert(dataUrl);
+      setGstCertName(file.name);
+    } catch {
+      setGstCertError("Couldn't read that file. Try again.");
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed) { setError("Please agree to Terms & Conditions."); return; }
+    if (!gstCert) { setError("Please upload your GST certificate."); return; }
     setLoading(true); setError(null);
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, email, password, role: "EMPLOYER", phone,
-          companyName: company, industry, gstNumber: gst,
+          companyName: company, industry, gstNumber: gst, gstCertificateUrl: gstCert,
           registrationAs: regAs.toUpperCase(), designation, country: "India",
         }),
       });
@@ -155,6 +186,27 @@ function EmployerSignupForm() {
                     className="w-full pl-9 pr-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition" />
                 </div>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Upload GST Certificate <span className="text-red-500">*</span></label>
+              {gstCert ? (
+                <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
+                  <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
+                    <FileText className="h-4 w-4 text-emerald-600 shrink-0" /> {gstCertName}
+                  </span>
+                  <button type="button" onClick={() => { setGstCert(""); setGstCertName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
+                </div>
+              ) : (
+                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-lg py-5 cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition">
+                  <Upload className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm text-zinc-600 font-medium">Click to upload GST certificate</span>
+                  <span className="text-xs text-zinc-400">PDF, JPG or PNG (Max 2MB)</span>
+                  <input required type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
+                    onChange={e => { handleGstCertUpload(e.target.files?.[0]); e.target.value = ""; }} />
+                </label>
+              )}
+              {gstCertError && <p className="text-xs text-red-600 mt-1.5">{gstCertError}</p>}
             </div>
           </div>
 

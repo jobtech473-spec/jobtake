@@ -18,6 +18,7 @@ const Body = z.object({
   companyName: z.string().optional(),
   industry: z.string().optional(),
   gstNumber: z.string().optional(),
+  gstCertificateUrl: z.string().optional(),
   registrationAs: z.string().optional(),
   designation: z.string().optional(),
   country: z.string().optional(),
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
   const gstNumber = (data.data.gstNumber ?? "").replace(/\s+/g, "").toUpperCase();
   if (data.data.role === "EMPLOYER") {
     if (!GSTIN.test(gstNumber)) return NextResponse.json({ error: "Please enter a valid 15-character GST number." }, { status: 400 });
+    if (!data.data.gstCertificateUrl) return NextResponse.json({ error: "Please upload your GST certificate." }, { status: 400 });
     const gstTaken = await prisma.company.findFirst({ where: { gstNumber: { equals: gstNumber, mode: "insensitive" } }, select: { id: true } });
     if (gstTaken) return NextResponse.json({ error: "An employer account with this GST number already exists. Please sign in instead." }, { status: 409 });
   }
@@ -75,6 +77,7 @@ export async function POST(req: NextRequest) {
         slug: slugify(data.data.companyName),
         industry: data.data.industry || null,
         gstNumber: gstNumber || null,
+        gstCertificateUrl: data.data.gstCertificateUrl || null,
         registrationAs: data.data.registrationAs || "COMPANY",
         contactDesignation: data.data.designation || null,
         headquarters: data.data.country || "India",

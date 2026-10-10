@@ -17,6 +17,12 @@ export default async function EditProfilePage() {
     orderBy: { skill: { name: "asc" } },
   });
 
+  const primaryResume = await prisma.resume.findFirst({
+    where: { userId: me.id },
+    orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+    select: { fileName: true },
+  });
+
   return (
     <DashboardShell role="SEEKER" current="/dashboard/profile">
       <EditProfileClient
@@ -32,6 +38,7 @@ export default async function EditProfilePage() {
         initialCurrentSalary={user.currentSalary}
         initialExpectedSalary={user.expectedSalary}
         initialPreferredLocations={user.preferredLocations}
+        initialResumeName={primaryResume?.fileName ?? null}
       />
     </DashboardShell>
   );

@@ -32,18 +32,20 @@ type Props = {
   initialCurrentSalary: number | null;
   initialExpectedSalary: number | null;
   initialPreferredLocations: string[];
+  initialResumeName: string | null;
 };
 
 export function EditProfileClient({
   initialName, initialHeadline, initialBio, initialPhone, initialLocation, initialSkills, initialAvatarUrl,
   initialYearsExperience, initialNoticePeriod, initialCurrentSalary, initialExpectedSalary, initialPreferredLocations,
+  initialResumeName,
 }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
-  const [resumeName, setResumeName] = useState<string | null>(null);
+  const [resumeName, setResumeName] = useState<string | null>(initialResumeName);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
 
@@ -327,7 +329,7 @@ export function EditProfileClient({
                 </div>
                 <div className="text-xs text-zinc-400 mt-0.5">PDF, DOC or DOCX · Max 5MB</div>
               </div>
-              <span className="bg-white border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 transition">Choose File</span>
+              <span className="bg-white border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 transition">{resumeName ? "Replace File" : "Choose File"}</span>
               <input type="file" accept=".pdf,.doc,.docx" className="hidden"
                 onChange={e => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); e.target.value = ""; }} />
             </label>

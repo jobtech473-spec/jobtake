@@ -2,27 +2,31 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Loader2, Upload, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, Upload, Sparkles, FileText } from "lucide-react";
 
-export function ApplyPanel({ jobId, jobTitle, userRole, hasApplied }: {
+export function ApplyPanel({ jobId, jobTitle, userRole, hasApplied, existingResume }: {
   jobId: string; jobTitle: string; userRole: "ADMIN" | "EMPLOYER" | "SEEKER" | null; hasApplied: boolean;
+  existingResume: { id: string; fileName: string } | null;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const [resume, setResume] = useState<File | null>(null);
+  const [replacingResume, setReplacingResume] = useState(!existingResume);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!resume && !existingResume) { setError("Please upload your resume."); return; }
     setLoading(true); setError(null);
     try {
       const form = new FormData();
       form.set("jobId", jobId);
       if (coverLetter) form.set("coverLetter", coverLetter);
       if (resume) form.set("resume", resume);
+      else if (existingResume) form.set("resumeId", existingResume.id);
       const res = await fetch("/api/applications", { method: "POST", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error || "Failed to apply"); return; }
@@ -80,11 +84,21 @@ export function ApplyPanel({ jobId, jobTitle, userRole, hasApplied }: {
         <form onSubmit={submit} className="mt-4 space-y-3">
           <div>
             <label className="label">Resume (PDF/DOCX)</label>
-            <label className="input cursor-pointer flex items-center gap-2 text-sm text-zinc-700">
-              <Upload className="h-4 w-4" />
-              {resume ? resume.name : "Upload your resume"}
-              <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => setResume(e.target.files?.[0] || null)} data-testid="apply-resume" />
-            </label>
+            {existingResume && !replacingResume ? (
+              <div className="input flex items-center justify-between gap-2 text-sm text-zinc-700">
+                <span className="flex items-center gap-2 min-w-0">
+                  <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="truncate">{resume ? resume.name : existingResume.fileName}</span>
+                </span>
+                <button type="button" onClick={() => setReplacingResume(true)} className="text-blue-600 font-medium text-xs shrink-0 hover:underline">Change</button>
+              </div>
+            ) : (
+              <label className="input cursor-pointer flex items-center gap-2 text-sm text-zinc-700">
+                <Upload className="h-4 w-4" />
+                {resume ? resume.name : "Upload your resume"}
+                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => setResume(e.target.files?.[0] || null)} data-testid="apply-resume" />
+              </label>
+            )}
           </div>
           <div>
             <label className="label">Cover letter <span className="lowercase text-zinc-400">(optional)</span></label>

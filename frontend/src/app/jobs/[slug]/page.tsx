@@ -44,13 +44,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
 
   let hasApplied = false;
   let isSaved = false;
+  let existingResume: { id: string; fileName: string } | null = null;
   if (me) {
-    const [dup, savedRow] = await Promise.all([
+    const [dup, savedRow, resume] = await Promise.all([
       prisma.application.findUnique({ where: { jobId_userId: { jobId: job.id, userId: me.id } } }),
       prisma.savedJob.findUnique({ where: { userId_jobId: { userId: me.id, jobId: job.id } } }),
+      me.role === "SEEKER"
+        ? prisma.resume.findFirst({ where: { userId: me.id }, orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }], select: { id: true, fileName: true } })
+        : Promise.resolve(null),
     ]);
     hasApplied = !!dup;
     isSaved = !!savedRow;
+    existingResume = resume;
   }
 
   const companyInitial = job.company.name[0].toUpperCase();
@@ -278,7 +283,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                   ? <>Apply for <span className="font-semibold text-zinc-900">{job.title}</span> in one click.</>
                   : <>Sign in or create an account to apply for <span className="font-semibold text-zinc-900">{job.title}</span></>}
               </p>
-              <ApplyPanel jobId={job.id} jobTitle={job.title} userRole={me?.role || null} hasApplied={hasApplied} />
+              <ApplyPanel jobId={job.id} jobTitle={job.title} userRole={me?.role || null} hasApplied={hasApplied} existingResume={existingResume} />
               <div className="mt-3 flex items-center gap-1.5 text-xs text-zinc-400 justify-center">
                 <ShieldCheck className="h-3.5 w-3.5" /> Your data is safe and secure with us.
               </div>

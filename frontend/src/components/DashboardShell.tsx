@@ -54,12 +54,16 @@ export async function DashboardShell({ children, role, current }: { children: Re
   const items = NAV[role];
   const initials = user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Get company slug for employer
+  // Get company slug + logo for employer
   let companySlug: string | null = null;
+  let companyLogoUrl: string | null = null;
   if (role === "EMPLOYER") {
-    const company = await prisma.company.findFirst({ where: { ownerId: user.id }, orderBy: { createdAt: "asc" }, select: { slug: true } });
+    const company = await prisma.company.findFirst({ where: { ownerId: user.id }, orderBy: { createdAt: "asc" }, select: { slug: true, logoUrl: true } });
     companySlug = company?.slug ?? null;
+    companyLogoUrl = company?.logoUrl ?? null;
   }
+
+  const sidebarImageUrl = user.avatarUrl ?? companyLogoUrl;
 
   const navBody = (
     <>
@@ -103,8 +107,8 @@ export async function DashboardShell({ children, role, current }: { children: Re
       {/* User info at bottom */}
       <div className="border-t border-zinc-100 px-4 py-4 space-y-3">
         <div className="flex items-center gap-3">
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover shrink-0" />
+          {sidebarImageUrl ? (
+            <img src={sidebarImageUrl} alt="" className="h-10 w-10 rounded-full object-cover shrink-0" />
           ) : (
             <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
               {initials}

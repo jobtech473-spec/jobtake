@@ -102,9 +102,13 @@ export async function DashboardShell({ children, role, current }: { children: Re
       {/* User info at bottom */}
       <div className="border-t border-zinc-100 px-4 py-4 space-y-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-            {initials}
-          </div>
+          {user.avatarUrl ? (
+            <img src={user.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {initials}
+            </div>
+          )}
           <div className="min-w-0">
             <div className="font-semibold text-zinc-900 text-sm truncate">{user.name}</div>
             <div className="text-xs text-zinc-400 truncate">{user.email}</div>

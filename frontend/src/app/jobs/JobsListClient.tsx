@@ -28,6 +28,48 @@ const AVATAR_COLORS = [
   "bg-indigo-500", "bg-rose-500", "bg-teal-500", "bg-amber-500",
 ];
 
+function CategoryDropdown({
+  value, onChange, categories,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  categories: Cat[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const selected = categories.find(c => c.slug === value);
+  const filtered = search.trim()
+    ? categories.filter(c => c.name.toLowerCase().includes(search.trim().toLowerCase()))
+    : categories;
+
+  return (
+    <div className="relative" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}>
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition bg-white text-left">
+        <span className={`truncate ${selected ? "text-zinc-900" : "text-zinc-400"}`}>{selected ? selected.name : "All Categories"}</span>
+        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search category..."
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div className="max-h-[220px] overflow-y-auto py-1">
+            <button type="button" onClick={() => { onChange(""); setOpen(false); setSearch(""); }}
+              className="block w-full px-3 py-2 text-left text-sm text-zinc-600 hover:bg-blue-50 transition">All Categories</button>
+            {filtered.map(c => (
+              <button key={c.id} type="button" onClick={() => { onChange(c.slug); setOpen(false); setSearch(""); }}
+                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">{c.name}</button>
+            ))}
+            {!filtered.length && <div className="px-3 py-3 text-sm text-zinc-400">No matching category.</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function formatSalaryINR(min: number | null, max: number | null) {
   if (!min && !max) return null;
   const fmt = (n: number) => {
@@ -236,14 +278,11 @@ export function JobsListClient({
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Category</label>
-                <select
+                <CategoryDropdown
                   value={filters.category}
-                  onChange={e => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}
-                </select>
+                  onChange={v => setFilters({ ...filters, category: v })}
+                  categories={categories}
+                />
               </div>
 
               <div>

@@ -121,9 +121,13 @@ export default async function CompaniesPage() {
               className="flex items-start gap-4 p-5 rounded-2xl border border-zinc-100 bg-white hover:shadow-md hover:-translate-y-0.5 transition-all group"
             >
               {/* Logo */}
-              <div className={`h-14 w-14 shrink-0 rounded-2xl ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-white text-xl font-black`}>
-                {c.name[0]}
-              </div>
+              {c.logoUrl ? (
+                <img src={c.logoUrl} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-contain border border-zinc-100 bg-white" />
+              ) : (
+                <div className={`h-14 w-14 shrink-0 rounded-2xl ${AVATAR_COLORS[i % AVATAR_COLORS.length]} flex items-center justify-center text-white text-xl font-black`}>
+                  {c.name[0]}
+                </div>
+              )}
 
               {/* Info */}
               <div className="flex-1 min-w-0">

@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ApplicationsClient } from "./ApplicationsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function ApplicationsPage() {
   const me = await getCurrentUser();
   if (!me || me.role !== "SEEKER") redirect("/login");

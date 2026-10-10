@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Briefcase, Send, Eye, Bookmark } from "lucide-react";
 import { JobsTable } from "./JobsTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function EmployerJobsPage() {
   const me = await getCurrentUser();
   if (!me || me.role !== "EMPLOYER") redirect("/employers/login");

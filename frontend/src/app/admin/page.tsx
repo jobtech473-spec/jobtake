@@ -17,6 +17,8 @@ const STATUS_STYLE: Record<string, string> = {
 
 const AVATAR_COLORS = ["bg-blue-600", "bg-violet-600", "bg-emerald-600", "bg-orange-500", "bg-zinc-500"];
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminHome() {
   const me = await getCurrentUser();
   if (!me) redirect("/login");

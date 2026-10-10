@@ -11,6 +11,8 @@ import {
 import { JobRowActions } from "./jobs/JobRowActions";
 import { StopPropagation } from "@/components/StopPropagation";
 
+export const dynamic = "force-dynamic";
+
 export default async function EmployerHome() {
   const me = await getCurrentUser();
   if (!me) redirect("/employers/login");

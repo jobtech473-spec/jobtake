@@ -22,6 +22,8 @@ const ROLE_STYLE: Record<string, string> = {
   SEEKER:   "bg-teal-50 text-teal-700",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const me = await getCurrentUser();
   if (!me || me.role !== "ADMIN") redirect("/login");

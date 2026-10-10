@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { CandidateActionBar } from "./CandidateActionBar";
 
+export const dynamic = "force-dynamic";
+
 export default async function CandidateProfilePage({
   params, searchParams,
 }: {

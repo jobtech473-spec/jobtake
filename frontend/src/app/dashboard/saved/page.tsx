@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { SavedJobsClient } from "./SavedJobsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function SavedJobsPage() {
   const me = await getCurrentUser();
   if (!me || me.role !== "SEEKER") redirect("/login");

@@ -41,6 +41,8 @@ function getHour() {
   return "Good evening";
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function SeekerDashboard() {
   const me = await getCurrentUser();
   if (!me) redirect("/login");

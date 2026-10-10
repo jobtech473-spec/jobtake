@@ -44,6 +44,8 @@ const STAT_META = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminJobs() {
   const me = await getCurrentUser();
   if (!me || me.role !== "ADMIN") redirect("/login");

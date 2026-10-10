@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { CompaniesTable } from "./CompaniesTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminCompanies() {
   const me = await getCurrentUser();
   if (!me || me.role !== "ADMIN") redirect("/login");

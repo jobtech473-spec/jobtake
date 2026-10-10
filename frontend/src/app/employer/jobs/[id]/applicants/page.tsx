@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ApplicantsBoard } from "./ApplicantsBoard";
 import { ArrowLeft, ExternalLink, MapPin, Briefcase, Calendar } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function ApplicantsPage({ params }: { params: Promise<{ id: string }> }) {
   const me = await getCurrentUser();
   if (!me) redirect("/employers/login");

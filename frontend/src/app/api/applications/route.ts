@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
   let resumeId = payload.resumeId;
   if (resumeFile) {
     const saved = await saveUpload(resumeFile, "resume");
+    await prisma.resume.updateMany({ where: { userId: user.id }, data: { isPrimary: false } });
     const created = await prisma.resume.create({
       data: {
         userId: user.id,

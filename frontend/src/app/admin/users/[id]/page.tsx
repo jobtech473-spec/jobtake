@@ -45,6 +45,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   if (!user) notFound();
 
   const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  // Collapse repeat uploads of the same file (newest first, since user.resumes is ordered by createdAt desc)
+  const uniqueResumes = Array.from(new Map(user.resumes.map(r => [r.fileName, r])).values());
 
   return (
     <DashboardShell role="ADMIN" current="/admin/users">
@@ -153,11 +155,11 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               {/* Resumes */}
               <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6">
                 <h3 className="font-bold text-zinc-900 mb-3 flex items-center gap-2"><FileText className="h-4 w-4 text-rose-500" /> Resumes</h3>
-                {user.resumes.length === 0 ? (
+                {uniqueResumes.length === 0 ? (
                   <p className="text-sm text-zinc-400">No resume uploaded.</p>
                 ) : (
                   <div className="space-y-2">
-                    {user.resumes.map(r => (
+                    {uniqueResumes.map(r => (
                       <a key={r.id} href={`/api/resumes/${r.id}`} target="_blank" className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition text-sm">
                         <span className="text-zinc-700 font-medium truncate">{r.fileName}{r.isPrimary && <span className="ml-2 text-[10px] font-semibold text-blue-600">PRIMARY</span>}</span>
                         <span className="text-zinc-400 text-xs shrink-0 ml-2">{(r.fileSize / 1024).toFixed(0)} KB</span>

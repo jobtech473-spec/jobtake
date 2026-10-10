@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, FileDown, Search, SlidersHorizontal, MapPin, Bookmark, ArrowRight, ArrowLeft, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
@@ -47,12 +47,30 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [localStages, setLocalStages] = useState<Record<string, Stage>>({});
   const [search, setSearch] = useState("");
+  const [stageFilter, setStageFilter] = useState<Stage | "ALL">("ALL");
+
+  const stageOf = (a: App) => localStages[a.id] ?? a.stage;
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { ALL: list.length };
+    for (const s of STAGES) c[s] = list.filter(a => stageOf(a) === s).length;
+    return c;
+  }, [list, localStages]);
+
+  const TABS: { label: string; value: Stage | "ALL" }[] = [
+    { label: "Applicants", value: "ALL" },
+    { label: "Shortlisted", value: "SCREENING" },
+    { label: "Interview", value: "INTERVIEW" },
+    { label: "Hired", value: "HIRED" },
+    { label: "Rejected", value: "REJECTED" },
+  ];
 
   const filtered = list.filter(a =>
-    !search ||
-    a.user.name.toLowerCase().includes(search.toLowerCase()) ||
-    (a.user.headline ?? "").toLowerCase().includes(search.toLowerCase()) ||
-    a.user.email.toLowerCase().includes(search.toLowerCase())
+    (stageFilter === "ALL" || stageOf(a) === stageFilter) &&
+    (!search ||
+      a.user.name.toLowerCase().includes(search.toLowerCase()) ||
+      (a.user.headline ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      a.user.email.toLowerCase().includes(search.toLowerCase()))
   );
 
   async function updateStage(id: string, stage: Stage) {
@@ -82,6 +100,18 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   return (
     <div className="space-y-3">
 
+      {/* Stage tabs */}
+      <div className="flex gap-0 border-b border-zinc-100 overflow-x-auto">
+        {TABS.map(t => (
+          <button key={t.value} onClick={() => setStageFilter(t.value)}
+            className={`text-sm font-semibold pb-3 pr-6 border-b-2 whitespace-nowrap transition ${
+              stageFilter === t.value ? "text-blue-600 border-blue-600" : "text-zinc-400 border-transparent hover:text-zinc-600"
+            }`}>
+            {t.label} {counts[t.value] > 0 && `(${counts[t.value]})`}
+          </button>
+        ))}
+      </div>
+
       {/* Search + Filters */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
@@ -102,6 +132,12 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
       </div>
 
       {/* Applicant cards */}
+      {filtered.length === 0 && (
+        <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm py-16 text-center text-zinc-500 text-sm">
+          <Users className="h-8 w-8 mx-auto text-zinc-300 mb-3" />
+          No applicants in this stage.
+        </div>
+      )}
       {filtered.map((a, i) => {
         const initials = a.user.name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
@@ -224,14 +260,18 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
                   className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 px-3 py-1.5 transition">
                   View Full Profile <ExternalLink className="h-3 w-3" />
                 </Link>
-                <button onClick={() => updateStage(a.id, "SCREENING")} disabled={busy}
-                  className="flex items-center gap-1.5 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition">
-                  <Bookmark className="h-3 w-3" /> Shortlist
-                </button>
-                <button onClick={() => updateStage(a.id, "REJECTED")} disabled={busy}
-                  className="flex items-center gap-1.5 border border-red-200 text-red-600 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
-                  ✕ Reject
-                </button>
+                {stage === "APPLIED" && (
+                  <button onClick={() => updateStage(a.id, "SCREENING")} disabled={busy}
+                    className="flex items-center gap-1.5 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition">
+                    <Bookmark className="h-3 w-3" /> Shortlist
+                  </button>
+                )}
+                {stage !== "REJECTED" && stage !== "HIRED" && stage !== "WITHDRAWN" && (
+                  <button onClick={() => updateStage(a.id, "REJECTED")} disabled={busy}
+                    className="flex items-center gap-1.5 border border-red-200 text-red-600 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
+                    ✕ Reject
+                  </button>
+                )}
               </div>
             </div>
           </div>

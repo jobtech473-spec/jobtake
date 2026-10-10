@@ -51,12 +51,6 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
     createdAt: a.createdAt.toISOString(),
   }));
 
-  const total      = apps.length;
-  const shortlisted = apps.filter(a => a.stage === "SCREENING").length;
-  const interview  = apps.filter(a => a.stage === "INTERVIEW").length;
-  const hired      = apps.filter(a => a.stage === "HIRED").length;
-  const rejected   = apps.filter(a => a.stage === "REJECTED").length;
-
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs">
 
@@ -84,22 +78,6 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
               View Job Details <ExternalLink className="h-3.5 w-3.5" />
             </Link>
           </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-0 mt-5 border-b border-zinc-100 -mb-6 overflow-x-auto">
-          {[
-            { label: "Applicants", count: total },
-            { label: "Shortlisted", count: shortlisted },
-            { label: "Interview", count: interview },
-            { label: "Hired", count: hired },
-            { label: "Rejected", count: rejected },
-          ].map((t, i) => (
-            <div key={t.label}
-              className={`text-sm font-semibold pb-4 pr-6 border-b-2 whitespace-nowrap ${i === 0 ? "text-blue-600 border-blue-600" : "text-zinc-400 border-transparent"}`}>
-              {t.label} {t.count > 0 && `(${t.count})`}
-            </div>
-          ))}
         </div>
       </div>
 

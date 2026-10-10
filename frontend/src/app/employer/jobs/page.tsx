@@ -111,7 +111,7 @@ export default async function EmployerJobsPage() {
           <Link href="/employer/post-job" className="text-blue-600 font-semibold hover:underline">Post your first job →</Link>
         </div>
       ) : (
-        <JobsTable jobs={jobRows} employerName={me.name ?? "You"} />
+        <JobsTable jobs={jobRows} employerName={me.email} />
       )}
     </DashboardShell>
   );

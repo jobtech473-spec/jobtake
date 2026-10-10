@@ -59,15 +59,26 @@ export async function POST(req: NextRequest) {
 
   // pick company: provided, or first owned, or auto-create
   let companyId = data.data.companyId;
+  let companyVerified = false;
   if (!companyId) {
     const owned = await prisma.company.findFirst({ where: { ownerId: user.id }, orderBy: { createdAt: "asc" } });
-    if (owned) companyId = owned.id;
-    else {
+    if (owned) {
+      companyId = owned.id;
+      companyVerified = owned.verified;
+    } else {
       const c = await prisma.company.create({
         data: { ownerId: user.id, name: `${user.name}'s Company`, slug: slugify(`${user.name}-${Date.now()}`), status: "ACTIVE" },
       });
       companyId = c.id;
+      companyVerified = c.verified;
     }
+  } else {
+    const chosen = await prisma.company.findUnique({ where: { id: companyId }, select: { verified: true } });
+    companyVerified = chosen?.verified ?? false;
+  }
+
+  if (user.role === "EMPLOYER" && !companyVerified) {
+    return NextResponse.json({ error: "Your company's GST certificate hasn't been verified by admin yet. You can't post jobs until it's approved." }, { status: 403 });
   }
 
   // Resolve categoryId — use provided or find/create by name

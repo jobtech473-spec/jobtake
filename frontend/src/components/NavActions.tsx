@@ -118,8 +118,11 @@ export function NavActions({ user }: Props) {
       )}
 
       {menu === "user" && (
-        <div className="absolute right-3 top-[64px] glass-strong rounded-2xl p-2 w-60 shadow-xl" data-testid="user-dropdown">
-          <div className="px-3 py-2 text-xs text-zinc-500">Signed in as <span className="font-medium text-zinc-900">{user.name}</span></div>
+        <div className="absolute right-3 top-[64px] glass-strong rounded-2xl p-2 w-48 shadow-xl" data-testid="user-dropdown">
+          <div className="px-3 py-2 text-xs text-zinc-500">
+            <span>Signed in as</span>
+            <span className="block truncate font-medium text-zinc-900">{user.name}</span>
+          </div>
           <div className="h-px bg-zinc-200/60 my-1" />
           <Link href={dashHref} className={MOBILE_LINK_CLS} data-testid="dropdown-dashboard" onClick={() => setMenu("none")}>
             <LayoutDashboard className="h-4 w-4" /> Dashboard

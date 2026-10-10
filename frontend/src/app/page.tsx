@@ -38,7 +38,7 @@ export default async function Home() {
   const COLLAR_TYPES = ["WHITE", "BLUE", "PINK", "GREY", "MSME"] as const;
   const collarSections: CollarSection[] = COLLAR_TYPES.map(type => {
     const typeJobs = type === "MSME"
-      ? (collarJobsRaw as any[]).filter((j: any) => j.isMsme === true)
+      ? (collarJobsRaw as any[]).filter((j: any) => j.isMsme === true || j.collarType === "MSME")
       : (collarJobsRaw as any[]).filter((j: any) => j.collarType === type);
     return {
       type,

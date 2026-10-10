@@ -7,6 +7,17 @@ import Link from "next/link";
 const inputCls = "w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white";
 
 const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
+const BIO_WORD_LIMIT = 500;
+
+function countWords(value: string) {
+  return value.trim() ? value.trim().split(/\s+/).length : 0;
+}
+
+function limitWords(value: string) {
+  const words = value.trim().split(/\s+/);
+  if (!value.trim() || words.length <= BIO_WORD_LIMIT) return value;
+  return words.slice(0, BIO_WORD_LIMIT).join(" ");
+}
 
 type Props = {
   initialName: string;
@@ -50,6 +61,7 @@ export function EditProfileClient({
   const [expectedSalary, setExpectedSalary]   = useState(initialExpectedSalary?.toString() ?? "");
   const [preferredLocations, setPreferredLocations] = useState<string[]>(initialPreferredLocations);
   const [locationInput, setLocationInput] = useState("");
+  const bioWordCount = countWords(bio);
 
   function addSkill(val: string) {
     const t = val.trim();
@@ -87,6 +99,7 @@ export function EditProfileClient({
 
   async function handleSave() {
     if (!avatarUrl) { setError("Profile photo is required."); return; }
+    if (bioWordCount > BIO_WORD_LIMIT) { setError(`About Me cannot be more than ${BIO_WORD_LIMIT} words.`); return; }
     setSaving(true); setError(null);
     const res = await fetch("/api/me", {
       method: "PATCH",
@@ -175,8 +188,9 @@ export function EditProfileClient({
             </div>
             <div>
               <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">About Me</label>
-              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4}
+              <textarea value={bio} onChange={e => setBio(limitWords(e.target.value))} rows={4}
                 className={inputCls + " resize-none"} placeholder="Write a short bio about yourself..." />
+              <div className="mt-1 text-right text-[11px] text-zinc-400">{bioWordCount}/{BIO_WORD_LIMIT} words</div>
             </div>
           </div>
         </div>

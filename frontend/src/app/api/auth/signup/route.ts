@@ -31,6 +31,13 @@ function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now();
 }
 
+function parseDateOfBirth(value?: string) {
+  if (!value) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return new Date(`${value}T00:00:00.000Z`);
+  if (/^\d{4}$/.test(value)) return new Date(`${value}-01-01T00:00:00.000Z`);
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   const data = Body.safeParse(await req.json().catch(() => ({})));
   if (!data.success) return NextResponse.json({ error: "Invalid input", details: data.error.flatten() }, { status: 400 });
@@ -62,7 +69,7 @@ export async function POST(req: NextRequest) {
       role: data.data.role,
       passwordHash,
       gender: data.data.gender || null,
-      dateOfBirth: data.data.dateOfBirth ? new Date(`${data.data.dateOfBirth}-01-01`) : null,
+      dateOfBirth: parseDateOfBirth(data.data.dateOfBirth),
       yearsExperience: yearsExp,
     },
     select: { id: true, email: true, name: true, role: true },

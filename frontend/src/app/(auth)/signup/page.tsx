@@ -318,6 +318,9 @@ function EmployerSignupForm() {
 
 function CandidateSignupForm() {
   const router = useRouter();
+  const today = new Date();
+  const maxDob = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+  const minDob = "1950-01-01";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -513,12 +516,15 @@ function CandidateSignupForm() {
                     <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Date of Birth <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                      <select value={dob} onChange={e => setDob(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                        <option value="">Select date</option>
-                        {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
+                      <input
+                        required
+                        type="date"
+                        value={dob}
+                        min={minDob}
+                        max={maxDob}
+                        onChange={e => setDob(e.target.value)}
+                        className={inputClass + " bg-white text-zinc-600 [color-scheme:light]"}
+                      />
                     </div>
                   </div>
                 </div>

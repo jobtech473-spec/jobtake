@@ -21,6 +21,7 @@ type Job = {
 };
 
 type Cat = { id: string; name: string; slug: string };
+type Industry = { id: string; label: string; value: string };
 
 const AVATAR_COLORS = [
   "bg-blue-500", "bg-violet-500", "bg-orange-500", "bg-emerald-500",
@@ -48,10 +49,10 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 }
 
 export function JobsListClient({
-  initialFilters, jobs, total, page, perPage, categories, initialSort, isLoggedIn, initialSavedIds,
+  initialFilters, jobs, total, page, perPage, categories, industries, initialSort, isLoggedIn, initialSavedIds,
 }: {
-  initialFilters: { q: string; location: string; category: string; workMode: string; seniority: string; collarType: string };
-  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; initialSort: string;
+  initialFilters: { q: string; location: string; category: string; workMode: string; seniority: string; collarType: string; industry: string; salaryMin: string; salaryMax: string };
+  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; initialSort: string;
   isLoggedIn: boolean; initialSavedIds: string[];
 }) {
   const router = useRouter();
@@ -210,7 +211,7 @@ export function JobsListClient({
               <span className="font-bold text-zinc-900 text-base">Filters</span>
               <button
                 onClick={() => {
-                  setFilters({ q: "", location: "", category: "", workMode: "", seniority: "", collarType: "" });
+                  setFilters({ q: "", location: "", category: "", workMode: "", seniority: "", collarType: "", industry: "", salaryMin: "", salaryMax: "" });
                   startT(() => router.push("/jobs"));
                 }}
                 className="text-xs text-blue-600 hover:underline"
@@ -242,6 +243,18 @@ export function JobsListClient({
                 >
                   <option value="">All Categories</option>
                   {categories.map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Industry Type</label>
+                <select
+                  value={filters.industry}
+                  onChange={e => setFilters({ ...filters, industry: e.target.value })}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+                >
+                  <option value="">All Industries</option>
+                  {industries.map(i => <option key={i.id} value={i.value}>{i.label}</option>)}
                 </select>
               </div>
 
@@ -292,6 +305,32 @@ export function JobsListClient({
                   <option value="GREY">Grey Collar</option>
                   <option value="MSME">MSME</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Salary Range</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={filters.salaryMin}
+                    onChange={e => setFilters({ ...filters, salaryMin: e.target.value })}
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    inputMode="decimal"
+                    placeholder="Min LPA"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                  <input
+                    value={filters.salaryMax}
+                    onChange={e => setFilters({ ...filters, salaryMax: e.target.value })}
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    inputMode="decimal"
+                    placeholder="Max LPA"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                </div>
               </div>
 
               <button

@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { syncUserSkills } from "@/lib/skills";
 
+const BIO_WORD_LIMIT = 500;
+
+function countWords(value: string) {
+  return value.trim() ? value.trim().split(/\s+/).length : 0;
+}
+
 export async function GET() {
   const me = await getCurrentUser();
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,7 +21,7 @@ export async function GET() {
 const PatchBody = z.object({
   name:     z.string().min(1).optional(),
   headline: z.string().optional(),
-  bio:      z.string().max(500).optional(),
+  bio:      z.string().optional(),
   phone:    z.string().optional(),
   location: z.string().optional(),
   skills:   z.array(z.string()).optional(),
@@ -24,6 +30,14 @@ const PatchBody = z.object({
   currentSalary:   z.number().int().min(0).nullable().optional(),
   expectedSalary:  z.number().int().min(0).nullable().optional(),
   preferredLocations: z.array(z.string()).optional(),
+}).superRefine((data, ctx) => {
+  if (data.bio && countWords(data.bio) > BIO_WORD_LIMIT) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["bio"],
+      message: `About Me cannot be more than ${BIO_WORD_LIMIT} words.`,
+    });
+  }
 });
 
 export async function PATCH(req: NextRequest) {
@@ -31,7 +45,7 @@ export async function PATCH(req: NextRequest) {
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = PatchBody.safeParse(await req.json().catch(() => ({})));
-  if (!body.success) return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+  if (!body.success) return NextResponse.json({ error: body.error.issues[0]?.message || "Invalid data" }, { status: 400 });
 
   const { skills, ...rest } = body.data;
 

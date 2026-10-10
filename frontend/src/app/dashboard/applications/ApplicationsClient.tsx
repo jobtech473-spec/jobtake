@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Briefcase, Bookmark, Eye, Send, Search, SlidersHorizontal,
   Building2, MapPin, Calendar, Clock, ChevronRight, ArrowRight, ArrowLeft,
+  CheckCircle2, XCircle, MinusCircle,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -48,6 +49,18 @@ const STAGE_DESC: Record<string, string> = {
   HIRED:     "Congratulations!",
   REJECTED:  "Not selected",
   WITHDRAWN: "Withdrawn by you",
+};
+
+const TERMINAL_ICON: Record<string, typeof CheckCircle2> = {
+  HIRED: CheckCircle2,
+  REJECTED: XCircle,
+  WITHDRAWN: MinusCircle,
+};
+
+const TERMINAL_COLOR: Record<string, string> = {
+  HIRED: "text-emerald-600",
+  REJECTED: "text-red-500",
+  WITHDRAWN: "text-zinc-400",
 };
 
 const NEXT_STEP: Record<string, string | null> = {
@@ -274,6 +287,13 @@ export function ApplicationsClient({ applications, savedCount }: { applications:
                         <Calendar className="h-3.5 w-3.5 text-zinc-400" />{next}
                       </div>
                       {nextDate && <div className="text-xs text-zinc-400 mt-0.5">{nextDate}</div>}
+                    </div>
+                  ) : TERMINAL_ICON[a.stage] ? (
+                    <div>
+                      <div className={`text-sm font-semibold flex items-center gap-1.5 ${TERMINAL_COLOR[a.stage]}`}>
+                        {(() => { const Icon = TERMINAL_ICON[a.stage]; return <Icon className="h-3.5 w-3.5" />; })()}
+                        {desc}
+                      </div>
                     </div>
                   ) : (
                     <div>

@@ -142,8 +142,9 @@ export async function POST(req: NextRequest) {
       minEducation: data.data.minEducation,
       educationSpecialization: data.data.educationSpecialization,
       keySkills: data.data.keySkills.filter(s => data.data.skills.includes(s)).slice(0, 5),
-      status: user.role === "ADMIN" ? "PUBLISHED" : "PENDING",
-      publishedAt: user.role === "ADMIN" ? new Date() : null,
+      // GST verification already gates who can reach this point, so jobs go live immediately.
+      status: "PUBLISHED",
+      publishedAt: new Date(),
     },
   });
 

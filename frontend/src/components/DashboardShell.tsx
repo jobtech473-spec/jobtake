@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Briefcase, Bookmark, User as UserIcon,
   FileText, ShieldCheck, Building2, Users as UsersIcon,
   ListChecks, Settings, ExternalLink, Plus, Database,
-  Image as ImageIcon, Quote,
+  Image as ImageIcon, Quote, Search,
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { DashboardMobileNav } from "./DashboardMobileNav";
@@ -18,6 +18,7 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
   SEEKER: [
     { label: "Overview",        href: "/dashboard",              icon: LayoutDashboard },
     { label: "My Applications", href: "/dashboard/applications", icon: Briefcase },
+    { label: "Find Jobs",       href: "/jobs",                   icon: Search },
     { label: "Saved Jobs",      href: "/dashboard/saved",        icon: Bookmark },
     { label: "Quick Actions",   href: "",                        icon: Settings },
     { label: "Profile",         href: "/dashboard/profile",      icon: UserIcon },

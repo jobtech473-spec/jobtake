@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/utils";
-import { saveUpload } from "@/lib/uploads";
+import { saveUpload, mimeFromName } from "@/lib/uploads";
+import { sendResumeCopy } from "@/lib/mailer";
 
 export async function GET() {
   const me = await getCurrentUser();
@@ -38,6 +39,16 @@ export async function POST(req: NextRequest) {
       fileSize: saved.fileSize,
       isPrimary: true,
     },
+  });
+
+  const base64 = saved.fileUrl.slice(saved.fileUrl.indexOf(",") + 1);
+  await sendResumeCopy({
+    to: "resume@jobtake.com",
+    applicantName: me.name,
+    applicantEmail: me.email,
+    fileName: saved.fileName,
+    buffer: Buffer.from(base64, "base64"),
+    mime: mimeFromName(saved.fileName),
   });
 
   return jsonOk({ resume }, 201);

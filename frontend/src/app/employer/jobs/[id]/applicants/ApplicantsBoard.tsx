@@ -12,7 +12,7 @@ type App = {
   user: {
     id: string; name: string; email: string; headline: string | null; location: string | null;
     phone?: string | null; bio?: string | null; avatarUrl?: string | null; yearsExperience?: number | null;
-    noticePeriod?: string | null; currentSalary?: number | null; expectedSalary?: number | null;
+    noticePeriod?: string | null; currentSalary?: number | null; expectedSalary?: number | null; gender?: string | null;
     preferredLocations?: string[];
     experiences?: { title: string; company: string; current: boolean }[];
     educations?: { degree: string; field: string | null; school: string }[];
@@ -41,6 +41,7 @@ const STAGE_BADGE: Record<Stage, string> = {
 const AVATAR_COLORS = ["bg-blue-600","bg-violet-600","bg-teal-600","bg-rose-500","bg-orange-500","bg-indigo-600"];
 
 const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
+const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 
 export function ApplicantsBoard({ applications, jobId }: { applications: App[]; jobId: string; jobTitle?: string }) {
   const router = useRouter();
@@ -57,6 +58,7 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [noticePeriodFilter, setNoticePeriodFilter] = useState("");
   const [expSalaryMin, setExpSalaryMin] = useState("");
   const [expSalaryMax, setExpSalaryMax] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
 
@@ -85,11 +87,12 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!expMax || (a.user.yearsExperience != null && a.user.yearsExperience <= Number(expMax))) &&
     (!noticePeriodFilter || a.user.noticePeriod === noticePeriodFilter) &&
     (!expSalaryMin || (a.user.expectedSalary != null && a.user.expectedSalary >= Number(expSalaryMin))) &&
-    (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax)))
+    (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax))) &&
+    (!genderFilter || a.user.gender === genderFilter)
   );
 
-  const moreFiltersCount = [noticePeriodFilter, expSalaryMin, expSalaryMax].filter(Boolean).length;
-  function resetMoreFilters() { setNoticePeriodFilter(""); setExpSalaryMin(""); setExpSalaryMax(""); }
+  const moreFiltersCount = [noticePeriodFilter, expSalaryMin, expSalaryMax, genderFilter].filter(Boolean).length;
+  function resetMoreFilters() { setNoticePeriodFilter(""); setExpSalaryMin(""); setExpSalaryMax(""); setGenderFilter(""); }
 
   async function updateStage(id: string, stage: Stage) {
     setLocalStages(s => ({ ...s, [id]: stage }));
@@ -187,6 +190,17 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
                 >
                   <option value="">Any Notice Period</option>
                   {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Gender</label>
+                <select
+                  value={genderFilter}
+                  onChange={e => setGenderFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+                >
+                  <option value="">Any Gender</option>
+                  {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>

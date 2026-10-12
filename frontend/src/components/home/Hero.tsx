@@ -47,7 +47,7 @@ const employerActions = [
   { icon: Building, label: "Build employer profile" },
 ];
 
-export default function Hero() {
+export default function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [loc, setLoc] = useState("");
@@ -183,7 +183,7 @@ export default function Hero() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push("/jobs")}
+                  onClick={() => router.push(isLoggedIn ? "/jobs" : "/signup?role=candidate")}
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600"
                 >
                   Find Jobs <ArrowUpRight className="h-3.5 w-3.5" />

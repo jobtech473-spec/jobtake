@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 import { PublicNav } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
 import Hero from "@/components/home/Hero";
@@ -19,6 +20,7 @@ const LOGO_PALETTE = [
 ];
 
 export default async function Home() {
+  const me = await getCurrentUser();
   const [featuredRaw, totalJobs, collarJobsRaw, partnerLogos] = await Promise.all([
     prisma.job.findMany({
       where: { status: "PUBLISHED", featured: true },
@@ -87,7 +89,7 @@ export default async function Home() {
   return (
     <main data-testid="home-page">
       <PublicNav />
-      <Hero />
+      <Hero isLoggedIn={!!me} />
       <LogoWall logos={partnerLogos} />
       <FeaturedJobs jobs={featured} />
       <CollarSections sections={collarSections} />

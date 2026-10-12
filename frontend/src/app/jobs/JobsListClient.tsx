@@ -246,7 +246,7 @@ export function JobsListClient({
   return (
     <div>
       {/* Search bar */}
-      <form onSubmit={doSearch} className="mt-8 bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+      <form onSubmit={doSearch} className="mt-8 bg-white rounded-2xl border border-zinc-200 shadow-sm">
         <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
           <label className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors">
             <Search className="h-4 w-4 text-zinc-400 shrink-0" />

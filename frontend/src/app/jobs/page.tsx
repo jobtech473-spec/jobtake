@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; seniority?: string; collarType?: string; isMsme?: string; industry?: string; salaryMin?: string; salaryMax?: string; page?: string; sort?: string }>;
 
 function parseSalaryLpa(value: string) {
+  if (!value) return null;
   const lpa = Number(value);
   return Number.isFinite(lpa) && lpa >= 0 ? Math.round(lpa * 100000) : null;
 }

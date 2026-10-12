@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
 function parseSalaryLpa(value: string) {
+  if (!value) return null;
   const lpa = Number(value);
   return Number.isFinite(lpa) && lpa >= 0 ? Math.round(lpa * 100000) : null;
 }

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, FileDown, Search, SlidersHorizontal, MapPin, Bookmark, ArrowRight, ArrowLeft, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
+import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -112,23 +112,12 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         ))}
       </div>
 
-      {/* Search + Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, skills or email..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
-        </div>
-        {["Stage", "Experience", "Location"].map(f => (
-          <button key={f} className="flex items-center gap-1.5 text-sm font-semibold text-zinc-600 border border-zinc-200 bg-white px-3 py-2.5 rounded-xl hover:bg-zinc-50 transition">
-            {f} <span className="text-zinc-300">▾</span>
-          </button>
-        ))}
-        <button className="flex items-center gap-1.5 text-sm font-semibold text-zinc-600 border border-zinc-200 bg-white px-3 py-2.5 rounded-xl hover:bg-zinc-50 transition">
-          <SlidersHorizontal className="h-3.5 w-3.5" /> More Filters
-        </button>
-        <div className="ml-auto text-xs text-zinc-400 font-medium">Sort by: <span className="text-zinc-700 font-semibold">Newest ▾</span></div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search by name, skills or email..."
+          className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
       </div>
 
       {/* Applicant cards */}
@@ -278,16 +267,8 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         );
       })}
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between pt-2">
-        <span className="text-xs text-zinc-400">Showing 1 to {filtered.length} of {list.length} applicants</span>
-        <div className="flex items-center gap-1">
-          <button className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center"><ArrowLeft className="h-4 w-4" /></button>
-          {[1, 2, 3, 4].map(n => (
-            <button key={n} className={`h-8 w-8 rounded-lg text-sm font-semibold transition ${n === 1 ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}>{n}</button>
-          ))}
-          <button className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center"><ArrowRight className="h-4 w-4" /></button>
-        </div>
+      <div className="pt-2 text-xs text-zinc-400">
+        Showing {filtered.length} of {list.length} applicant{list.length === 1 ? "" : "s"}
       </div>
     </div>
   );

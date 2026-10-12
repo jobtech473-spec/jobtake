@@ -123,7 +123,8 @@ export async function DashboardShell({ children, role, current }: { children: Re
         {/* View Company Profile — employer only */}
         {role === "EMPLOYER" && companySlug && (
           <Link
-            href={`/jobs?q=${encodeURIComponent(user.name)}`}
+            href={`/companies/${companySlug}`}
+            target="_blank"
             className="flex items-center justify-center gap-2 w-full border border-zinc-200 text-zinc-700 font-semibold text-sm py-2 rounded-xl hover:bg-zinc-50 transition-colors"
           >
             View Company Profile <ExternalLink className="h-3.5 w-3.5" />

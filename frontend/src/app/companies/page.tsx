@@ -1,8 +1,12 @@
 import { PublicNav } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { getManagedOptions } from "@/lib/job-options";
 import Link from "next/link";
 import { Building2, BadgeCheck, ShieldCheck, Users, Star, Lock, Briefcase } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 const TRUST_BADGES = [
   { icon: ShieldCheck, color: "text-blue-600",   bg: "bg-blue-50",   label: "Verified",       desc: "All companies are manually verified" },
@@ -16,13 +20,54 @@ const AVATAR_COLORS = [
   "bg-orange-500", "bg-pink-500", "bg-teal-600", "bg-rose-600",
 ];
 
-export default async function CompaniesPage() {
-  const companies = await prisma.company.findMany({
-    where: { status: "ACTIVE" },
-    orderBy: [{ featured: "desc" }, { name: "asc" }],
-    take: 60,
-    include: { _count: { select: { jobs: { where: { status: "PUBLISHED" } } } } },
+type SP = Promise<{ q?: string; industry?: string; location?: string; size?: string; page?: string }>;
+
+export default async function CompaniesPage({ searchParams }: { searchParams: SP }) {
+  const sp = await searchParams;
+  const q = sp.q || "";
+  const industry = sp.industry || "";
+  const location = sp.location || "";
+  const size = sp.size || "";
+  const page = Math.max(1, parseInt(sp.page || "1", 10));
+  const perPage = 12;
+  const hasFilters = !!(q || industry || location || size);
+
+  const where: Prisma.CompanyWhereInput = { status: "ACTIVE" };
+  const andFilters: Prisma.CompanyWhereInput[] = [];
+  if (q) andFilters.push({
+    OR: [
+      { name: { contains: q, mode: "insensitive" } },
+      { industry: { contains: q, mode: "insensitive" } },
+      { tagline: { contains: q, mode: "insensitive" } },
+    ],
   });
+  if (industry) andFilters.push({ industry: { equals: industry } });
+  if (location) andFilters.push({ headquarters: { contains: location, mode: "insensitive" } });
+  if (size) andFilters.push({ size: { contains: size, mode: "insensitive" } });
+  if (andFilters.length) where.AND = andFilters;
+
+  const [companies, total, managedOptions] = await Promise.all([
+    prisma.company.findMany({
+      where,
+      orderBy: [{ featured: "desc" }, { name: "asc" }],
+      take: perPage,
+      skip: (page - 1) * perPage,
+      include: { _count: { select: { jobs: { where: { status: "PUBLISHED" } } } } },
+    }),
+    prisma.company.count({ where }),
+    getManagedOptions(true, true),
+  ]);
+  const pages = Math.max(1, Math.ceil(total / perPage));
+
+  const paramsFor = (p: number) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (industry) params.set("industry", industry);
+    if (location) params.set("location", location);
+    if (size) params.set("size", size);
+    params.set("page", String(p));
+    return params.toString();
+  };
 
   return (
     <main className="min-h-screen bg-white">
@@ -64,60 +109,60 @@ export default async function CompaniesPage() {
         </div>
 
         {/* Search bar */}
-        <div className="mt-10 flex flex-col sm:flex-row items-stretch gap-3 bg-white border border-zinc-200 rounded-2xl p-3 shadow-sm">
+        <form action="/companies" method="GET" className="mt-10 flex flex-col sm:flex-row items-stretch gap-3 bg-white border border-zinc-200 rounded-2xl p-3 shadow-sm">
           <div className="flex items-center gap-2 flex-1 px-3">
             <Building2 className="h-4 w-4 text-zinc-400 shrink-0" />
             <input
               type="text"
-              placeholder="Search company name, industry or role"
+              name="q"
+              defaultValue={q}
+              placeholder="Search company name, industry or tagline"
               className="w-full text-sm outline-none text-zinc-700 placeholder:text-zinc-400 bg-transparent"
-              readOnly
             />
           </div>
           <div className="h-px sm:h-auto sm:w-px bg-zinc-200" />
-          <select className="text-sm text-zinc-700 px-4 py-2 outline-none bg-transparent cursor-pointer">
-            <option>All Industries</option>
-            <option>Technology</option>
-            <option>Finance</option>
-            <option>Healthcare</option>
-            <option>Manufacturing</option>
+          <select name="industry" defaultValue={industry} className="text-sm text-zinc-700 px-4 py-2 outline-none bg-transparent cursor-pointer">
+            <option value="">All Industries</option>
+            {managedOptions.INDUSTRY.map(i => <option key={i.id} value={i.value}>{i.label}</option>)}
           </select>
           <div className="hidden sm:block h-auto w-px bg-zinc-200" />
-          <select className="text-sm text-zinc-700 px-4 py-2 outline-none bg-transparent cursor-pointer">
-            <option>Company Size</option>
-            <option>1–50</option>
-            <option>51–200</option>
-            <option>201–1000</option>
-            <option>1000+</option>
-          </select>
+          <input
+            type="text"
+            name="size"
+            defaultValue={size}
+            placeholder="Company size e.g. 50-200"
+            className="text-sm text-zinc-700 px-4 py-2 outline-none bg-transparent placeholder:text-zinc-400 sm:w-[170px]"
+          />
           <div className="hidden sm:block h-auto w-px bg-zinc-200" />
-          <select className="text-sm text-zinc-700 px-4 py-2 outline-none bg-transparent cursor-pointer">
-            <option>All Locations</option>
-            <option>Remote</option>
-            <option>Mumbai</option>
-            <option>Bangalore</option>
-            <option>Delhi</option>
-          </select>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap">
+          <input
+            type="text"
+            name="location"
+            defaultValue={location}
+            placeholder="Location"
+            className="text-sm text-zinc-700 px-4 py-2 outline-none bg-transparent placeholder:text-zinc-400 sm:w-[150px]"
+          />
+          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap">
             Explore Companies →
           </button>
-        </div>
+        </form>
       </section>
 
       {/* Companies grid */}
       <section className="mx-auto max-w-7xl px-6 md:px-12 pb-24">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-zinc-900">Top companies hiring now</h2>
-          <Link href="/jobs" className="text-sm font-semibold text-blue-600 hover:underline flex items-center gap-1">
-            View all companies →
-          </Link>
+          <h2 className="text-lg font-bold text-zinc-900">{hasFilters ? `${total} compan${total === 1 ? "y" : "ies"} found` : "All companies"}</h2>
+          {hasFilters && (
+            <Link href="/companies" className="text-sm font-semibold text-blue-600 hover:underline flex items-center gap-1">
+              Clear filters
+            </Link>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {companies.map((c, i) => (
             <Link
               key={c.id}
-              href={`/jobs?q=${encodeURIComponent(c.name)}`}
+              href={`/companies/${c.slug}`}
               className="flex items-start gap-4 p-5 rounded-2xl border border-zinc-100 bg-white hover:shadow-md hover:-translate-y-0.5 transition-all group"
             >
               {/* Logo */}
@@ -156,11 +201,30 @@ export default async function CompaniesPage() {
           {!companies.length && (
             <div className="md:col-span-3 rounded-2xl border border-zinc-100 p-16 text-center text-zinc-700">
               <Building2 className="h-10 w-10 mx-auto text-zinc-300" />
-              <div className="mt-4 text-lg font-bold text-zinc-900">No verified companies yet</div>
-              <p className="text-sm text-zinc-700 mt-1">Check back soon — we're growing fast.</p>
+              <div className="mt-4 text-lg font-bold text-zinc-900">{hasFilters ? "No companies match your filters" : "No verified companies yet"}</div>
+              <p className="text-sm text-zinc-700 mt-1">{hasFilters ? "Try widening your search or clearing filters." : "Check back soon — we're growing fast."}</p>
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {pages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-2">
+            {Array.from({ length: pages }, (_, i) => i + 1).slice(0, 10).map(p => (
+              <Link
+                key={p}
+                href={`/companies?${paramsFor(p)}`}
+                className={`h-9 min-w-9 px-3 rounded-lg grid place-items-center text-sm font-medium border transition ${
+                  p === page
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-zinc-700 border-zinc-200 hover:border-blue-300 hover:text-blue-600"
+                }`}
+              >
+                {p}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Can't find company CTA */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 border border-blue-100 rounded-2xl px-6 py-5">

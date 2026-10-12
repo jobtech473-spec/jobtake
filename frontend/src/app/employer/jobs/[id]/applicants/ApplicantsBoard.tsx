@@ -59,14 +59,21 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [expSalaryMin, setExpSalaryMin] = useState("");
   const [expSalaryMax, setExpSalaryMax] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
+  const [degreeFilter, setDegreeFilter] = useState("");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
+  const degreeOf = (a: App) => a.user.educations?.[0]?.degree ?? null;
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { ALL: list.length };
     for (const s of STAGES) c[s] = list.filter(a => stageOf(a) === s).length;
     return c;
   }, [list, localStages]);
+
+  const degreeOptions = useMemo(
+    () => Array.from(new Set(list.map(degreeOf).filter((d): d is string => !!d))).sort(),
+    [list]
+  );
 
   const TABS: { label: string; value: Stage | "ALL" }[] = [
     { label: "Applicants", value: "ALL" },
@@ -88,11 +95,12 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!noticePeriodFilter || a.user.noticePeriod === noticePeriodFilter) &&
     (!expSalaryMin || (a.user.expectedSalary != null && a.user.expectedSalary >= Number(expSalaryMin))) &&
     (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax))) &&
-    (!genderFilter || a.user.gender === genderFilter)
+    (!genderFilter || a.user.gender === genderFilter) &&
+    (!degreeFilter || degreeOf(a) === degreeFilter)
   );
 
-  const moreFiltersCount = [noticePeriodFilter, expSalaryMin, expSalaryMax, genderFilter].filter(Boolean).length;
-  function resetMoreFilters() { setNoticePeriodFilter(""); setExpSalaryMin(""); setExpSalaryMax(""); setGenderFilter(""); }
+  const moreFiltersCount = [noticePeriodFilter, expSalaryMin, expSalaryMax, genderFilter, degreeFilter].filter(Boolean).length;
+  function resetMoreFilters() { setNoticePeriodFilter(""); setExpSalaryMin(""); setExpSalaryMax(""); setGenderFilter(""); setDegreeFilter(""); }
 
   async function updateStage(id: string, stage: Stage) {
     setLocalStages(s => ({ ...s, [id]: stage }));
@@ -181,6 +189,18 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
           </button>
           {moreOpen && (
             <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-xl border border-zinc-200 bg-white shadow-xl p-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Category (Education)</label>
+                <select
+                  value={degreeFilter}
+                  onChange={e => setDegreeFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+                  disabled={degreeOptions.length === 0}
+                >
+                  <option value="">All Categories</option>
+                  {degreeOptions.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Notice Period</label>
                 <select

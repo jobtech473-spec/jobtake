@@ -127,6 +127,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
           perPage={perPage}
           categories={categories}
           industries={managedOptions.INDUSTRY}
+          locations={managedOptions.LOCATION}
           isLoggedIn={!!me}
           initialSavedIds={savedJobs.map(s => s.jobId)}
         />

@@ -28,6 +28,56 @@ const AVATAR_COLORS = [
   "bg-indigo-500", "bg-rose-500", "bg-teal-500", "bg-amber-500",
 ];
 
+function LocationDropdown({
+  value, onChange, locations, variant = "sidebar", placeholder = "Location",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  locations: Industry[];
+  variant?: "bar" | "sidebar";
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = search.trim()
+    ? locations.filter(l => l.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : locations;
+
+  return (
+    <div className="relative w-full" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className={
+          variant === "bar"
+            ? "w-full flex items-center justify-between gap-2 bg-transparent text-sm text-left outline-none"
+            : "w-full flex items-center justify-between gap-2 pl-8 pr-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition bg-white text-left"
+        }
+      >
+        <span className={`truncate ${value ? "text-zinc-800" : "text-zinc-400"}`}>{value || placeholder}</span>
+        {variant === "sidebar" && <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />}
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 min-w-[220px] rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search location..."
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div className="max-h-[220px] overflow-y-auto py-1">
+            <button type="button" onClick={() => { onChange(""); setOpen(false); setSearch(""); }}
+              className="block w-full px-3 py-2 text-left text-sm text-zinc-600 hover:bg-blue-50 transition">All Locations</button>
+            {filtered.map(l => (
+              <button key={l.id} type="button" onClick={() => { onChange(l.value); setOpen(false); setSearch(""); }}
+                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">{l.label}</button>
+            ))}
+            {!filtered.length && <div className="px-3 py-3 text-sm text-zinc-400">No matching location.</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CategoryDropdown({
   value, onChange, categories,
 }: {
@@ -91,10 +141,10 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 }
 
 export function JobsListClient({
-  initialFilters, jobs, total, page, perPage, categories, industries, initialSort, isLoggedIn, initialSavedIds,
+  initialFilters, jobs, total, page, perPage, categories, industries, locations, initialSort, isLoggedIn, initialSavedIds,
 }: {
   initialFilters: { q: string; location: string; category: string; workMode: string; seniority: string; collarType: string; industry: string; salaryMin: string; salaryMax: string };
-  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; initialSort: string;
+  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; locations: Industry[]; initialSort: string;
   isLoggedIn: boolean; initialSavedIds: string[];
 }) {
   const router = useRouter();
@@ -185,15 +235,10 @@ export function JobsListClient({
               className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
             />
           </label>
-          <label className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors">
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors">
             <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
-            <input
-              value={searchLoc}
-              onChange={e => setSearchLoc(e.target.value)}
-              placeholder="Location"
-              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
-            />
-          </label>
+            <LocationDropdown value={searchLoc} onChange={setSearchLoc} locations={locations} variant="bar" placeholder="Location" />
+          </div>
           <label className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors cursor-pointer">
             <Briefcase className="h-4 w-4 text-zinc-400 shrink-0" />
             <select
@@ -266,12 +311,12 @@ export function JobsListClient({
               <div>
                 <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Location</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-                  <input
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 z-10" />
+                  <LocationDropdown
                     value={filters.location}
-                    onChange={e => setFilters({ ...filters, location: e.target.value })}
-                    placeholder="e.g. Mumbai, Delhi"
-                    className="w-full pl-8 pr-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                    onChange={v => setFilters({ ...filters, location: v })}
+                    locations={locations}
+                    placeholder="All Locations"
                   />
                 </div>
               </div>

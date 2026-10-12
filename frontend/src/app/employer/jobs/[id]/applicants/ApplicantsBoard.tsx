@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
+import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users, SlidersHorizontal } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -40,6 +40,8 @@ const STAGE_BADGE: Record<Stage, string> = {
 
 const AVATAR_COLORS = ["bg-blue-600","bg-violet-600","bg-teal-600","bg-rose-500","bg-orange-500","bg-indigo-600"];
 
+const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
+
 export function ApplicantsBoard({ applications, jobId }: { applications: App[]; jobId: string; jobTitle?: string }) {
   const router = useRouter();
   const list = applications;
@@ -51,6 +53,10 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [expMin, setExpMin] = useState("");
   const [expMax, setExpMax] = useState("");
   const [stageFilter, setStageFilter] = useState<Stage | "ALL">("ALL");
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [noticePeriodFilter, setNoticePeriodFilter] = useState("");
+  const [expSalaryMin, setExpSalaryMin] = useState("");
+  const [expSalaryMax, setExpSalaryMax] = useState("");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
 
@@ -76,8 +82,14 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
       a.user.email.toLowerCase().includes(search.toLowerCase())) &&
     (!locationFilter || (a.user.location ?? "").toLowerCase().includes(locationFilter.toLowerCase())) &&
     (!expMin || (a.user.yearsExperience != null && a.user.yearsExperience >= Number(expMin))) &&
-    (!expMax || (a.user.yearsExperience != null && a.user.yearsExperience <= Number(expMax)))
+    (!expMax || (a.user.yearsExperience != null && a.user.yearsExperience <= Number(expMax))) &&
+    (!noticePeriodFilter || a.user.noticePeriod === noticePeriodFilter) &&
+    (!expSalaryMin || (a.user.expectedSalary != null && a.user.expectedSalary >= Number(expSalaryMin))) &&
+    (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax)))
   );
+
+  const moreFiltersCount = [noticePeriodFilter, expSalaryMin, expSalaryMax].filter(Boolean).length;
+  function resetMoreFilters() { setNoticePeriodFilter(""); setExpSalaryMin(""); setExpSalaryMax(""); }
 
   async function updateStage(id: string, stage: Stage) {
     setLocalStages(s => ({ ...s, [id]: stage }));
@@ -151,12 +163,69 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
           </div>
         </div>
       </div>
-      {(search || locationFilter || expMin || expMax) && (
-        <button onClick={() => { setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); }}
-          className="text-xs font-semibold text-blue-600 hover:underline px-1">
-          Clear filters
-        </button>
-      )}
+
+      <div className="flex items-center gap-2">
+        <div className="relative" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setMoreOpen(false); }}>
+          <button
+            type="button"
+            onClick={() => setMoreOpen(v => !v)}
+            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 border border-zinc-200 bg-white px-4 py-2.5 rounded-xl hover:bg-zinc-50 transition"
+          >
+            <SlidersHorizontal className="h-4 w-4" /> More Filters
+            {moreFiltersCount > 0 && (
+              <span className="ml-0.5 h-5 w-5 rounded-full bg-blue-600 text-white text-[11px] font-bold grid place-items-center">{moreFiltersCount}</span>
+            )}
+          </button>
+          {moreOpen && (
+            <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-xl border border-zinc-200 bg-white shadow-xl p-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Notice Period</label>
+                <select
+                  value={noticePeriodFilter}
+                  onChange={e => setNoticePeriodFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+                >
+                  <option value="">Any Notice Period</option>
+                  {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Expected Salary (LPA)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={expSalaryMin}
+                    onChange={e => setExpSalaryMin(e.target.value)}
+                    type="number" min="0" step="0.1" inputMode="decimal"
+                    placeholder="Min LPA"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                  <input
+                    value={expSalaryMax}
+                    onChange={e => setExpSalaryMax(e.target.value)}
+                    type="number" min="0" step="0.1" inputMode="decimal"
+                    placeholder="Max LPA"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <button type="button" onClick={resetMoreFilters} className="text-xs font-semibold text-zinc-500 hover:underline">
+                  Reset
+                </button>
+                <button type="button" onClick={() => setMoreOpen(false)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2 rounded-lg transition">
+                  Apply
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        {(search || locationFilter || expMin || expMax || moreFiltersCount > 0) && (
+          <button onClick={() => { setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); resetMoreFilters(); }}
+            className="text-xs font-semibold text-blue-600 hover:underline px-1">
+            Clear filters
+          </button>
+        )}
+      </div>
 
       {/* Applicant cards */}
       {filtered.length === 0 && (

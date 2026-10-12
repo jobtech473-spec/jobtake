@@ -22,8 +22,10 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
       jobs: {
         where: { status: "PUBLISHED" },
         orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
+        take: 5,
         include: { category: { select: { name: true } } },
       },
+      _count: { select: { jobs: { where: { status: "PUBLISHED" } } } },
     },
   });
 
@@ -118,8 +120,8 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
 
             <div className="shrink-0 flex md:flex-col items-center md:items-end gap-3">
               <div className="text-center md:text-right bg-blue-50 rounded-2xl px-5 py-3">
-                <div className="text-2xl font-black text-blue-700 leading-none">{company.jobs.length}</div>
-                <div className="text-xs font-bold text-blue-600 mt-1 uppercase tracking-wide">Open Role{company.jobs.length === 1 ? "" : "s"}</div>
+                <div className="text-2xl font-black text-blue-700 leading-none">{company._count.jobs}</div>
+                <div className="text-xs font-bold text-blue-600 mt-1 uppercase tracking-wide">Open Role{company._count.jobs === 1 ? "" : "s"}</div>
               </div>
             </div>
           </div>
@@ -241,6 +243,14 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
                     </Link>
                   ))}
                 </div>
+              )}
+              {company._count.jobs > company.jobs.length && (
+                <Link
+                  href={`/jobs?q=${encodeURIComponent(company.name)}`}
+                  className="mt-4 block text-center text-sm font-semibold text-blue-600 hover:underline"
+                >
+                  View all {company._count.jobs} roles →
+                </Link>
               )}
             </div>
           </aside>

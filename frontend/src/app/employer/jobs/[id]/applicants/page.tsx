@@ -52,7 +52,7 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
   }));
 
   return (
-    <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs">
+    <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs" hideSidebar>
 
       {/* ── Job Header ── */}
       <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-6 mb-5">

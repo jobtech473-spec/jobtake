@@ -43,7 +43,7 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
   ],
 };
 
-export async function DashboardShell({ children, role, current }: { children: React.ReactNode; role: Role; current?: string }) {
+export async function DashboardShell({ children, role, current, hideSidebar }: { children: React.ReactNode; role: Role; current?: string; hideSidebar?: boolean }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== role) {
@@ -142,21 +142,23 @@ export async function DashboardShell({ children, role, current }: { children: Re
       {/* ── MOBILE TOP BAR + DRAWER ── */}
       <DashboardMobileNav>{navBody}</DashboardMobileNav>
 
-      <div className="mx-auto max-w-[1400px] grid lg:grid-cols-[220px_minmax(0,1fr)] gap-0">
+      <div className={`mx-auto max-w-[1400px] grid gap-0 ${hideSidebar ? "" : "lg:grid-cols-[220px_minmax(0,1fr)]"}`}>
 
         {/* ── DESKTOP SIDEBAR ── */}
-        <aside
-          className="hidden lg:flex bg-white border-r border-zinc-100 min-h-screen lg:sticky lg:top-0 flex-col"
-          data-testid="dashboard-sidebar"
-          style={{ height: "100vh", position: "sticky", top: 0, overflowY: "auto" }}
-        >
-          {/* Logo */}
-          <div className="px-5 pt-6 pb-4">
-            <Logo size={72} />
-          </div>
+        {!hideSidebar && (
+          <aside
+            className="hidden lg:flex bg-white border-r border-zinc-100 min-h-screen lg:sticky lg:top-0 flex-col"
+            data-testid="dashboard-sidebar"
+            style={{ height: "100vh", position: "sticky", top: 0, overflowY: "auto" }}
+          >
+            {/* Logo */}
+            <div className="px-5 pt-6 pb-4">
+              <Logo size={72} />
+            </div>
 
-          {navBody}
-        </aside>
+            {navBody}
+          </aside>
+        )}
 
         {/* ── MAIN CONTENT ── */}
         <main className="min-w-0 overflow-x-hidden p-4 sm:p-6 md:p-8 space-y-6 pb-16 min-h-screen bg-zinc-50">

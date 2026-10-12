@@ -183,7 +183,7 @@ export default function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(isLoggedIn ? "/jobs" : "/signup?role=candidate")}
+                  onClick={() => router.push(isLoggedIn ? "/jobs" : "/login")}
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600"
                 >
                   Find Jobs <ArrowUpRight className="h-3.5 w-3.5" />

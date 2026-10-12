@@ -325,7 +325,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
               </div>
 
               <Link
-                href={`/jobs?q=${encodeURIComponent(job.company.name)}`}
+                href={`/companies/${job.company.slug}`}
                 className="mt-5 w-full inline-flex items-center justify-center gap-2 border border-zinc-200 rounded-xl py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
               >
                 View company profile →

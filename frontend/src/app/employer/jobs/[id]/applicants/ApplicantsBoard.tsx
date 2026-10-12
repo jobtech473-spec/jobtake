@@ -47,6 +47,9 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [localStages, setLocalStages] = useState<Record<string, Stage>>({});
   const [search, setSearch] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [expMin, setExpMin] = useState("");
+  const [expMax, setExpMax] = useState("");
   const [stageFilter, setStageFilter] = useState<Stage | "ALL">("ALL");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
@@ -70,7 +73,10 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!search ||
       a.user.name.toLowerCase().includes(search.toLowerCase()) ||
       (a.user.headline ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      a.user.email.toLowerCase().includes(search.toLowerCase()))
+      a.user.email.toLowerCase().includes(search.toLowerCase())) &&
+    (!locationFilter || (a.user.location ?? "").toLowerCase().includes(locationFilter.toLowerCase())) &&
+    (!expMin || (a.user.yearsExperience != null && a.user.yearsExperience >= Number(expMin))) &&
+    (!expMax || (a.user.yearsExperience != null && a.user.yearsExperience <= Number(expMax)))
   );
 
   async function updateStage(id: string, stage: Stage) {
@@ -112,12 +118,33 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         ))}
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-        <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by name, skills or email..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
+      {/* Search + Filters */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name, skills or email..."
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
+        </div>
+        <div className="relative w-[160px]">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+          <input value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+            placeholder="Location"
+            className="w-full pl-9 pr-3 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
+        </div>
+        <div className="flex items-center gap-1.5 border border-zinc-200 bg-white rounded-xl px-3 py-2.5">
+          <input value={expMin} onChange={e => setExpMin(e.target.value)} type="number" min="0" step="1"
+            placeholder="Min yrs" className="w-[70px] text-sm outline-none bg-transparent placeholder:text-zinc-400" />
+          <span className="text-zinc-300">–</span>
+          <input value={expMax} onChange={e => setExpMax(e.target.value)} type="number" min="0" step="1"
+            placeholder="Max yrs" className="w-[70px] text-sm outline-none bg-transparent placeholder:text-zinc-400" />
+        </div>
+        {(search || locationFilter || expMin || expMax) && (
+          <button onClick={() => { setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); }}
+            className="text-xs font-semibold text-blue-600 hover:underline px-1">
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Applicant cards */}

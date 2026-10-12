@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck, SlidersHorizontal } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
@@ -79,11 +79,12 @@ function LocationDropdown({
 }
 
 function CategoryDropdown({
-  value, onChange, categories,
+  value, onChange, categories, variant = "sidebar",
 }: {
   value: string;
   onChange: (v: string) => void;
   categories: Cat[];
+  variant?: "bar" | "sidebar";
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -93,11 +94,18 @@ function CategoryDropdown({
     : categories;
 
   return (
-    <div className="relative" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}>
-      <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition bg-white text-left">
-        <span className={`truncate ${selected ? "text-zinc-900" : "text-zinc-400"}`}>{selected ? selected.name : "All Categories"}</span>
-        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+    <div className="relative w-full" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className={
+          variant === "bar"
+            ? "w-full flex items-center justify-between gap-2 bg-transparent text-sm text-left outline-none"
+            : "w-full flex items-center justify-between gap-2 px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition bg-white text-left"
+        }
+      >
+        <span className={`truncate ${selected ? "text-zinc-800" : "text-zinc-400"}`}>{selected ? selected.name : "All Categories"}</span>
+        {variant === "sidebar" && <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />}
       </button>
       {open && (
         <div className="absolute left-0 right-0 top-full z-20 mt-1.5 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
@@ -143,7 +151,7 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 export function JobsListClient({
   initialFilters, jobs, total, page, perPage, categories, industries, locations, initialSort, isLoggedIn, initialSavedIds,
 }: {
-  initialFilters: { q: string; location: string; category: string; workMode: string; seniority: string; collarType: string; industry: string; salaryMin: string; salaryMax: string };
+  initialFilters: { q: string; location: string; category: string; workMode: string; experienceMin: string; experienceMax: string; collarType: string; industry: string; salaryMin: string; salaryMax: string };
   jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; locations: Industry[]; initialSort: string;
   isLoggedIn: boolean; initialSavedIds: string[];
 }) {
@@ -154,11 +162,24 @@ export function JobsListClient({
   const [searchQ, setSearchQ] = useState(initialFilters.q);
   const [searchLoc, setSearchLoc] = useState(initialFilters.location);
   const [searchCat, setSearchCat] = useState(initialFilters.category);
-  const [searchExp, setSearchExp] = useState(initialFilters.seniority);
+  const [searchExpMin, setSearchExpMin] = useState(initialFilters.experienceMin);
+  const [searchExpMax, setSearchExpMax] = useState(initialFilters.experienceMax);
   const [sortBy, setSortBy] = useState(initialSort);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set(initialSavedIds));
   const [savingId, setSavingId] = useState<string | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // Re-sync local filter state whenever a fresh navigation (search, sidebar
+  // filters, pagination, clear-all) brings in new URL-derived filters —
+  // otherwise the search bar can keep showing stale values after the URL changes.
+  useEffect(() => {
+    setFilters(initialFilters);
+    setSearchQ(initialFilters.q);
+    setSearchLoc(initialFilters.location);
+    setSearchCat(initialFilters.category);
+    setSearchExpMin(initialFilters.experienceMin);
+    setSearchExpMax(initialFilters.experienceMax);
+  }, [initialFilters]);
 
   async function toggleSave(e: React.MouseEvent, jobId: string) {
     e.preventDefault();
@@ -204,7 +225,8 @@ export function JobsListClient({
     if (searchQ) p.set("q", searchQ); else p.delete("q");
     if (searchLoc) p.set("location", searchLoc); else p.delete("location");
     if (searchCat) p.set("category", searchCat); else p.delete("category");
-    if (searchExp) p.set("seniority", searchExp); else p.delete("seniority");
+    if (searchExpMin) p.set("experienceMin", searchExpMin); else p.delete("experienceMin");
+    if (searchExpMax) p.set("experienceMax", searchExpMax); else p.delete("experienceMax");
     p.delete("page");
     startT(() => router.push(`/jobs?${p.toString()}`));
   }
@@ -239,37 +261,28 @@ export function JobsListClient({
             <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
             <LocationDropdown value={searchLoc} onChange={setSearchLoc} locations={locations} variant="bar" placeholder="Location" />
           </div>
-          <label className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors cursor-pointer">
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors">
             <Briefcase className="h-4 w-4 text-zinc-400 shrink-0" />
-            <select
-              value={searchCat}
-              onChange={e => setSearchCat(e.target.value)}
-              className="w-full bg-transparent text-sm text-zinc-500 outline-none appearance-none"
-            >
-              <option value="">All Categories</option>
-              {categories.map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}
-            </select>
-            <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
-          </label>
-          <label className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors cursor-pointer">
+            <CategoryDropdown value={searchCat} onChange={setSearchCat} categories={categories} variant="bar" />
+          </div>
+          <div className="flex items-center gap-2 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 hover:bg-zinc-50 transition-colors">
             <svg className="h-4 w-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            <select
-              value={searchExp}
-              onChange={e => setSearchExp(e.target.value)}
-              className="w-full bg-transparent text-sm text-zinc-500 outline-none appearance-none"
-            >
-              <option value="">Any Experience</option>
-              <option value="INTERN">Intern</option>
-              <option value="ENTRY">Entry level</option>
-              <option value="MID">Mid level</option>
-              <option value="SENIOR">Senior</option>
-              <option value="STAFF">Staff</option>
-              <option value="PRINCIPAL">Principal</option>
-              <option value="DIRECTOR">Director</option>
-              <option value="EXECUTIVE">Executive</option>
-            </select>
-            <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
-          </label>
+            <input
+              type="number" min="0" step="1"
+              value={searchExpMin}
+              onChange={e => setSearchExpMin(e.target.value)}
+              placeholder="Min yrs"
+              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
+            />
+            <span className="text-zinc-300 shrink-0">–</span>
+            <input
+              type="number" min="0" step="1"
+              value={searchExpMax}
+              onChange={e => setSearchExpMax(e.target.value)}
+              placeholder="Max yrs"
+              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
+            />
+          </div>
           <div className="px-2 py-2 flex items-center">
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition w-full whitespace-nowrap">
               Search Jobs
@@ -298,7 +311,7 @@ export function JobsListClient({
               <span className="font-bold text-zinc-900 text-base">Filters</span>
               <button
                 onClick={() => {
-                  setFilters({ q: "", location: "", category: "", workMode: "", seniority: "", collarType: "", industry: "", salaryMin: "", salaryMax: "" });
+                  setFilters({ q: "", location: "", category: "", workMode: "", experienceMin: "", experienceMax: "", collarType: "", industry: "", salaryMin: "", salaryMax: "" });
                   startT(() => router.push("/jobs"));
                 }}
                 className="text-xs text-blue-600 hover:underline"
@@ -343,22 +356,29 @@ export function JobsListClient({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Experience</label>
-                <select
-                  value={filters.seniority}
-                  onChange={e => setFilters({ ...filters, seniority: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">Any Level</option>
-                  <option value="INTERN">Intern</option>
-                  <option value="ENTRY">Entry level</option>
-                  <option value="MID">Mid level</option>
-                  <option value="SENIOR">Senior</option>
-                  <option value="STAFF">Staff</option>
-                  <option value="PRINCIPAL">Principal</option>
-                  <option value="DIRECTOR">Director</option>
-                  <option value="EXECUTIVE">Executive</option>
-                </select>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Experience (Years)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={filters.experienceMin}
+                    onChange={e => setFilters({ ...filters, experienceMin: e.target.value })}
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputMode="numeric"
+                    placeholder="Min yrs"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                  <input
+                    value={filters.experienceMax}
+                    onChange={e => setFilters({ ...filters, experienceMax: e.target.value })}
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputMode="numeric"
+                    placeholder="Max yrs"
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                </div>
               </div>
 
               <div>

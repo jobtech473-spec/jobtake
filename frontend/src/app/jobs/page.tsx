@@ -8,12 +8,18 @@ import { JobsListClient } from "./JobsListClient";
 
 export const dynamic = "force-dynamic";
 
-type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; seniority?: string; collarType?: string; isMsme?: string; industry?: string; salaryMin?: string; salaryMax?: string; page?: string; sort?: string }>;
+type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; experienceMin?: string; experienceMax?: string; collarType?: string; isMsme?: string; industry?: string; salaryMin?: string; salaryMax?: string; page?: string; sort?: string }>;
 
 function parseSalaryLpa(value: string) {
   if (!value) return null;
   const lpa = Number(value);
   return Number.isFinite(lpa) && lpa >= 0 ? Math.round(lpa * 100000) : null;
+}
+
+function parseYears(value: string) {
+  if (!value) return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
 }
 
 export default async function JobsPage({ searchParams }: { searchParams: SP }) {
@@ -22,7 +28,8 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const location = sp.location || "";
   const categorySlug = sp.category || "";
   const workMode = sp.workMode || "";
-  const seniority = sp.seniority || "";
+  const experienceMin = sp.experienceMin || "";
+  const experienceMax = sp.experienceMax || "";
   const collarType = sp.collarType || "";
   const isMsme = sp.isMsme === "true";
   const industry = sp.industry || "";
@@ -30,6 +37,8 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const salaryMax = sp.salaryMax || "";
   const salaryMinValue = parseSalaryLpa(salaryMin);
   const salaryMaxValue = parseSalaryLpa(salaryMax);
+  const experienceMinValue = parseYears(experienceMin);
+  const experienceMaxValue = parseYears(experienceMax);
   const sort = sp.sort || "newest";
   const page = Math.max(1, parseInt(sp.page || "1", 10));
   const perPage = 12;
@@ -44,7 +53,6 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   if (location) where.location = { contains: location, mode: "insensitive" };
   if (categorySlug) where.category = { slug: categorySlug };
   if (workMode) where.workMode = workMode as Prisma.JobWhereInput["workMode"];
-  if (seniority) where.seniority = seniority as Prisma.JobWhereInput["seniority"];
   if (industry) where.company = { industry: { equals: industry } };
   if (collarType === "MSME") {
     andFilters.push({
@@ -59,6 +67,8 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   if (isMsme && collarType !== "MSME") (where as any).isMsme = true;
   if (salaryMinValue !== null) andFilters.push({ salaryMax: { gte: salaryMinValue }, hideSalary: false });
   if (salaryMaxValue !== null) andFilters.push({ salaryMin: { lte: salaryMaxValue }, hideSalary: false });
+  if (experienceMinValue !== null) andFilters.push({ experienceMax: { gte: experienceMinValue } });
+  if (experienceMaxValue !== null) andFilters.push({ experienceMin: { lte: experienceMaxValue } });
   if (andFilters.length) where.AND = andFilters;
 
   const orderBy: Prisma.JobOrderByWithRelationInput[] =
@@ -98,7 +108,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
         <p className="text-zinc-700 mt-3 text-base">Explore top roles across industries and locations.</p>
 
         <JobsListClient
-          initialFilters={{ q, location, category: categorySlug, workMode, seniority, collarType: collarType || (isMsme ? "MSME" : ""), industry, salaryMin, salaryMax }}
+          initialFilters={{ q, location, category: categorySlug, workMode, experienceMin, experienceMax, collarType: collarType || (isMsme ? "MSME" : ""), industry, salaryMin, salaryMax }}
           initialSort={sort}
           jobs={jobs.map(j => ({
             id: j.id,

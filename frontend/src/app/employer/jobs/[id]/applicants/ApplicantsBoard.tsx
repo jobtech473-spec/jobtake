@@ -118,34 +118,37 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         ))}
       </div>
 
-      {/* Search + Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, skills or email..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
+      {/* Search + Filters — styled to match the /jobs search bar */}
+      <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm">
+        <div className="flex flex-col md:flex-row">
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 flex-1 min-w-[200px]">
+            <Search className="h-4 w-4 text-zinc-400 shrink-0" />
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name, skills or email..."
+              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
+          </div>
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 md:w-[220px]">
+            <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
+            <input value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+              placeholder="Location"
+              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
+          </div>
+          <div className="flex items-center gap-2 px-4 py-3.5 md:w-[220px]">
+            <svg className="h-4 w-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <input value={expMin} onChange={e => setExpMin(e.target.value)} type="number" min="0" step="1"
+              placeholder="Min yrs" className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
+            <span className="text-zinc-300 shrink-0">–</span>
+            <input value={expMax} onChange={e => setExpMax(e.target.value)} type="number" min="0" step="1"
+              placeholder="Max yrs" className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
+          </div>
         </div>
-        <div className="relative w-[160px]">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-          <input value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-            placeholder="Location"
-            className="w-full pl-9 pr-3 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white" />
-        </div>
-        <div className="flex items-center gap-1.5 border border-zinc-200 bg-white rounded-xl px-3 py-2.5">
-          <input value={expMin} onChange={e => setExpMin(e.target.value)} type="number" min="0" step="1"
-            placeholder="Min yrs" className="w-[70px] text-sm outline-none bg-transparent placeholder:text-zinc-400" />
-          <span className="text-zinc-300">–</span>
-          <input value={expMax} onChange={e => setExpMax(e.target.value)} type="number" min="0" step="1"
-            placeholder="Max yrs" className="w-[70px] text-sm outline-none bg-transparent placeholder:text-zinc-400" />
-        </div>
-        {(search || locationFilter || expMin || expMax) && (
-          <button onClick={() => { setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); }}
-            className="text-xs font-semibold text-blue-600 hover:underline px-1">
-            Clear filters
-          </button>
-        )}
       </div>
+      {(search || locationFilter || expMin || expMax) && (
+        <button onClick={() => { setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); }}
+          className="text-xs font-semibold text-blue-600 hover:underline px-1">
+          Clear filters
+        </button>
+      )}
 
       {/* Applicant cards */}
       {filtered.length === 0 && (

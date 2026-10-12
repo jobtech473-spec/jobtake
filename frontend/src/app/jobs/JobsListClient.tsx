@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck, SlidersHorizontal } from "lucide-react";
+import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Job = {
@@ -149,16 +149,15 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 }
 
 export function JobsListClient({
-  initialFilters, jobs, total, page, perPage, categories, industries, locations, initialSort, isLoggedIn, initialSavedIds,
+  initialFilters, jobs, total, page, perPage, categories, locations, initialSort, isLoggedIn, initialSavedIds,
 }: {
   initialFilters: { q: string; location: string; category: string; workMode: string; experienceMin: string; experienceMax: string; collarType: string; industry: string; salaryMin: string; salaryMax: string };
-  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; locations: Industry[]; initialSort: string;
+  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; locations: Industry[]; initialSort: string;
   isLoggedIn: boolean; initialSavedIds: string[];
 }) {
   const router = useRouter();
   const sp = useSearchParams();
   const [, startT] = useTransition();
-  const [filters, setFilters] = useState(initialFilters);
   const [searchQ, setSearchQ] = useState(initialFilters.q);
   const [searchLoc, setSearchLoc] = useState(initialFilters.location);
   const [searchCat, setSearchCat] = useState(initialFilters.category);
@@ -167,13 +166,11 @@ export function JobsListClient({
   const [sortBy, setSortBy] = useState(initialSort);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set(initialSavedIds));
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Re-sync local filter state whenever a fresh navigation (search, sidebar
-  // filters, pagination, clear-all) brings in new URL-derived filters —
+  // Re-sync local search-bar state whenever a fresh navigation (search,
+  // pagination, a homepage quick-link) brings in new URL-derived filters —
   // otherwise the search bar can keep showing stale values after the URL changes.
   useEffect(() => {
-    setFilters(initialFilters);
     setSearchQ(initialFilters.q);
     setSearchLoc(initialFilters.location);
     setSearchCat(initialFilters.category);
@@ -231,16 +228,6 @@ export function JobsListClient({
     startT(() => router.push(`/jobs?${p.toString()}`));
   }
 
-  function applyFilters() {
-    const p = new URLSearchParams(sp);
-    for (const [k, v] of Object.entries(filters)) {
-      if (v) p.set(k, v); else p.delete(k);
-    }
-    p.delete("page");
-    startT(() => router.push(`/jobs?${p.toString()}`));
-    setShowMobileFilters(false);
-  }
-
   const pages = Math.max(1, Math.ceil(total / perPage));
 
   return (
@@ -291,163 +278,7 @@ export function JobsListClient({
         </div>
       </form>
 
-      {/* Main layout */}
-      <div className="mt-4 lg:hidden">
-        <button
-          type="button"
-          onClick={() => setShowMobileFilters(v => !v)}
-          className="flex items-center gap-2 text-sm font-semibold text-zinc-700 border border-zinc-200 bg-white px-4 py-2.5 rounded-xl hover:bg-zinc-50 transition"
-        >
-          <SlidersHorizontal className="h-4 w-4" /> Filters
-        </button>
-      </div>
-
-      <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6">
-
-        {/* Left sidebar */}
-        <aside className={`${showMobileFilters ? "block" : "hidden"} lg:block`}>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5 lg:sticky lg:top-28">
-            <div className="flex items-center justify-between mb-5">
-              <span className="font-bold text-zinc-900 text-base">Filters</span>
-              <button
-                onClick={() => {
-                  setFilters({ q: "", location: "", category: "", workMode: "", experienceMin: "", experienceMax: "", collarType: "", industry: "", salaryMin: "", salaryMax: "" });
-                  startT(() => router.push("/jobs"));
-                }}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                Clear all
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Location</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 z-10" />
-                  <LocationDropdown
-                    value={filters.location}
-                    onChange={v => setFilters({ ...filters, location: v })}
-                    locations={locations}
-                    placeholder="All Locations"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Category</label>
-                <CategoryDropdown
-                  value={filters.category}
-                  onChange={v => setFilters({ ...filters, category: v })}
-                  categories={categories}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Industry Type</label>
-                <select
-                  value={filters.industry}
-                  onChange={e => setFilters({ ...filters, industry: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">All Industries</option>
-                  {industries.map(i => <option key={i.id} value={i.value}>{i.label}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Experience (Years)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={filters.experienceMin}
-                    onChange={e => setFilters({ ...filters, experienceMin: e.target.value })}
-                    type="number"
-                    min="0"
-                    step="1"
-                    inputMode="numeric"
-                    placeholder="Min yrs"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                  <input
-                    value={filters.experienceMax}
-                    onChange={e => setFilters({ ...filters, experienceMax: e.target.value })}
-                    type="number"
-                    min="0"
-                    step="1"
-                    inputMode="numeric"
-                    placeholder="Max yrs"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Job Type</label>
-                <select
-                  value={filters.workMode}
-                  onChange={e => setFilters({ ...filters, workMode: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">Any Type</option>
-                  <option value="ONSITE">On-site</option>
-                  <option value="REMOTE">Remote</option>
-                  <option value="HYBRID">Hybrid</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Collar Type</label>
-                <select
-                  value={filters.collarType}
-                  onChange={e => setFilters({ ...filters, collarType: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">All Types</option>
-                  <option value="WHITE">White Collar</option>
-                  <option value="BLUE">Blue Collar</option>
-                  <option value="PINK">Pink Collar</option>
-                  <option value="GREY">Grey Collar</option>
-                  <option value="MSME">MSME</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Salary Range</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={filters.salaryMin}
-                    onChange={e => setFilters({ ...filters, salaryMin: e.target.value })}
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    inputMode="decimal"
-                    placeholder="Min LPA"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                  <input
-                    value={filters.salaryMax}
-                    onChange={e => setFilters({ ...filters, salaryMax: e.target.value })}
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    inputMode="decimal"
-                    placeholder="Max LPA"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={applyFilters}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-2"
-              >
-                Show {total} Results
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Right — job list */}
+      <div className="mt-6">
         <div>
           {/* Results header */}
           <div className="flex items-center justify-between mb-4">

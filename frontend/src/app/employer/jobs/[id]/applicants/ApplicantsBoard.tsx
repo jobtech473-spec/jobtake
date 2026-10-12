@@ -127,11 +127,19 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
               placeholder="Search by name, skills or email..."
               className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
           </div>
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 md:w-[220px]">
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 md:w-[200px]">
             <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
             <input value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
               placeholder="Location"
               className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
+          </div>
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 md:w-[170px]">
+            <Bookmark className="h-4 w-4 text-zinc-400 shrink-0" />
+            <select value={stageFilter} onChange={e => setStageFilter(e.target.value as Stage | "ALL")}
+              className="w-full bg-transparent text-sm text-zinc-800 outline-none appearance-none cursor-pointer">
+              <option value="ALL">All Stages</option>
+              {STAGES.map(s => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
+            </select>
           </div>
           <div className="flex items-center gap-2 px-4 py-3.5 md:w-[220px]">
             <svg className="h-4 w-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>

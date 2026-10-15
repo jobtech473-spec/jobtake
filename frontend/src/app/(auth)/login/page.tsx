@@ -58,19 +58,6 @@ function LoginForm() {
       <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-5 border-b border-zinc-100">
         <span className="sm:hidden shrink-0"><Logo size={38} /></span>
         <span className="hidden sm:inline-flex shrink-0"><Logo size={72} /></span>
-        <div className="flex items-center gap-3 text-sm text-zinc-600">
-          <span className="hidden sm:inline">{isEmployer ? "Looking for talent?" : "New here?"}</span>
-          <Link
-            href={isEmployer ? "/signup?role=employer" : "/signup?role=candidate"}
-            className={`text-center px-3 sm:px-4 py-2 rounded-lg border font-medium transition ${
-              isEmployer
-                ? "border-orange-400 text-orange-500 hover:bg-orange-50"
-                : "border-blue-500 text-blue-600 hover:bg-blue-50"
-            }`}
-          >
-            {isEmployer ? "Create Employer Account" : "Create an account"}
-          </Link>
-        </div>
       </header>
 
       {/* Body */}
@@ -145,6 +132,16 @@ function LoginForm() {
                 Sign in <ArrowRight className="h-4 w-4" />
               </button>
             </form>
+
+            <p className="text-center text-sm text-zinc-600 mt-4">
+              {isEmployer ? "Looking for talent?" : "New here?"}{" "}
+              <Link
+                href={isEmployer ? "/signup?role=employer" : "/signup?role=candidate"}
+                className={`font-semibold ${isEmployer ? "text-orange-500 hover:text-orange-600" : "text-blue-600 hover:text-blue-700"}`}
+              >
+                {isEmployer ? "Create Employer Account" : "Create an account"}
+              </Link>
+            </p>
 
             <div className="mt-6 flex items-center gap-3">
               <div className="h-px flex-1 bg-zinc-200" />

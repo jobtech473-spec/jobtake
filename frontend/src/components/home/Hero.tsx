@@ -141,7 +141,7 @@ export default function Hero({ isLoggedIn, locations }: { isLoggedIn: boolean; l
                   value={expMin}
                   onChange={(e) => setExpMin(e.target.value)}
                   type="number" min="0" step="1"
-                  placeholder="Min yrs"
+                  placeholder="Min Experience"
                   className="w-full bg-transparent text-[15px] text-zinc-900 outline-none placeholder:text-slate-500"
                 />
                 <span className="text-slate-300 shrink-0">–</span>
@@ -149,7 +149,7 @@ export default function Hero({ isLoggedIn, locations }: { isLoggedIn: boolean; l
                   value={expMax}
                   onChange={(e) => setExpMax(e.target.value)}
                   type="number" min="0" step="1"
-                  placeholder="Max yrs"
+                  placeholder="Max Experience"
                   className="w-full bg-transparent text-[15px] text-zinc-900 outline-none placeholder:text-slate-500"
                 />
               </div>

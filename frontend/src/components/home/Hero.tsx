@@ -47,7 +47,42 @@ const employerActions = [
   { icon: Building, label: "Build employer profile" },
 ];
 
-export default function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
+type LocOpt = { id: string; label: string; value: string };
+
+function LocationDropdown({ value, onChange, locations }: { value: string; onChange: (v: string) => void; locations: LocOpt[] }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = search.trim()
+    ? locations.filter(l => l.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : locations;
+
+  return (
+    <div className="relative w-full" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}>
+      <button type="button" onClick={() => setOpen(v => !v)} className="w-full text-left bg-transparent text-[15px] outline-none">
+        <span className={value ? "text-zinc-900" : "text-slate-500"}>{value || "Search for an area..."}</span>
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 min-w-[220px] rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search location..."
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div className="max-h-[220px] overflow-y-auto py-1">
+            <button type="button" onClick={() => { onChange(""); setOpen(false); setSearch(""); }}
+              className="block w-full px-3 py-2 text-left text-sm text-zinc-600 hover:bg-blue-50 transition">All Locations</button>
+            {filtered.map(l => (
+              <button key={l.id} type="button" onClick={() => { onChange(l.value); setOpen(false); setSearch(""); }}
+                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">{l.label}</button>
+            ))}
+            {!filtered.length && <div className="px-3 py-3 text-sm text-zinc-400">No matching location.</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Hero({ isLoggedIn, locations }: { isLoggedIn: boolean; locations: LocOpt[] }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [loc, setLoc] = useState("");
@@ -84,7 +119,7 @@ export default function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 1 }}
-            className="mt-10 max-w-5xl overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
+            className="mt-10 max-w-5xl rounded-xl border border-zinc-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
           >
             <div className="grid md:grid-cols-[1.08fr_0.92fr_1fr_auto]">
               <label className="flex min-h-[62px] items-center gap-3 border-b border-zinc-200 px-4 transition-colors hover:bg-zinc-50 md:border-b-0 md:border-r">
@@ -110,16 +145,10 @@ export default function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </select>
                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" />
               </label>
-              <label className="flex min-h-[62px] items-center gap-3 border-b border-zinc-200 px-4 transition-colors hover:bg-zinc-50 md:border-b-0 md:border-r">
+              <div className="flex min-h-[62px] items-center gap-3 border-b border-zinc-200 px-4 transition-colors hover:bg-zinc-50 md:border-b-0 md:border-r">
                 <MapPin className="h-5 w-5 shrink-0 text-slate-500" />
-                <input
-                  value={loc}
-                  onChange={(e) => setLoc(e.target.value)}
-                  placeholder="Search for an area..."
-                  className="w-full bg-transparent text-[15px] text-zinc-900 outline-none placeholder:text-slate-500"
-                  data-testid="hero-location-input"
-                />
-              </label>
+                <LocationDropdown value={loc} onChange={setLoc} locations={locations} />
+              </div>
               <div className="p-2">
                 <motion.button
                   type="submit"

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getManagedOptions } from "@/lib/job-options";
 import { PublicNav } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
 import Hero from "@/components/home/Hero";
@@ -21,7 +22,7 @@ const LOGO_PALETTE = [
 
 export default async function Home() {
   const me = await getCurrentUser();
-  const [featuredRaw, totalJobs, collarJobsRaw, partnerLogos] = await Promise.all([
+  const [featuredRaw, totalJobs, collarJobsRaw, partnerLogos, managedOptions] = await Promise.all([
     prisma.job.findMany({
       where: { status: "PUBLISHED", featured: true },
       orderBy: { publishedAt: "desc" },
@@ -35,6 +36,7 @@ export default async function Home() {
       include: { company: { select: { name: true } } },
     }),
     prisma.partnerLogo.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
+    getManagedOptions(true, true),
   ]);
 
   const COLLAR_TYPES = ["WHITE", "BLUE", "PINK", "GREY", "MSME"] as const;
@@ -89,7 +91,7 @@ export default async function Home() {
   return (
     <main data-testid="home-page">
       <PublicNav />
-      <Hero isLoggedIn={!!me} />
+      <Hero isLoggedIn={!!me} locations={managedOptions.LOCATION} />
       <LogoWall logos={partnerLogos} />
       <FeaturedJobs jobs={featured} />
       <CollarSections sections={collarSections} />

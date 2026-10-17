@@ -16,18 +16,16 @@ export default async function EmployerJobsPage() {
     where: { postedById: me.id },
     orderBy: { createdAt: "desc" },
     include: {
-      applications: { select: { stage: true, createdAt: true } },
+      applications: { select: { stage: true, createdAt: true, viewedByEmployerAt: true } },
       company: { select: { name: true } },
       category: { select: { name: true } },
     },
   });
 
-  const NEW_WINDOW_MS = 48 * 60 * 60 * 1000;
-  const now = Date.now();
   const jobs = jobsRaw.map(j => ({
     ...j,
     totalResponses: j.applications.length,
-    newResponses: j.applications.filter(a => now - a.createdAt.getTime() < NEW_WINDOW_MS).length,
+    newResponses: j.applications.filter(a => !a.viewedByEmployerAt).length,
     shortlistedCount: j.applications.filter(a => a.stage === "SCREENING").length,
   }));
 

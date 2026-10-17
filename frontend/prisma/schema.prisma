@@ -304,6 +304,7 @@ model Application {
   stage       ApplicationStage   @default(APPLIED)
   rating      Int?
   matchScore  Int?
+  viewedByEmployerAt DateTime?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   job         Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)

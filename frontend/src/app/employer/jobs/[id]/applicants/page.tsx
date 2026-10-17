@@ -37,6 +37,14 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
   if (!job) notFound();
   if (me.role !== "ADMIN" && job.postedById !== me.id) redirect("/employer");
 
+  const unseenIds = job.applications.filter(a => !a.viewedByEmployerAt).map(a => a.id);
+  if (unseenIds.length > 0) {
+    await prisma.application.updateMany({
+      where: { id: { in: unseenIds } },
+      data: { viewedByEmployerAt: new Date() },
+    });
+  }
+
   const apps = job.applications.map(a => ({
     id: a.id,
     stage: a.stage,

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import {
   ArrowLeft, Mail, Phone, MapPin, Zap,
-  Briefcase, GraduationCap, FileText, Globe, Linkedin, Github,
+  Briefcase, GraduationCap, FileText, Globe, Linkedin, Github, Download,
 } from "lucide-react";
 import { CandidateActionBar } from "./CandidateActionBar";
 import mammoth from "mammoth";
@@ -218,7 +218,18 @@ export default async function CandidateProfilePage({
 
         {/* Resumes */}
         <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-8">
-          <h3 className="text-lg font-bold text-zinc-900 mb-3 flex items-center gap-2"><FileText className="h-5 w-5 text-rose-500" /> Resume</h3>
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2"><FileText className="h-5 w-5 text-rose-500" /> Resume</h3>
+            {primaryResume && (
+              <a
+                href={`/api/resumes/${primaryResume.id}?download=1`}
+                download={primaryResume.fileName}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline"
+              >
+                <Download className="h-4 w-4" /> Download
+              </a>
+            )}
+          </div>
           {!primaryResume ? (
             <p className="text-base text-zinc-400">No resume uploaded.</p>
           ) : (

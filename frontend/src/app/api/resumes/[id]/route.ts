@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const download = req.nextUrl.searchParams.get("download") === "1";
   const me = await getCurrentUser();
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -32,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return new NextResponse(buffer, {
     headers: {
       "Content-Type": mime,
-      "Content-Disposition": `inline; filename="${resume.fileName.replace(/"/g, "")}"`,
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${resume.fileName.replace(/"/g, "")}"`,
       "Content-Length": String(buffer.length),
       "Cache-Control": "private, no-store",
     },

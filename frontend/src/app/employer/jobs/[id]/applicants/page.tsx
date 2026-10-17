@@ -26,6 +26,7 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
               experiences: { orderBy: [{ current: "desc" }, { startDate: "desc" }], take: 2, select: { title: true, company: true, current: true } },
               educations: { orderBy: { startYear: "desc" }, take: 1, select: { degree: true, field: true, school: true } },
               userSkills: { orderBy: { skill: { name: "asc" } }, take: 8, select: { skill: { select: { name: true } } } },
+              resumes: { orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }], take: 1, select: { id: true } },
             },
           },
           resume: true,
@@ -54,7 +55,9 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
       ...a.user,
       skills: a.user.userSkills.map(us => us.skill.name),
     },
-    resumeUrl: a.resume ? `/api/resumes/${a.resume.id}` : null,
+    // Prefer the candidate's current resume (always exists if present) over the
+    // snapshot captured at apply-time, which can go stale if they replaced it since.
+    resumeUrl: a.user.resumes[0] ? `/api/resumes/${a.user.resumes[0].id}` : a.resume ? `/api/resumes/${a.resume.id}` : null,
     coverLetter: a.coverLetter,
     createdAt: a.createdAt.toISOString(),
   }));

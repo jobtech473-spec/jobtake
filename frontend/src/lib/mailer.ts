@@ -28,18 +28,25 @@ export async function sendResumeCopy(opts: {
   fileName: string;
   buffer: Buffer;
   mime: string;
+  jobTitle?: string;
 }) {
   const t = getTransporter();
   if (!t) {
     console.error("SMTP not configured (SMTP_HOST/SMTP_USER/SMTP_PASS) — skipping resume email");
     return;
   }
+  const subject = opts.jobTitle
+    ? `New application — ${opts.applicantName} applied to ${opts.jobTitle}`
+    : `New resume uploaded — ${opts.applicantName}`;
+  const text = opts.jobTitle
+    ? `${opts.applicantName} (${opts.applicantEmail}) applied to "${opts.jobTitle}" on Jobtake.`
+    : `${opts.applicantName} (${opts.applicantEmail}) uploaded a new resume on Jobtake.`;
   try {
     await t.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: opts.to,
-      subject: `New resume uploaded — ${opts.applicantName}`,
-      text: `${opts.applicantName} (${opts.applicantEmail}) uploaded a new resume on Jobtake.`,
+      subject,
+      text,
       attachments: [{ filename: opts.fileName, content: opts.buffer, contentType: opts.mime }],
     });
   } catch (err) {

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { saveUpload } from "@/lib/uploads";
+import { saveUpload, mimeFromName } from "@/lib/uploads";
+import { sendResumeCopy } from "@/lib/mailer";
 import { z } from "zod";
 
 const ApplySchema = z.object({
@@ -45,6 +46,9 @@ export async function POST(req: NextRequest) {
   if (dup) return NextResponse.json({ error: "Already applied" }, { status: 409 });
 
   let resumeId = payload.resumeId;
+  let resumeFileName: string | null = null;
+  let resumeBase64: string | null = null;
+
   if (resumeFile) {
     const saved = await saveUpload(resumeFile, "resume");
     await prisma.resume.updateMany({ where: { userId: user.id }, data: { isPrimary: false } });
@@ -58,6 +62,14 @@ export async function POST(req: NextRequest) {
       },
     });
     resumeId = created.id;
+    resumeFileName = saved.fileName;
+    resumeBase64 = saved.fileUrl.slice(saved.fileUrl.indexOf(",") + 1);
+  } else if (resumeId) {
+    const existing = await prisma.resume.findUnique({ where: { id: resumeId } });
+    if (existing) {
+      resumeFileName = existing.fileName;
+      resumeBase64 = existing.fileUrl.slice(existing.fileUrl.indexOf(",") + 1);
+    }
   }
 
   const app = await prisma.application.create({
@@ -80,6 +92,18 @@ export async function POST(req: NextRequest) {
       linkUrl: `/employer/jobs/${job.id}/applicants`,
     },
   });
+
+  if (resumeFileName && resumeBase64) {
+    await sendResumeCopy({
+      to: "resume@jobtake.com",
+      applicantName: user.name,
+      applicantEmail: user.email,
+      fileName: resumeFileName,
+      buffer: Buffer.from(resumeBase64, "base64"),
+      mime: mimeFromName(resumeFileName),
+      jobTitle: job.title,
+    });
+  }
 
   return NextResponse.json({ application: app });
 }

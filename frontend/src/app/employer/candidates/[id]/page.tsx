@@ -9,8 +9,25 @@ import {
   Briefcase, GraduationCap, FileText, Globe, Linkedin, Github,
 } from "lucide-react";
 import { CandidateActionBar } from "./CandidateActionBar";
+import mammoth from "mammoth";
 
 export const dynamic = "force-dynamic";
+
+async function buildResumePreview(resume: { id: string; fileName: string; fileUrl: string }) {
+  const ext = resume.fileName.split(".").pop()?.toLowerCase();
+  if (ext === "pdf") return { type: "pdf" as const };
+  if (ext === "doc" || ext === "docx") {
+    try {
+      const base64 = resume.fileUrl.slice(resume.fileUrl.indexOf(",") + 1);
+      const buffer = Buffer.from(base64, "base64");
+      const { value: html } = await mammoth.convertToHtml({ buffer });
+      return { type: "html" as const, html };
+    } catch {
+      return { type: "unsupported" as const };
+    }
+  }
+  return { type: "unsupported" as const };
+}
 
 export default async function CandidateProfilePage({
   params, searchParams,
@@ -58,6 +75,8 @@ export default async function CandidateProfilePage({
   const primaryResume = user.resumes.find(r => r.isPrimary) ?? user.resumes[0];
   // Collapse repeat uploads of the same file (newest first, since user.resumes is ordered by createdAt desc)
   const uniqueResumes = Array.from(new Map(user.resumes.map(r => [r.fileName, r])).values());
+  const otherResumes = uniqueResumes.filter(r => r.id !== primaryResume?.id);
+  const resumePreview = primaryResume ? await buildResumePreview(primaryResume) : null;
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/jobs">
@@ -199,18 +218,46 @@ export default async function CandidateProfilePage({
 
         {/* Resumes */}
         <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-8">
-          <h3 className="text-lg font-bold text-zinc-900 mb-3 flex items-center gap-2"><FileText className="h-5 w-5 text-rose-500" /> Resumes</h3>
-          {uniqueResumes.length === 0 ? (
+          <h3 className="text-lg font-bold text-zinc-900 mb-3 flex items-center gap-2"><FileText className="h-5 w-5 text-rose-500" /> Resume</h3>
+          {!primaryResume ? (
             <p className="text-base text-zinc-400">No resume uploaded.</p>
           ) : (
-            <div className="space-y-2">
-              {uniqueResumes.map(r => (
-                <a key={r.id} href={`/api/resumes/${r.id}`} target="_blank" className="flex items-center justify-between px-4 py-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition text-base">
-                  <span className="text-zinc-700 font-medium truncate">{r.fileName}{r.isPrimary && <span className="ml-2 text-xs font-semibold text-blue-600">PRIMARY</span>}</span>
-                  <span className="text-zinc-400 text-sm shrink-0 ml-2">{(r.fileSize / 1024).toFixed(0)} KB</span>
-                </a>
-              ))}
-            </div>
+            <>
+              <div className="mb-3 text-sm text-zinc-500">{primaryResume.fileName}</div>
+              {resumePreview?.type === "pdf" && (
+                <iframe
+                  src={`/api/resumes/${primaryResume.id}`}
+                  className="w-full h-[900px] rounded-xl border border-zinc-100"
+                  title="Resume preview"
+                />
+              )}
+              {resumePreview?.type === "html" && (
+                <div
+                  className="prose prose-zinc max-w-none border border-zinc-100 rounded-xl p-6 max-h-[900px] overflow-y-auto text-base"
+                  dangerouslySetInnerHTML={{ __html: resumePreview.html }}
+                />
+              )}
+              {resumePreview?.type === "unsupported" && (
+                <div className="border border-zinc-100 rounded-xl p-6 text-center">
+                  <p className="text-base text-zinc-500">Preview isn&apos;t available for this file type.</p>
+                  <a href={`/api/resumes/${primaryResume.id}`} target="_blank" className="inline-block mt-2 text-sm font-semibold text-blue-600 hover:underline">
+                    Open {primaryResume.fileName}
+                  </a>
+                </div>
+              )}
+
+              {otherResumes.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-zinc-50 space-y-2">
+                  <div className="text-sm font-semibold text-zinc-500">Other uploads</div>
+                  {otherResumes.map(r => (
+                    <a key={r.id} href={`/api/resumes/${r.id}`} target="_blank" className="flex items-center justify-between px-4 py-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition text-base">
+                      <span className="text-zinc-700 font-medium truncate">{r.fileName}</span>
+                      <span className="text-zinc-400 text-sm shrink-0 ml-2">{(r.fileSize / 1024).toFixed(0)} KB</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

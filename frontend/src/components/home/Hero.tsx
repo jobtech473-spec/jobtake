@@ -5,7 +5,6 @@ import {
   MapPin,
   Sparkles,
   Briefcase,
-  ChevronDown,
   UserRound,
   ClipboardList,
   Bell,
@@ -86,12 +85,16 @@ export default function Hero({ isLoggedIn, locations }: { isLoggedIn: boolean; l
   const router = useRouter();
   const [q, setQ] = useState("");
   const [loc, setLoc] = useState("");
+  const [expMin, setExpMin] = useState("");
+  const [expMax, setExpMax] = useState("");
 
   function search(e: React.FormEvent) {
     e.preventDefault();
     const p = new URLSearchParams();
     if (q) p.set("q", q);
     if (loc) p.set("location", loc);
+    if (expMin) p.set("experienceMin", expMin);
+    if (expMax) p.set("experienceMax", expMax);
     router.push(`/jobs?${p.toString()}`);
   }
 
@@ -132,19 +135,24 @@ export default function Hero({ isLoggedIn, locations }: { isLoggedIn: boolean; l
                   data-testid="hero-search-input"
                 />
               </label>
-              <label className="flex min-h-[62px] items-center gap-3 border-b border-zinc-200 px-4 transition-colors hover:bg-zinc-50 md:border-b-0 md:border-r">
+              <div className="flex min-h-[62px] items-center gap-2 border-b border-zinc-200 px-4 transition-colors hover:bg-zinc-50 md:border-b-0 md:border-r">
                 <Briefcase className="h-5 w-5 shrink-0 text-slate-500" />
-                <select className="w-full appearance-none bg-transparent text-[15px] text-zinc-700 outline-none">
-                  <option>Your experience</option>
-                  <option>Fresher</option>
-                  <option>1-5 years</option>
-                  <option>5-10 years</option>
-                  <option>10-20 years</option>
-                  <option>20-30 years</option>
-                  <option>30+ years</option>
-                </select>
-                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" />
-              </label>
+                <input
+                  value={expMin}
+                  onChange={(e) => setExpMin(e.target.value)}
+                  type="number" min="0" step="1"
+                  placeholder="Min yrs"
+                  className="w-full bg-transparent text-[15px] text-zinc-900 outline-none placeholder:text-slate-500"
+                />
+                <span className="text-slate-300 shrink-0">–</span>
+                <input
+                  value={expMax}
+                  onChange={(e) => setExpMax(e.target.value)}
+                  type="number" min="0" step="1"
+                  placeholder="Max yrs"
+                  className="w-full bg-transparent text-[15px] text-zinc-900 outline-none placeholder:text-slate-500"
+                />
+              </div>
               <div className="flex min-h-[62px] items-center gap-3 border-b border-zinc-200 px-4 transition-colors hover:bg-zinc-50 md:border-b-0 md:border-r">
                 <MapPin className="h-5 w-5 shrink-0 text-slate-500" />
                 <LocationDropdown value={loc} onChange={setLoc} locations={locations} />

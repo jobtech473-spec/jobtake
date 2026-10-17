@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users, SlidersHorizontal } from "lucide-react";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo, personSlug } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
 
@@ -283,7 +283,7 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
           <div key={a.id} className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm" data-testid={`applicant-${a.id}`}>
             <div className="flex items-start gap-4">
               {/* Avatar */}
-              <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank" className="shrink-0">
+              <Link href={`/employer/candidates/${personSlug(a.user.name, a.user.id)}?job=${jobId}`} target="_blank" className="shrink-0">
                 {a.user.avatarUrl ? (
                   <img src={a.user.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
                 ) : (
@@ -293,7 +293,7 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank" className="font-bold text-zinc-900 text-sm hover:text-blue-600 hover:underline">
+                  <Link href={`/employer/candidates/${personSlug(a.user.name, a.user.id)}?job=${jobId}`} target="_blank" className="font-bold text-zinc-900 text-sm hover:text-blue-600 hover:underline">
                     {a.user.name}
                   </Link>
                   {stage === "APPLIED" && <span className="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full uppercase">New</span>}
@@ -386,7 +386,7 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
                 {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />}
               </div>
               <div className="flex items-center gap-2">
-                <Link href={`/employer/candidates/${a.user.id}?job=${jobId}`} target="_blank"
+                <Link href={`/employer/candidates/${personSlug(a.user.name, a.user.id)}?job=${jobId}`} target="_blank"
                   className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 px-3 py-1.5 transition">
                   View Full Profile <ExternalLink className="h-3 w-3" />
                 </Link>

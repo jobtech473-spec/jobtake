@@ -17,6 +17,17 @@ export function slugify(input: string): string {
     .slice(0, 80);
 }
 
+// Readable URL for a person's profile: "<name-slug>-<id>". Since cuids
+// contain no dashes, the real id is always recoverable as the last segment.
+export function personSlug(name: string, id: string): string {
+  return `${slugify(name)}-${id}`;
+}
+
+export function idFromPersonSlug(slug: string): string {
+  const parts = slug.split("-");
+  return parts[parts.length - 1];
+}
+
 export function formatSalary(min?: number | null, max?: number | null, currency = "USD", period = "year") {
   if (!min && !max) return "Competitive";
   const fmt = (n: number) => {

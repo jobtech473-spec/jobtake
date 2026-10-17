@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo, idFromPersonSlug } from "@/lib/utils";
 import {
   ArrowLeft, Mail, Phone, MapPin, Zap,
   Briefcase, GraduationCap, FileText, Globe, Linkedin, Github, Download,
@@ -38,7 +38,8 @@ export default async function CandidateProfilePage({
   const me = await getCurrentUser();
   if (!me || (me.role !== "EMPLOYER" && me.role !== "ADMIN")) redirect("/employers/login");
 
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = idFromPersonSlug(rawId);
   const { job: jobId } = await searchParams;
   const backHref = jobId ? `/employer/jobs/${jobId}/applicants` : "/employer/jobs";
 

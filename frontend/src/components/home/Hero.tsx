@@ -24,8 +24,8 @@ import {
 const JOB_CATEGORIES = [
   { icon: Monitor,    iconBg: "bg-blue-50",   iconColor: "text-blue-600",   label: "White Collar Jobs",  desc: "Office & professional opportunities",   href: "/jobs?collarType=WHITE" },
   { icon: HardHat,   iconBg: "bg-teal-50",   iconColor: "text-teal-600",   label: "Blue Collar Jobs",   desc: "Skilled & frontline opportunities",      href: "/jobs?collarType=BLUE"  },
-  { icon: Users,     iconBg: "bg-purple-50", iconColor: "text-purple-600", label: "Diversity Jobs",    desc: "Inclusive workplaces, equal opportunities", href: "/jobs?collarType=PINK" },
   { icon: Store,     iconBg: "bg-orange-50", iconColor: "text-orange-500", label: "MSME Jobs",          desc: "Jobs from growing small businesses",     href: "/jobs?collarType=MSME"  },
+  { icon: Users,     iconBg: "bg-purple-50", iconColor: "text-purple-600", label: "Diversity Jobs",    desc: "Inclusive workplaces, equal opportunities", href: "/jobs?collarType=PINK" },
   { icon: LayoutGrid,iconBg: "bg-zinc-100",  iconColor: "text-zinc-600",   label: "View All Jobs",      desc: "Explore all job opportunities",          href: "/jobs"                  },
 ];
 import { useRouter } from "next/navigation";

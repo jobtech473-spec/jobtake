@@ -224,13 +224,23 @@ export function CompaniesTable({
               >
                 <Star className="h-3.5 w-3.5" /> {selected.featured ? "Unfeature" : "Feature"}
               </button>
-              <button
-                disabled={busy}
-                onClick={() => patch(selected.id, { status: selected.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED" })}
-                className={`flex items-center justify-center gap-1.5 border rounded-lg py-2 text-xs font-semibold disabled:opacity-50 ${selected.status === "SUSPENDED" ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50" : "border-red-200 text-red-600 hover:bg-red-50"}`}
-              >
-                {selected.status === "SUSPENDED" ? "Reactivate" : "Suspend"}
-              </button>
+              {selected.status === "PENDING" ? (
+                <button
+                  disabled={busy}
+                  onClick={() => patch(selected.id, { status: "ACTIVE" })}
+                  className="flex items-center justify-center gap-1.5 border border-emerald-200 text-emerald-600 rounded-lg py-2 text-xs font-semibold hover:bg-emerald-50 disabled:opacity-50"
+                >
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />} Approve
+                </button>
+              ) : (
+                <button
+                  disabled={busy}
+                  onClick={() => patch(selected.id, { status: selected.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED" })}
+                  className={`flex items-center justify-center gap-1.5 border rounded-lg py-2 text-xs font-semibold disabled:opacity-50 ${selected.status === "SUSPENDED" ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50" : "border-red-200 text-red-600 hover:bg-red-50"}`}
+                >
+                  {selected.status === "SUSPENDED" ? "Reactivate" : "Suspend"}
+                </button>
+              )}
             </div>
 
             {/* Info */}

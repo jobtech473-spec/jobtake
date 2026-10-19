@@ -41,7 +41,8 @@ const STAGE_BADGE: Record<Stage, string> = {
 
 const AVATAR_COLORS = ["bg-blue-600","bg-violet-600","bg-teal-600","bg-rose-500","bg-orange-500","bg-indigo-600"];
 
-const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
+const GENDER_OPTIONS = ["Male", "Female"];
+const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
 
 export function ApplicantsBoard({ applications, jobId }: { applications: App[]; jobId: string; jobTitle?: string }) {
   const router = useRouter();
@@ -59,8 +60,11 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [genderFilter, setGenderFilter] = useState("");
   const [ageMin, setAgeMin] = useState("");
   const [ageMax, setAgeMax] = useState("");
+  const [noticePeriodFilter, setNoticePeriodFilter] = useState("");
+  const [degreeFilter, setDegreeFilter] = useState("");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
+  const degreeOf = (a: App) => a.user.educations?.[0]?.degree ?? null;
   const ageOf = (a: App) => {
     if (!a.user.dateOfBirth) return null;
     const dob = new Date(a.user.dateOfBirth);
@@ -73,6 +77,11 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     for (const s of STAGES) c[s] = list.filter(a => stageOf(a) === s).length;
     return c;
   }, [list, localStages]);
+
+  const degreeOptions = useMemo(
+    () => Array.from(new Set(list.map(degreeOf).filter((d): d is string => !!d))).sort(),
+    [list]
+  );
 
   const TABS: { label: string; value: Stage | "ALL" }[] = [
     { label: "Applicants", value: "ALL" },
@@ -95,16 +104,20 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax))) &&
     (!genderFilter || a.user.gender === genderFilter) &&
     (!ageMin || (ageOf(a) != null && ageOf(a)! >= Number(ageMin))) &&
-    (!ageMax || (ageOf(a) != null && ageOf(a)! <= Number(ageMax)))
+    (!ageMax || (ageOf(a) != null && ageOf(a)! <= Number(ageMax))) &&
+    (!noticePeriodFilter || a.user.noticePeriod === noticePeriodFilter) &&
+    (!degreeFilter || degreeOf(a) === degreeFilter)
   );
 
   const sidebarFiltersCount = [
-    search, locationFilter, expMin, expMax, expSalaryMin, expSalaryMax, ageMin, ageMax, genderFilter,
+    search, locationFilter, expMin, expMax, expSalaryMin, expSalaryMax, ageMin, ageMax,
+    genderFilter, noticePeriodFilter, degreeFilter,
   ].filter(Boolean).length;
 
   function resetSidebarFilters() {
     setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax("");
     setExpSalaryMin(""); setExpSalaryMax(""); setAgeMin(""); setAgeMax(""); setGenderFilter("");
+    setNoticePeriodFilter(""); setDegreeFilter("");
   }
 
   async function updateStage(id: string, stage: Stage) {
@@ -181,12 +194,16 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
             <RangeInputs min={expMin} max={expMax} onMin={setExpMin} onMax={setExpMax} />
           </FilterField>
 
-          <FilterField label="Expected Salary (Lacs)">
+          <FilterField label="Salary (Lacs)">
             <RangeInputs min={expSalaryMin} max={expSalaryMax} onMin={setExpSalaryMin} onMax={setExpSalaryMax} step="0.1" />
           </FilterField>
 
-          <FilterField label="Age (Years)">
-            <RangeInputs min={ageMin} max={ageMax} onMin={setAgeMin} onMax={setAgeMax} />
+          <FilterField label="Education">
+            <select value={degreeFilter} onChange={e => setDegreeFilter(e.target.value)} disabled={degreeOptions.length === 0}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white disabled:opacity-50">
+              <option value="">Any Education</option>
+              {degreeOptions.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
           </FilterField>
 
           <FilterField label="Gender">
@@ -195,6 +212,18 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
               <option value="">Any Gender</option>
               {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
+          </FilterField>
+
+          <FilterField label="Notice Period">
+            <select value={noticePeriodFilter} onChange={e => setNoticePeriodFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white">
+              <option value="">Any Notice Period</option>
+              {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </FilterField>
+
+          <FilterField label="Age (Years)">
+            <RangeInputs min={ageMin} max={ageMax} onMin={setAgeMin} onMax={setAgeMax} />
           </FilterField>
         </aside>
 

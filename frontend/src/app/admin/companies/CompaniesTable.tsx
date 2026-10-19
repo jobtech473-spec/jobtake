@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -47,6 +47,13 @@ export function CompaniesTable({
   const [industryFilter, setIndustryFilter] = useState("");
   const [selected, setSelected] = useState<Company | null>(companies[0] ?? null);
   const [busy, setBusy] = useState(false);
+
+  // Re-sync the selected company's detail panel whenever fresh data comes in
+  // (e.g. after router.refresh() post-mutation) — otherwise it keeps showing
+  // the stale status/flags from before the action that was just taken.
+  useEffect(() => {
+    setSelected(prev => (prev ? companies.find(c => c.id === prev.id) ?? prev : companies[0] ?? null));
+  }, [companies]);
 
   const industries = useMemo(() => Array.from(new Set(companies.map(c => c.industry).filter(Boolean))) as string[], [companies]);
 

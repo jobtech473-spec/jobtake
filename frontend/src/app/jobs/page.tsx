@@ -8,7 +8,7 @@ import { JobsListClient } from "./JobsListClient";
 
 export const dynamic = "force-dynamic";
 
-type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; experienceMin?: string; experienceMax?: string; collarType?: string; isMsme?: string; industry?: string; salaryMin?: string; salaryMax?: string; page?: string; sort?: string }>;
+type SP = Promise<{ q?: string; location?: string; category?: string; workMode?: string; experienceMin?: string; experienceMax?: string; collarType?: string; isMsme?: string; industry?: string; salaryMin?: string; salaryMax?: string; education?: string; page?: string; sort?: string }>;
 
 function parseSalaryLpa(value: string) {
   if (!value) return null;
@@ -35,6 +35,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   const industry = sp.industry || "";
   const salaryMin = sp.salaryMin || "";
   const salaryMax = sp.salaryMax || "";
+  const education = sp.education || "";
   const salaryMinValue = parseSalaryLpa(salaryMin);
   const salaryMaxValue = parseSalaryLpa(salaryMax);
   const experienceMinValue = parseYears(experienceMin);
@@ -54,6 +55,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
   if (categorySlug) where.category = { slug: categorySlug };
   if (workMode) where.workMode = workMode as Prisma.JobWhereInput["workMode"];
   if (industry) where.company = { industry: { equals: industry } };
+  if (education) where.minEducation = { has: education };
   if (collarType === "MSME") {
     andFilters.push({
       OR: [
@@ -108,7 +110,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
         <p className="text-zinc-700 mt-3 text-base">Explore top roles across industries and locations.</p>
 
         <JobsListClient
-          initialFilters={{ q, location, category: categorySlug, workMode, experienceMin, experienceMax, collarType: collarType || (isMsme ? "MSME" : ""), industry, salaryMin, salaryMax }}
+          initialFilters={{ q, location, category: categorySlug, workMode, experienceMin, experienceMax, collarType: collarType || (isMsme ? "MSME" : ""), industry, salaryMin, salaryMax, education }}
           initialSort={sort}
           jobs={jobs.map(j => ({
             id: j.id,
@@ -138,6 +140,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
           categories={categories}
           industries={managedOptions.INDUSTRY}
           locations={managedOptions.LOCATION}
+          educationOptions={managedOptions.EDUCATION}
           isLoggedIn={!!me}
           initialSavedIds={savedJobs.map(s => s.jobId)}
         />

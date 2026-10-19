@@ -149,10 +149,10 @@ function formatExperience(min: number | null, max: number | null, fallback: stri
 }
 
 export function JobsListClient({
-  initialFilters, jobs, total, page, perPage, categories, industries, locations, initialSort, isLoggedIn, initialSavedIds,
+  initialFilters, jobs, total, page, perPage, categories, industries, locations, educationOptions, initialSort, isLoggedIn, initialSavedIds,
 }: {
-  initialFilters: { q: string; location: string; category: string; workMode: string; experienceMin: string; experienceMax: string; collarType: string; industry: string; salaryMin: string; salaryMax: string };
-  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; locations: Industry[]; initialSort: string;
+  initialFilters: { q: string; location: string; category: string; workMode: string; experienceMin: string; experienceMax: string; collarType: string; industry: string; salaryMin: string; salaryMax: string; education: string };
+  jobs: Job[]; total: number; page: number; perPage: number; categories: Cat[]; industries: Industry[]; locations: Industry[]; educationOptions: Industry[]; initialSort: string;
   isLoggedIn: boolean; initialSavedIds: string[];
 }) {
   const router = useRouter();
@@ -171,6 +171,7 @@ export function JobsListClient({
   const [collarTypeFilter, setCollarTypeFilter] = useState(initialFilters.collarType);
   const [salaryMinFilter, setSalaryMinFilter] = useState(initialFilters.salaryMin);
   const [salaryMaxFilter, setSalaryMaxFilter] = useState(initialFilters.salaryMax);
+  const [educationFilter, setEducationFilter] = useState(initialFilters.education);
 
   // Re-sync local search-bar state whenever a fresh navigation (search,
   // pagination, a homepage quick-link) brings in new URL-derived filters —
@@ -186,9 +187,10 @@ export function JobsListClient({
     setCollarTypeFilter(initialFilters.collarType);
     setSalaryMinFilter(initialFilters.salaryMin);
     setSalaryMaxFilter(initialFilters.salaryMax);
+    setEducationFilter(initialFilters.education);
   }, [initialFilters]);
 
-  const moreFiltersCount = [industryFilter, workModeFilter, collarTypeFilter, salaryMinFilter, salaryMaxFilter].filter(Boolean).length;
+  const moreFiltersCount = [industryFilter, workModeFilter, collarTypeFilter, salaryMinFilter, salaryMaxFilter, educationFilter].filter(Boolean).length;
 
   function applyMoreFilters() {
     const p = new URLSearchParams(sp);
@@ -197,12 +199,13 @@ export function JobsListClient({
     if (collarTypeFilter) p.set("collarType", collarTypeFilter); else p.delete("collarType");
     if (salaryMinFilter) p.set("salaryMin", salaryMinFilter); else p.delete("salaryMin");
     if (salaryMaxFilter) p.set("salaryMax", salaryMaxFilter); else p.delete("salaryMax");
+    if (educationFilter) p.set("education", educationFilter); else p.delete("education");
     p.delete("page");
     startT(() => router.push(`/jobs?${p.toString()}`));
   }
 
   function resetMoreFilters() {
-    setIndustryFilter(""); setWorkModeFilter(""); setCollarTypeFilter(""); setSalaryMinFilter(""); setSalaryMaxFilter("");
+    setIndustryFilter(""); setWorkModeFilter(""); setCollarTypeFilter(""); setSalaryMinFilter(""); setSalaryMaxFilter(""); setEducationFilter("");
   }
 
   async function toggleSave(e: React.MouseEvent, jobId: string) {
@@ -378,6 +381,18 @@ export function JobsListClient({
                 className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Education</label>
+            <select
+              value={educationFilter}
+              onChange={e => setEducationFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+            >
+              <option value="">Any Education</option>
+              {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+            </select>
           </div>
 
           <button type="button" onClick={applyMoreFilters} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-2.5 rounded-lg transition">

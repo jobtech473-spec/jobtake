@@ -41,7 +41,6 @@ const STAGE_BADGE: Record<Stage, string> = {
 
 const AVATAR_COLORS = ["bg-blue-600","bg-violet-600","bg-teal-600","bg-rose-500","bg-orange-500","bg-indigo-600"];
 
-const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 
 export function ApplicantsBoard({ applications, jobId }: { applications: App[]; jobId: string; jobTitle?: string }) {
@@ -55,22 +54,13 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [expMin, setExpMin] = useState("");
   const [expMax, setExpMax] = useState("");
   const [stageFilter, setStageFilter] = useState<Stage | "ALL">("ALL");
-  const [noticePeriodFilter, setNoticePeriodFilter] = useState("");
   const [expSalaryMin, setExpSalaryMin] = useState("");
   const [expSalaryMax, setExpSalaryMax] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
-  const [degreeFilter, setDegreeFilter] = useState("");
-  const [designationFilter, setDesignationFilter] = useState("");
-  const [companyFilter, setCompanyFilter] = useState("");
-  const [collegeFilter, setCollegeFilter] = useState("");
-  const [curSalaryMin, setCurSalaryMin] = useState("");
-  const [curSalaryMax, setCurSalaryMax] = useState("");
   const [ageMin, setAgeMin] = useState("");
   const [ageMax, setAgeMax] = useState("");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
-  const degreeOf = (a: App) => a.user.educations?.[0]?.degree ?? null;
-  const currentExpOf = (a: App) => a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0] ?? null;
   const ageOf = (a: App) => {
     if (!a.user.dateOfBirth) return null;
     const dob = new Date(a.user.dateOfBirth);
@@ -83,11 +73,6 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     for (const s of STAGES) c[s] = list.filter(a => stageOf(a) === s).length;
     return c;
   }, [list, localStages]);
-
-  const degreeOptions = useMemo(
-    () => Array.from(new Set(list.map(degreeOf).filter((d): d is string => !!d))).sort(),
-    [list]
-  );
 
   const TABS: { label: string; value: Stage | "ALL" }[] = [
     { label: "Applicants", value: "ALL" },
@@ -106,29 +91,20 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!locationFilter || (a.user.location ?? "").toLowerCase().includes(locationFilter.toLowerCase())) &&
     (!expMin || (a.user.yearsExperience != null && a.user.yearsExperience >= Number(expMin))) &&
     (!expMax || (a.user.yearsExperience != null && a.user.yearsExperience <= Number(expMax))) &&
-    (!noticePeriodFilter || a.user.noticePeriod === noticePeriodFilter) &&
     (!expSalaryMin || (a.user.expectedSalary != null && a.user.expectedSalary >= Number(expSalaryMin))) &&
     (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax))) &&
     (!genderFilter || a.user.gender === genderFilter) &&
-    (!degreeFilter || degreeOf(a) === degreeFilter) &&
-    (!designationFilter || (currentExpOf(a)?.title ?? "").toLowerCase().includes(designationFilter.toLowerCase())) &&
-    (!companyFilter || (currentExpOf(a)?.company ?? "").toLowerCase().includes(companyFilter.toLowerCase())) &&
-    (!collegeFilter || (a.user.educations?.[0]?.school ?? "").toLowerCase().includes(collegeFilter.toLowerCase())) &&
-    (!curSalaryMin || (a.user.currentSalary != null && a.user.currentSalary >= Number(curSalaryMin))) &&
-    (!curSalaryMax || (a.user.currentSalary != null && a.user.currentSalary <= Number(curSalaryMax))) &&
     (!ageMin || (ageOf(a) != null && ageOf(a)! >= Number(ageMin))) &&
     (!ageMax || (ageOf(a) != null && ageOf(a)! <= Number(ageMax)))
   );
 
   const sidebarFiltersCount = [
-    search, locationFilter, expMin, expMax, curSalaryMin, curSalaryMax, expSalaryMin, expSalaryMax,
-    designationFilter, companyFilter, noticePeriodFilter, degreeFilter, collegeFilter, ageMin, ageMax, genderFilter,
+    search, locationFilter, expMin, expMax, expSalaryMin, expSalaryMax, ageMin, ageMax, genderFilter,
   ].filter(Boolean).length;
 
   function resetSidebarFilters() {
-    setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); setCurSalaryMin(""); setCurSalaryMax("");
-    setExpSalaryMin(""); setExpSalaryMax(""); setDesignationFilter(""); setCompanyFilter("");
-    setNoticePeriodFilter(""); setDegreeFilter(""); setCollegeFilter(""); setAgeMin(""); setAgeMax(""); setGenderFilter("");
+    setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax("");
+    setExpSalaryMin(""); setExpSalaryMax(""); setAgeMin(""); setAgeMax(""); setGenderFilter("");
   }
 
   async function updateStage(id: string, stage: Stage) {
@@ -205,46 +181,8 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
             <RangeInputs min={expMin} max={expMax} onMin={setExpMin} onMax={setExpMax} />
           </FilterField>
 
-          <FilterField label="Current Salary (Lacs)">
-            <RangeInputs min={curSalaryMin} max={curSalaryMax} onMin={setCurSalaryMin} onMax={setCurSalaryMax} step="0.1" />
-          </FilterField>
-
           <FilterField label="Expected Salary (Lacs)">
             <RangeInputs min={expSalaryMin} max={expSalaryMax} onMin={setExpSalaryMin} onMax={setExpSalaryMax} step="0.1" />
-          </FilterField>
-
-          <FilterField label="Current Designation">
-            <input value={designationFilter} onChange={e => setDesignationFilter(e.target.value)}
-              placeholder="e.g. Sales Manager"
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
-          </FilterField>
-
-          <FilterField label="Current Company">
-            <input value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
-              placeholder="e.g. SV Management"
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
-          </FilterField>
-
-          <FilterField label="Notice Period">
-            <select value={noticePeriodFilter} onChange={e => setNoticePeriodFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white">
-              <option value="">Any Notice Period</option>
-              {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </FilterField>
-
-          <FilterField label="Degree / Course">
-            <select value={degreeFilter} onChange={e => setDegreeFilter(e.target.value)} disabled={degreeOptions.length === 0}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white disabled:opacity-50">
-              <option value="">Any Degree</option>
-              {degreeOptions.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </FilterField>
-
-          <FilterField label="College Name">
-            <input value={collegeFilter} onChange={e => setCollegeFilter(e.target.value)}
-              placeholder="e.g. IPS Academy"
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
           </FilterField>
 
           <FilterField label="Age (Years)">

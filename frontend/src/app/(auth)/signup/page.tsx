@@ -11,6 +11,24 @@ import { Logo } from "@/components/Logo";
 
 const MAX_GST_CERT_BYTES = 2 * 1024 * 1024;
 
+const FIELD_LABEL: Record<string, string> = {
+  email: "Email", password: "Password", name: "Name", phone: "Phone",
+  gstNumber: "GST number", gstCertificateUrl: "GST certificate", companyName: "Company name",
+};
+
+function signupErrorMessage(data: { error?: string; details?: { fieldErrors?: Record<string, string[]> } }): string {
+  const fieldErrors = data.details?.fieldErrors;
+  if (fieldErrors) {
+    const first = Object.entries(fieldErrors).find(([, v]) => Array.isArray(v) && v.length > 0);
+    if (first) {
+      const [field, messages] = first;
+      const label = FIELD_LABEL[field] ?? field;
+      return `${label}: ${messages[0]}`;
+    }
+  }
+  return data.error || "Signup failed";
+}
+
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -82,7 +100,7 @@ function EmployerSignupForm() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Signup failed"); setLoading(false); return; }
+      if (!res.ok) { setError(signupErrorMessage(data)); setLoading(false); return; }
       router.push("/employer"); router.refresh();
     } catch {
       setError("Network error"); setLoading(false);
@@ -351,7 +369,7 @@ function CandidateSignupForm() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Signup failed"); setLoading(false); return; }
+      if (!res.ok) { setError(signupErrorMessage(data)); setLoading(false); return; }
       router.push("/dashboard"); router.refresh();
     } catch {
       setError("Network error"); setLoading(false);

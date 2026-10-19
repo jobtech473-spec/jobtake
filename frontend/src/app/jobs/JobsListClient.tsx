@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck, SlidersHorizontal } from "lucide-react";
+import { MapPin, Briefcase, Search, ChevronDown, Bookmark, BadgeCheck } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 type Job = {
@@ -166,7 +166,6 @@ export function JobsListClient({
   const [sortBy, setSortBy] = useState(initialSort);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set(initialSavedIds));
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [moreOpen, setMoreOpen] = useState(false);
   const [industryFilter, setIndustryFilter] = useState(initialFilters.industry);
   const [workModeFilter, setWorkModeFilter] = useState(initialFilters.workMode);
   const [collarTypeFilter, setCollarTypeFilter] = useState(initialFilters.collarType);
@@ -200,7 +199,6 @@ export function JobsListClient({
     if (salaryMaxFilter) p.set("salaryMax", salaryMaxFilter); else p.delete("salaryMax");
     p.delete("page");
     startT(() => router.push(`/jobs?${p.toString()}`));
-    setMoreOpen(false);
   }
 
   function resetMoreFilters() {
@@ -307,97 +305,86 @@ export function JobsListClient({
         </div>
       </form>
 
-      {/* More Filters */}
-      <div className="mt-3 flex items-center gap-2">
-        <div className="relative" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setMoreOpen(false); }}>
-          <button
-            type="button"
-            onClick={() => setMoreOpen(v => !v)}
-            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 border border-zinc-200 bg-white px-4 py-2.5 rounded-xl hover:bg-zinc-50 transition"
-          >
-            <SlidersHorizontal className="h-4 w-4" /> More Filters
+      <div className="mt-6 grid lg:grid-cols-[260px_1fr] gap-6 items-start">
+
+        {/* Filters sidebar */}
+        <aside className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-4 space-y-4 lg:sticky lg:top-6">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-zinc-900 text-sm">Filters</span>
             {moreFiltersCount > 0 && (
-              <span className="ml-0.5 h-5 w-5 rounded-full bg-blue-600 text-white text-[11px] font-bold grid place-items-center">{moreFiltersCount}</span>
+              <button type="button" onClick={resetMoreFilters} className="text-xs font-semibold text-blue-600 hover:underline">
+                Clear all
+              </button>
             )}
-          </button>
-          {moreOpen && (
-            <div className="absolute left-0 top-full z-20 mt-2 w-[300px] rounded-xl border border-zinc-200 bg-white shadow-xl p-4 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Industry Type</label>
-                <select
-                  value={industryFilter}
-                  onChange={e => setIndustryFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">All Industries</option>
-                  {industries.map(i => <option key={i.id} value={i.value}>{i.label}</option>)}
-                </select>
-              </div>
+          </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Job Type</label>
-                <select
-                  value={workModeFilter}
-                  onChange={e => setWorkModeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">Any Type</option>
-                  <option value="ONSITE">On-site</option>
-                  <option value="REMOTE">Remote</option>
-                  <option value="HYBRID">Hybrid</option>
-                </select>
-              </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Industry Type</label>
+            <select
+              value={industryFilter}
+              onChange={e => setIndustryFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+            >
+              <option value="">All Industries</option>
+              {industries.map(i => <option key={i.id} value={i.value}>{i.label}</option>)}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Collar Type</label>
-                <select
-                  value={collarTypeFilter}
-                  onChange={e => setCollarTypeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">All Types</option>
-                  <option value="WHITE">White Collar</option>
-                  <option value="BLUE">Blue Collar</option>
-                  <option value="PINK">Pink Collar</option>
-                  <option value="GREY">Grey Collar</option>
-                  <option value="MSME">MSME</option>
-                </select>
-              </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Job Type</label>
+            <select
+              value={workModeFilter}
+              onChange={e => setWorkModeFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+            >
+              <option value="">Any Type</option>
+              <option value="ONSITE">On-site</option>
+              <option value="REMOTE">Remote</option>
+              <option value="HYBRID">Hybrid</option>
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Salary Range (LPA)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={salaryMinFilter}
-                    onChange={e => setSalaryMinFilter(e.target.value)}
-                    type="number" min="0" step="0.1" inputMode="decimal"
-                    placeholder="Min LPA"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                  <input
-                    value={salaryMaxFilter}
-                    onChange={e => setSalaryMaxFilter(e.target.value)}
-                    type="number" min="0" step="0.1" inputMode="decimal"
-                    placeholder="Max LPA"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                </div>
-              </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Collar Type</label>
+            <select
+              value={collarTypeFilter}
+              onChange={e => setCollarTypeFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
+            >
+              <option value="">All Types</option>
+              <option value="WHITE">White Collar</option>
+              <option value="BLUE">Blue Collar</option>
+              <option value="PINK">Pink Collar</option>
+              <option value="GREY">Grey Collar</option>
+              <option value="MSME">MSME</option>
+            </select>
+          </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <button type="button" onClick={resetMoreFilters} className="text-xs font-semibold text-zinc-500 hover:underline">
-                  Reset
-                </button>
-                <button type="button" onClick={applyMoreFilters} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2 rounded-lg transition">
-                  Apply
-                </button>
-              </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Salary Range (LPA)</label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={salaryMinFilter}
+                onChange={e => setSalaryMinFilter(e.target.value)}
+                type="number" min="0" step="0.1" inputMode="decimal"
+                placeholder="Min LPA"
+                className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+              />
+              <input
+                value={salaryMaxFilter}
+                onChange={e => setSalaryMaxFilter(e.target.value)}
+                type="number" min="0" step="0.1" inputMode="decimal"
+                placeholder="Max LPA"
+                className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+              />
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      <div className="mt-6">
+          <button type="button" onClick={applyMoreFilters} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-2.5 rounded-lg transition">
+            Apply Filters
+          </button>
+        </aside>
+
         <div>
           {/* Results header */}
           <div className="flex items-center justify-between mb-4">

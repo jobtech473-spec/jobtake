@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users, SlidersHorizontal } from "lucide-react";
+import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
 import { timeAgo, personSlug } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -13,6 +13,7 @@ type App = {
     id: string; name: string; email: string; headline: string | null; location: string | null;
     phone?: string | null; bio?: string | null; avatarUrl?: string | null; yearsExperience?: number | null;
     noticePeriod?: string | null; currentSalary?: number | null; expectedSalary?: number | null; gender?: string | null;
+    dateOfBirth?: string | null;
     preferredLocations?: string[];
     experiences?: { title: string; company: string; current: boolean }[];
     educations?: { degree: string; field: string | null; school: string }[];
@@ -54,15 +55,28 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [expMin, setExpMin] = useState("");
   const [expMax, setExpMax] = useState("");
   const [stageFilter, setStageFilter] = useState<Stage | "ALL">("ALL");
-  const [moreOpen, setMoreOpen] = useState(false);
   const [noticePeriodFilter, setNoticePeriodFilter] = useState("");
   const [expSalaryMin, setExpSalaryMin] = useState("");
   const [expSalaryMax, setExpSalaryMax] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
   const [degreeFilter, setDegreeFilter] = useState("");
+  const [designationFilter, setDesignationFilter] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("");
+  const [collegeFilter, setCollegeFilter] = useState("");
+  const [curSalaryMin, setCurSalaryMin] = useState("");
+  const [curSalaryMax, setCurSalaryMax] = useState("");
+  const [ageMin, setAgeMin] = useState("");
+  const [ageMax, setAgeMax] = useState("");
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
   const degreeOf = (a: App) => a.user.educations?.[0]?.degree ?? null;
+  const currentExpOf = (a: App) => a.user.experiences?.find(e => e.current) ?? a.user.experiences?.[0] ?? null;
+  const ageOf = (a: App) => {
+    if (!a.user.dateOfBirth) return null;
+    const dob = new Date(a.user.dateOfBirth);
+    const diff = Date.now() - dob.getTime();
+    return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+  };
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { ALL: list.length };
@@ -96,11 +110,26 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!expSalaryMin || (a.user.expectedSalary != null && a.user.expectedSalary >= Number(expSalaryMin))) &&
     (!expSalaryMax || (a.user.expectedSalary != null && a.user.expectedSalary <= Number(expSalaryMax))) &&
     (!genderFilter || a.user.gender === genderFilter) &&
-    (!degreeFilter || degreeOf(a) === degreeFilter)
+    (!degreeFilter || degreeOf(a) === degreeFilter) &&
+    (!designationFilter || (currentExpOf(a)?.title ?? "").toLowerCase().includes(designationFilter.toLowerCase())) &&
+    (!companyFilter || (currentExpOf(a)?.company ?? "").toLowerCase().includes(companyFilter.toLowerCase())) &&
+    (!collegeFilter || (a.user.educations?.[0]?.school ?? "").toLowerCase().includes(collegeFilter.toLowerCase())) &&
+    (!curSalaryMin || (a.user.currentSalary != null && a.user.currentSalary >= Number(curSalaryMin))) &&
+    (!curSalaryMax || (a.user.currentSalary != null && a.user.currentSalary <= Number(curSalaryMax))) &&
+    (!ageMin || (ageOf(a) != null && ageOf(a)! >= Number(ageMin))) &&
+    (!ageMax || (ageOf(a) != null && ageOf(a)! <= Number(ageMax)))
   );
 
-  const moreFiltersCount = [noticePeriodFilter, expSalaryMin, expSalaryMax, genderFilter, degreeFilter].filter(Boolean).length;
-  function resetMoreFilters() { setNoticePeriodFilter(""); setExpSalaryMin(""); setExpSalaryMax(""); setGenderFilter(""); setDegreeFilter(""); }
+  const sidebarFiltersCount = [
+    search, locationFilter, expMin, expMax, curSalaryMin, curSalaryMax, expSalaryMin, expSalaryMax,
+    designationFilter, companyFilter, noticePeriodFilter, degreeFilter, collegeFilter, ageMin, ageMax, genderFilter,
+  ].filter(Boolean).length;
+
+  function resetSidebarFilters() {
+    setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); setCurSalaryMin(""); setCurSalaryMax("");
+    setExpSalaryMin(""); setExpSalaryMax(""); setDesignationFilter(""); setCompanyFilter("");
+    setNoticePeriodFilter(""); setDegreeFilter(""); setCollegeFilter(""); setAgeMin(""); setAgeMax(""); setGenderFilter("");
+  }
 
   async function updateStage(id: string, stage: Stage) {
     setLocalStages(s => ({ ...s, [id]: stage }));
@@ -141,125 +170,98 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
         ))}
       </div>
 
-      {/* Search + Filters — styled to match the /jobs search bar */}
-      <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm">
-        <div className="flex flex-col md:flex-row">
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 flex-1 min-w-[200px]">
-            <Search className="h-4 w-4 text-zinc-400 shrink-0" />
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search by name, skills or email..."
-              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
-          </div>
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 md:w-[200px]">
-            <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
-            <input value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-              placeholder="Location"
-              className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
-          </div>
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b md:border-b-0 md:border-r border-zinc-100 md:w-[170px]">
-            <Bookmark className="h-4 w-4 text-zinc-400 shrink-0" />
-            <select value={stageFilter} onChange={e => setStageFilter(e.target.value as Stage | "ALL")}
-              className="w-full bg-transparent text-sm text-zinc-800 outline-none appearance-none cursor-pointer">
-              <option value="ALL">All Stages</option>
-              {STAGES.map(s => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
-            </select>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-3.5 md:w-[220px]">
-            <svg className="h-4 w-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            <input value={expMin} onChange={e => setExpMin(e.target.value)} type="number" min="0" step="1"
-              placeholder="Min yrs" className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
-            <span className="text-zinc-300 shrink-0">–</span>
-            <input value={expMax} onChange={e => setExpMax(e.target.value)} type="number" min="0" step="1"
-              placeholder="Max yrs" className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400" />
-          </div>
-        </div>
-      </div>
+      <div className="grid lg:grid-cols-[280px_1fr] gap-5 items-start">
 
-      <div className="flex items-center gap-2">
-        <div className="relative" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setMoreOpen(false); }}>
-          <button
-            type="button"
-            onClick={() => setMoreOpen(v => !v)}
-            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 border border-zinc-200 bg-white px-4 py-2.5 rounded-xl hover:bg-zinc-50 transition"
-          >
-            <SlidersHorizontal className="h-4 w-4" /> More Filters
-            {moreFiltersCount > 0 && (
-              <span className="ml-0.5 h-5 w-5 rounded-full bg-blue-600 text-white text-[11px] font-bold grid place-items-center">{moreFiltersCount}</span>
+        {/* Filters sidebar */}
+        <aside className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-4 space-y-4 lg:sticky lg:top-4">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-zinc-900 text-sm">Filters</span>
+            {sidebarFiltersCount > 0 && (
+              <button onClick={resetSidebarFilters} className="text-xs font-semibold text-blue-600 hover:underline">
+                Clear all
+              </button>
             )}
-          </button>
-          {moreOpen && (
-            <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-xl border border-zinc-200 bg-white shadow-xl p-4 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Category (Education)</label>
-                <select
-                  value={degreeFilter}
-                  onChange={e => setDegreeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                  disabled={degreeOptions.length === 0}
-                >
-                  <option value="">All Categories</option>
-                  {degreeOptions.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Notice Period</label>
-                <select
-                  value={noticePeriodFilter}
-                  onChange={e => setNoticePeriodFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">Any Notice Period</option>
-                  {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Gender</label>
-                <select
-                  value={genderFilter}
-                  onChange={e => setGenderFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white"
-                >
-                  <option value="">Any Gender</option>
-                  {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">Expected Salary (LPA)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={expSalaryMin}
-                    onChange={e => setExpSalaryMin(e.target.value)}
-                    type="number" min="0" step="0.1" inputMode="decimal"
-                    placeholder="Min LPA"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                  <input
-                    value={expSalaryMax}
-                    onChange={e => setExpSalaryMax(e.target.value)}
-                    type="number" min="0" step="0.1" inputMode="decimal"
-                    placeholder="Max LPA"
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-1">
-                <button type="button" onClick={resetMoreFilters} className="text-xs font-semibold text-zinc-500 hover:underline">
-                  Reset
-                </button>
-                <button type="button" onClick={() => setMoreOpen(false)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2 rounded-lg transition">
-                  Apply
-                </button>
-              </div>
+          </div>
+
+          <FilterField label="Keywords">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Name, skills or email"
+                className="w-full pl-8 pr-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
             </div>
-          )}
-        </div>
-        {(search || locationFilter || expMin || expMax || moreFiltersCount > 0) && (
-          <button onClick={() => { setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax(""); resetMoreFilters(); }}
-            className="text-xs font-semibold text-blue-600 hover:underline px-1">
-            Clear filters
-          </button>
-        )}
-      </div>
+          </FilterField>
+
+          <FilterField label="Location">
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+              <input value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+                placeholder="e.g. Mumbai, Delhi"
+                className="w-full pl-8 pr-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
+            </div>
+          </FilterField>
+
+          <FilterField label="Experience (Years)">
+            <RangeInputs min={expMin} max={expMax} onMin={setExpMin} onMax={setExpMax} />
+          </FilterField>
+
+          <FilterField label="Current Salary (Lacs)">
+            <RangeInputs min={curSalaryMin} max={curSalaryMax} onMin={setCurSalaryMin} onMax={setCurSalaryMax} step="0.1" />
+          </FilterField>
+
+          <FilterField label="Expected Salary (Lacs)">
+            <RangeInputs min={expSalaryMin} max={expSalaryMax} onMin={setExpSalaryMin} onMax={setExpSalaryMax} step="0.1" />
+          </FilterField>
+
+          <FilterField label="Current Designation">
+            <input value={designationFilter} onChange={e => setDesignationFilter(e.target.value)}
+              placeholder="e.g. Sales Manager"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
+          </FilterField>
+
+          <FilterField label="Current Company">
+            <input value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
+              placeholder="e.g. SV Management"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
+          </FilterField>
+
+          <FilterField label="Notice Period">
+            <select value={noticePeriodFilter} onChange={e => setNoticePeriodFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white">
+              <option value="">Any Notice Period</option>
+              {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </FilterField>
+
+          <FilterField label="Degree / Course">
+            <select value={degreeFilter} onChange={e => setDegreeFilter(e.target.value)} disabled={degreeOptions.length === 0}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white disabled:opacity-50">
+              <option value="">Any Degree</option>
+              {degreeOptions.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </FilterField>
+
+          <FilterField label="College Name">
+            <input value={collegeFilter} onChange={e => setCollegeFilter(e.target.value)}
+              placeholder="e.g. IPS Academy"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
+          </FilterField>
+
+          <FilterField label="Age (Years)">
+            <RangeInputs min={ageMin} max={ageMax} onMin={setAgeMin} onMax={setAgeMax} />
+          </FilterField>
+
+          <FilterField label="Gender">
+            <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white">
+              <option value="">Any Gender</option>
+              {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </FilterField>
+        </aside>
+
+        {/* Results */}
+        <div className="space-y-3 min-w-0">
 
       {/* Applicant cards */}
       {filtered.length === 0 && (
@@ -411,6 +413,32 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
       <div className="pt-2 text-xs text-zinc-400">
         Showing {filtered.length} of {list.length} applicant{list.length === 1 ? "" : "s"}
       </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-zinc-600 mb-1.5 uppercase tracking-wide">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function RangeInputs({
+  min, max, onMin, onMax, step = "1",
+}: {
+  min: string; max: string; onMin: (v: string) => void; onMax: (v: string) => void; step?: string;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <input value={min} onChange={e => onMin(e.target.value)} type="number" min="0" step={step}
+        placeholder="Min" className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
+      <input value={max} onChange={e => onMax(e.target.value)} type="number" min="0" step={step}
+        placeholder="Max" className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition" />
     </div>
   );
 }

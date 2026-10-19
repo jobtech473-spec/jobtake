@@ -22,7 +22,7 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
             select: {
               id: true, name: true, email: true, headline: true, location: true, phone: true, bio: true,
               avatarUrl: true, yearsExperience: true, noticePeriod: true, currentSalary: true, expectedSalary: true,
-              preferredLocations: true, gender: true,
+              preferredLocations: true, gender: true, dateOfBirth: true,
               experiences: { orderBy: [{ current: "desc" }, { startDate: "desc" }], take: 2, select: { title: true, company: true, current: true } },
               educations: { orderBy: { startYear: "desc" }, take: 1, select: { degree: true, field: true, school: true } },
               userSkills: { orderBy: { skill: { name: "asc" } }, take: 8, select: { skill: { select: { name: true } } } },
@@ -54,6 +54,7 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
     user: {
       ...a.user,
       skills: a.user.userSkills.map(us => us.skill.name),
+      dateOfBirth: a.user.dateOfBirth ? a.user.dateOfBirth.toISOString() : null,
     },
     // Prefer the candidate's current resume (always exists if present) over the
     // snapshot captured at apply-time, which can go stale if they replaced it since.

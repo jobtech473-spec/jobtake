@@ -272,7 +272,7 @@ export function CompaniesTable({
                 </div>
               </dl>
               {selected.gstCertificateUrl && (
-                <a href={selected.gstCertificateUrl} target="_blank" rel="noreferrer"
+                <a href={`/api/companies/${selected.id}/gst-certificate`} target="_blank" rel="noreferrer"
                   className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline">
                   <FileText className="h-3.5 w-3.5" /> View GST Certificate
                 </a>

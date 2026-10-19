@@ -225,10 +225,18 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
           <FilterField label="Age (Years)">
             <RangeInputs min={ageMin} max={ageMax} onMin={setAgeMin} onMax={setAgeMax} />
           </FilterField>
+
+          <button
+            type="button"
+            onClick={() => document.getElementById("applicants-results")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-2.5 rounded-lg transition"
+          >
+            Search Candidates
+          </button>
         </aside>
 
         {/* Results */}
-        <div className="space-y-3 min-w-0">
+        <div id="applicants-results" className="space-y-3 min-w-0 scroll-mt-4">
 
       {/* Applicant cards */}
       {filtered.length === 0 && (

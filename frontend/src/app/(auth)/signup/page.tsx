@@ -1,13 +1,19 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Loader2, Mail, Lock, Eye, EyeOff, User, Phone, Upload,
   ShieldCheck, Briefcase, TrendingUp, Bell, Building2,
-  CalendarDays, UserRound, FileText,
+  CalendarDays, UserRound, FileText, GraduationCap, X,
+  IndianRupee, MapPin, Clock, FileCheck2,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+
+const MAX_RESUME_BYTES = 2 * 1024 * 1024;
+const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
+
+type ManagedOption = { id: string; label: string; value: string };
 
 const MAX_GST_CERT_BYTES = 2 * 1024 * 1024;
 
@@ -348,16 +354,73 @@ function CandidateSignupForm() {
   const [gender, setGender] = useState("");
   const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
-  const [expYears, setExpYears] = useState("");
-  const [expMonths, setExpMonths] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [alerts, setAlerts] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Managed options (location / education / experience ranges), sourced live
+  // from the same admin-managed data every other page uses.
+  const [locations, setLocations] = useState<ManagedOption[]>([]);
+  const [educationOptions, setEducationOptions] = useState<ManagedOption[]>([]);
+  const [experienceOptions, setExperienceOptions] = useState<ManagedOption[]>([]);
+  useEffect(() => {
+    fetch("/api/options").then(r => r.json()).then(d => {
+      setLocations(d.options?.LOCATION ?? []);
+      setEducationOptions(d.options?.EDUCATION ?? []);
+      setExperienceOptions(d.options?.EXPERIENCE ?? []);
+    }).catch(() => {});
+  }, []);
+
+  const [regType, setRegType] = useState<"EXPERIENCED" | "FRESHER">("EXPERIENCED");
+  const [expRange, setExpRange] = useState("");
+  const [currentSalary, setCurrentSalary] = useState("");
+  const [expectedSalary, setExpectedSalary] = useState("");
+  const [noticePeriod, setNoticePeriod] = useState("");
+  const [currentCompany, setCurrentCompany] = useState("");
+  const [currentDesignation, setCurrentDesignation] = useState("");
+  const [location, setLocation] = useState("");
+  const [education, setEducation] = useState("");
+  const [schoolName, setSchoolName] = useState("");
+  const [passingYear, setPassingYear] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+  const [bio, setBio] = useState("");
+
+  const [resumeDataUrl, setResumeDataUrl] = useState("");
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [resumeError, setResumeError] = useState<string | null>(null);
+
+  function addSkill() {
+    const s = skillInput.trim();
+    if (!s) return;
+    if (!skills.some(x => x.toLowerCase() === s.toLowerCase())) setSkills(prev => [...prev, s]);
+    setSkillInput("");
+  }
+  function removeSkill(s: string) {
+    setSkills(prev => prev.filter(x => x !== s));
+  }
+
+  async function handleResumeUpload(file: File | undefined) {
+    setResumeError(null);
+    if (!file) return;
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    if (!["pdf", "doc", "docx"].includes(ext)) { setResumeError("Upload a PDF, DOC or DOCX file."); return; }
+    if (file.size > MAX_RESUME_BYTES) { setResumeError(`File is too large (max ${Math.round(MAX_RESUME_BYTES / (1024 * 1024))}MB).`); return; }
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setResumeDataUrl(dataUrl);
+      setResumeFileName(file.name);
+    } catch {
+      setResumeError("Couldn't read that file. Try again.");
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirmPw) { setError("Passwords do not match."); return; }
+    if (!resumeDataUrl) { setError("Please upload your resume."); return; }
+    if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
     if (!agreed) { setError("Please agree to Terms & Conditions."); return; }
     setLoading(true); setError(null);
     try {
@@ -365,7 +428,16 @@ function CandidateSignupForm() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, email, password, role: "SEEKER", phone,
-          gender, dateOfBirth: dob, expYears: expYears,
+          gender, dateOfBirth: dob,
+          registrationType: regType,
+          yearsExperience: regType === "EXPERIENCED" ? expRange : "0-0",
+          currentSalary: regType === "EXPERIENCED" ? currentSalary : "",
+          expectedSalary: regType === "EXPERIENCED" ? expectedSalary : "",
+          noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
+          currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
+          currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
+          location, education, schoolName, passingYear, skills, bio,
+          resumeDataUrl, resumeFileName,
         }),
       });
       const data = await res.json();
@@ -575,30 +647,178 @@ function CandidateSignupForm() {
                   <Briefcase className="h-4 w-4 text-blue-600" />
                   <h2 className="font-bold text-zinc-900">Professional Information</h2>
                 </div>
+
+                {/* Registration type */}
+                <div className="grid sm:grid-cols-2 gap-3 mb-5">
+                  <button type="button" onClick={() => setRegType("EXPERIENCED")}
+                    className={`relative text-left p-4 rounded-xl border-2 transition ${regType === "EXPERIENCED" ? "border-blue-500 bg-blue-50/50" : "border-zinc-200 hover:border-zinc-300"}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-blue-100 grid place-items-center shrink-0">
+                        <GraduationCap className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-zinc-900 text-sm">Register as Experienced</span>
+                          <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Most Popular</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-0.5">For candidates with prior work experience.</p>
+                      </div>
+                      <span className={`h-4 w-4 rounded-full border-2 shrink-0 mt-0.5 ${regType === "EXPERIENCED" ? "border-blue-500 bg-blue-500" : "border-zinc-300"}`} />
+                    </div>
+                  </button>
+                  <button type="button" onClick={() => setRegType("FRESHER")}
+                    className={`relative text-left p-4 rounded-xl border-2 transition ${regType === "FRESHER" ? "border-blue-500 bg-blue-50/50" : "border-zinc-200 hover:border-zinc-300"}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-blue-100 grid place-items-center shrink-0">
+                        <Briefcase className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-bold text-zinc-900 text-sm">Register as Fresher</span>
+                        <p className="text-xs text-zinc-500 mt-0.5">For candidates with little or no work experience.</p>
+                      </div>
+                      <span className={`h-4 w-4 rounded-full border-2 shrink-0 mt-0.5 ${regType === "FRESHER" ? "border-blue-500 bg-blue-500" : "border-zinc-300"}`} />
+                    </div>
+                  </button>
+                </div>
+
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Total Experience <span className="text-red-500">*</span></label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <select value={expYears} onChange={e => setExpYears(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
-                        <option value="">Select years</option>
-                        {["Fresher", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "15+"].map(y => <option key={y}>{y}</option>)}
-                      </select>
-                      <select value={expMonths} onChange={e => setExpMonths(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
-                        <option value="">Select months</option>
-                        {[0,1,2,3,4,5,6,7,8,9,10,11].map(m => <option key={m} value={m}>{m} month{m !== 1 ? "s" : ""}</option>)}
-                      </select>
+                  {regType === "EXPERIENCED" && (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Years of Experience <span className="text-red-500">*</span></label>
+                        <select required value={expRange} onChange={e => setExpRange(e.target.value)}
+                          className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
+                          <option value="">Select experience range</option>
+                          {experienceOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Notice Period <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <select required value={noticePeriod} onChange={e => setNoticePeriod(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                            <option value="">Select notice period</option>
+                            {NOTICE_PERIOD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current CTC (Lacs PA) <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <input required type="number" min={0} step="0.1" value={currentSalary} onChange={e => setCurrentSalary(e.target.value)} placeholder="e.g. 8" className={inputClass} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Expected CTC (Lacs PA) <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <input required type="number" min={0} step="0.1" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g. 12" className={inputClass} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current Company <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <input required value={currentCompany} onChange={e => setCurrentCompany(e.target.value)} placeholder="Enter your current company name" className={inputClass} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current Designation <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <UserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <input required value={currentDesignation} onChange={e => setCurrentDesignation(e.target.value)} placeholder="Enter your current designation" className={inputClass} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Location <span className="text-red-500">*</span></label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                        <select required value={location} onChange={e => setLocation(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                          <option value="">Select your location</option>
+                          {locations.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education <span className="text-red-500">*</span></label>
+                      <div className="relative">
+                        <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                        <select required value={education} onChange={e => setEducation(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                          <option value="">Select highest qualification</option>
+                          {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University <span className="text-red-500">*</span></label>
+                      <input required value={schoolName} onChange={e => setSchoolName(e.target.value)} placeholder="Enter your school or university name"
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year <span className="text-red-500">*</span></label>
+                      <input required type="number" min={1950} max={today.getFullYear() + 10} value={passingYear} onChange={e => setPassingYear(e.target.value)} placeholder="e.g. 2022"
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                     </div>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                      Key Skills {regType === "EXPERIENCED" && <span className="text-red-500">*</span>}
+                      <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(optional)"}</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
+                        placeholder="Enter skills (e.g., Java, Python, Marketing, etc.)"
+                        className="flex-1 px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                      <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/5</span>
+                      <button type="button" onClick={addSkill} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                        + Add More
+                      </button>
+                    </div>
+                    {skills.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2.5">
+                        {skills.map(s => (
+                          <span key={s} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                            {s}
+                            <button type="button" onClick={() => removeSkill(s)} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me</label>
+                    <textarea value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short summary about yourself, your experience, key strengths and what you are looking for..."
+                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
+                    <p className="text-xs text-zinc-400 text-right mt-1">{bio.length}/500</p>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Attach Resume <span className="text-red-500">*</span></label>
-                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
-                      <Upload className="h-6 w-6 text-blue-500" />
-                      <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
-                      <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
-                      <input type="file" accept=".pdf,.doc,.docx" className="hidden" />
-                    </label>
+                    {resumeDataUrl ? (
+                      <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
+                        <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
+                          <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" /> {resumeFileName}
+                        </span>
+                        <button type="button" onClick={() => { setResumeDataUrl(""); setResumeFileName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                        <Upload className="h-6 w-6 text-blue-500" />
+                        <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
+                        <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
+                        <input type="file" accept=".pdf,.doc,.docx" className="hidden"
+                          onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
+                      </label>
+                    )}
+                    {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
                   </div>
                 </div>
               </div>

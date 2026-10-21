@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, signSession, setSessionCookie, hashToken } from "@/lib/auth";
+import { slugify as toSlug } from "@/lib/utils";
+import { mimeFromName } from "@/lib/uploads";
+import { sendResumeCopy } from "@/lib/mailer";
+
+const MAX_RESUME_BYTES = 2 * 1024 * 1024;
 
 const Body = z.object({
   email: z.string().email().toLowerCase(),
@@ -13,7 +18,20 @@ const Body = z.object({
   // Candidate fields
   gender: z.string().optional(),
   dateOfBirth: z.string().optional(),
-  expYears: z.string().optional(),
+  registrationType: z.enum(["EXPERIENCED", "FRESHER"]).optional(),
+  yearsExperience: z.string().optional(),
+  currentSalary: z.string().optional(),
+  expectedSalary: z.string().optional(),
+  noticePeriod: z.string().optional(),
+  currentCompany: z.string().optional(),
+  currentDesignation: z.string().optional(),
+  education: z.string().optional(),
+  schoolName: z.string().optional(),
+  passingYear: z.string().optional(),
+  skills: z.array(z.string()).optional().default([]),
+  bio: z.string().optional(),
+  resumeDataUrl: z.string().optional(),
+  resumeFileName: z.string().optional(),
   // Employer fields
   companyName: z.string().optional(),
   industry: z.string().optional(),
@@ -38,6 +56,20 @@ function parseDateOfBirth(value?: string) {
   return null;
 }
 
+// EXPERIENCE managed-option values look like "0-0", "1-3", "10-" — take the
+// lower bound as the candidate's representative years of experience.
+function parseExperienceRange(value?: string) {
+  if (!value) return null;
+  const m = value.match(/^(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function parseIntOrNull(value?: string) {
+  if (!value) return null;
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function POST(req: NextRequest) {
   const data = Body.safeParse(await req.json().catch(() => ({})));
   if (!data.success) return NextResponse.json({ error: "Invalid input", details: data.error.flatten() }, { status: 400 });
@@ -54,11 +86,22 @@ export async function POST(req: NextRequest) {
     if (gstTaken) return NextResponse.json({ error: "An employer account with this GST number already exists. Please sign in instead." }, { status: 409 });
   }
 
+  let resumeBuffer: Buffer | null = null;
+  if (data.data.role === "SEEKER") {
+    if (!data.data.resumeDataUrl || !data.data.resumeFileName) {
+      return NextResponse.json({ error: "Please upload your resume." }, { status: 400 });
+    }
+    const commaIdx = data.data.resumeDataUrl.indexOf(",");
+    const base64 = commaIdx >= 0 ? data.data.resumeDataUrl.slice(commaIdx + 1) : data.data.resumeDataUrl;
+    resumeBuffer = Buffer.from(base64, "base64");
+    if (resumeBuffer.length > MAX_RESUME_BYTES) {
+      return NextResponse.json({ error: `Resume is too large (max ${Math.round(MAX_RESUME_BYTES / (1024 * 1024))}MB).` }, { status: 400 });
+    }
+  }
+
   const passwordHash = await hashPassword(data.data.password);
 
-  const yearsExp = data.data.expYears && data.data.expYears !== "Fresher"
-    ? parseInt(data.data.expYears) || null
-    : data.data.expYears === "Fresher" ? 0 : null;
+  const isExperienced = data.data.registrationType !== "FRESHER";
 
   const user = await prisma.user.create({
     data: {
@@ -70,10 +113,57 @@ export async function POST(req: NextRequest) {
       passwordHash,
       gender: data.data.gender || null,
       dateOfBirth: parseDateOfBirth(data.data.dateOfBirth),
-      yearsExperience: yearsExp,
+      bio: data.data.bio || null,
+      yearsExperience: parseExperienceRange(data.data.yearsExperience),
+      noticePeriod: isExperienced ? (data.data.noticePeriod || null) : null,
+      currentSalary: isExperienced ? parseIntOrNull(data.data.currentSalary) : null,
+      expectedSalary: isExperienced ? parseIntOrNull(data.data.expectedSalary) : null,
+      currentCompany: isExperienced ? (data.data.currentCompany || null) : null,
+      currentDesignation: isExperienced ? (data.data.currentDesignation || null) : null,
     },
     select: { id: true, email: true, name: true, role: true },
   });
+
+  // Candidate education, skills and resume
+  if (data.data.role === "SEEKER") {
+    const startYear = parseIntOrNull(data.data.passingYear);
+    if (data.data.education && data.data.schoolName && startYear) {
+      await prisma.education.create({
+        data: { userId: user.id, school: data.data.schoolName, degree: data.data.education, startYear },
+      }).catch(() => null);
+    }
+
+    for (const skillName of data.data.skills.slice(0, 20)) {
+      const sn = skillName.trim();
+      if (!sn) continue;
+      const skill = await prisma.skill.upsert({
+        where: { name: sn },
+        update: {},
+        create: { name: sn, slug: toSlug(sn) },
+      });
+      await prisma.userSkill.create({ data: { userId: user.id, skillId: skill.id } }).catch(() => null);
+    }
+
+    if (resumeBuffer && data.data.resumeDataUrl && data.data.resumeFileName) {
+      await prisma.resume.create({
+        data: {
+          userId: user.id,
+          fileName: data.data.resumeFileName,
+          fileUrl: data.data.resumeDataUrl,
+          fileSize: resumeBuffer.length,
+          isPrimary: true,
+        },
+      }).catch(() => null);
+      await sendResumeCopy({
+        to: "resume@jobtake.com",
+        applicantName: user.name,
+        applicantEmail: user.email,
+        fileName: data.data.resumeFileName,
+        buffer: resumeBuffer,
+        mime: mimeFromName(data.data.resumeFileName),
+      }).catch(() => null);
+    }
+  }
 
   // For employers: create Company record
   if (data.data.role === "EMPLOYER" && data.data.companyName) {

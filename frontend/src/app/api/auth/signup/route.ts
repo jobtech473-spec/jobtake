@@ -27,6 +27,7 @@ const Body = z.object({
   currentCompany: z.string().optional(),
   currentDesignation: z.string().optional(),
   education: z.string().optional(),
+  educationSpecialization: z.string().optional(),
   schoolName: z.string().optional(),
   passingYear: z.string().optional(),
   skills: z.array(z.string()).optional().default([]),
@@ -147,7 +148,13 @@ export async function POST(req: NextRequest) {
     const startYear = parseIntOrNull(data.data.passingYear);
     if (data.data.education && data.data.schoolName && startYear) {
       await prisma.education.create({
-        data: { userId: user.id, school: data.data.schoolName, degree: data.data.education, startYear },
+        data: {
+          userId: user.id,
+          school: data.data.schoolName,
+          degree: data.data.education,
+          field: data.data.educationSpecialization?.trim() || null,
+          startYear,
+        },
       }).catch(() => null);
     }
 

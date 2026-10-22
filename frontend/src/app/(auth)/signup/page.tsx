@@ -426,11 +426,19 @@ function CandidateSignupForm() {
   const [locations, setLocations] = useState<ManagedOption[]>([]);
   const [educationOptions, setEducationOptions] = useState<ManagedOption[]>([]);
   const [skillOptions, setSkillOptions] = useState<ManagedOption[]>([]);
+  const [ugSpecializations, setUgSpecializations] = useState<ManagedOption[]>([]);
+  const [pgSpecializations, setPgSpecializations] = useState<ManagedOption[]>([]);
+  const [diplomaSpecializations, setDiplomaSpecializations] = useState<ManagedOption[]>([]);
+  const [itiSpecializations, setItiSpecializations] = useState<ManagedOption[]>([]);
   useEffect(() => {
     fetch("/api/options").then(r => r.json()).then(d => {
       setLocations(d.options?.LOCATION ?? []);
       setEducationOptions(d.options?.EDUCATION ?? []);
       setSkillOptions(d.options?.SKILL ?? []);
+      setUgSpecializations(d.options?.UG_SPECIALIZATION ?? []);
+      setPgSpecializations(d.options?.PG_SPECIALIZATION ?? []);
+      setDiplomaSpecializations(d.options?.DIPLOMA_SPECIALIZATION ?? []);
+      setItiSpecializations(d.options?.ITI_SPECIALIZATION ?? []);
     }).catch(() => {});
   }, []);
 
@@ -443,6 +451,8 @@ function CandidateSignupForm() {
   const [currentDesignation, setCurrentDesignation] = useState("");
   const [location, setLocation] = useState("");
   const [education, setEducation] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [specializationCustom, setSpecializationCustom] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [passingYear, setPassingYear] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
@@ -453,6 +463,22 @@ function CandidateSignupForm() {
   const [resumeDataUrl, setResumeDataUrl] = useState("");
   const [resumeFileName, setResumeFileName] = useState("");
   const [resumeError, setResumeError] = useState<string | null>(null);
+
+  // A specialization sub-field only makes sense under UG/PG/Diploma/ITI —
+  // same four levels PostJobForm asks employers to narrow down.
+  const specializationGroup =
+    education === "Under Graduate (UG)" ? { label: "UG Specialization", options: ugSpecializations } :
+    education === "Post Graduate (PG)" ? { label: "PG Specialization", options: pgSpecializations } :
+    education === "Diploma" ? { label: "Diploma Specialization", options: diplomaSpecializations } :
+    education === "ITI Pass" ? { label: "ITI Specialization", options: itiSpecializations } :
+    null;
+  const specializationEffective = specializationCustom.trim() || specialization;
+
+  function onEducationChange(value: string) {
+    setEducation(value);
+    setSpecialization("");
+    setSpecializationCustom("");
+  }
 
   function addSkill(value?: string) {
     const s = (value ?? skillInput).trim();
@@ -509,7 +535,7 @@ function CandidateSignupForm() {
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
           currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
-          location, education, schoolName, passingYear, skills, bio,
+          location, education, educationSpecialization: specializationEffective, schoolName, passingYear, skills, bio,
           resumeDataUrl, resumeFileName,
         }),
       });
@@ -774,12 +800,31 @@ function CandidateSignupForm() {
                       <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education <span className="text-red-500">*</span></label>
                       <div className="relative">
                         <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                        <select required value={education} onChange={e => setEducation(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                        <select required value={education} onChange={e => onEducationChange(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
                           <option value="">Select highest qualification</option>
                           {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
                         </select>
                       </div>
                     </div>
+
+                    {specializationGroup && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
+                          <select value={specialization} onChange={e => setSpecialization(e.target.value)}
+                            className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
+                            <option value="">Select specialization</option>
+                            {specializationGroup.options.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Or type your own</label>
+                          <input value={specializationCustom} onChange={e => setSpecializationCustom(e.target.value)} placeholder="Type a specialization"
+                            className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                        </div>
+                      </>
+                    )}
+
                     <div>
                       <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University <span className="text-red-500">*</span></label>
                       <input required value={schoolName} onChange={e => setSchoolName(e.target.value)} placeholder="Enter your school or university name"

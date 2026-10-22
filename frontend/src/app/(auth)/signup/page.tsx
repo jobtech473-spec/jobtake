@@ -295,17 +295,24 @@ function EmployerSignupForm() {
 
           {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>}
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
-                <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300" />
-                I agree to the <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link> and <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link>.
-              </label>
-              <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
-                <input type="checkbox" checked={updates} onChange={e => setUpdates(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 accent-blue-600" defaultChecked />
-                I would like to receive important updates and promotions on email.
-              </label>
-            </div>
+          <div className="space-y-3">
+            <label className="flex items-start gap-2.5 text-sm text-zinc-700 cursor-pointer">
+              <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 mt-0.5 shrink-0" />
+              <span className="leading-relaxed">
+                I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that my company details, contact information and other information provided on the platform are correct and genuine.
+                <br /><br />
+                I agree to post genuine job openings and provide accurate details about job roles, salaries, locations and employment conditions. I will not post fake jobs, mislead candidates, collect money from candidates through false promises, misuse their personal information, or engage in spam, discrimination or abusive behaviour.
+                <br /><br />
+                I understand that providing false information, posting misleading jobs or misusing Jobtake may lead to account restriction, suspension / legal actions.
+              </span>
+            </label>
+            <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
+              <input type="checkbox" checked={updates} onChange={e => setUpdates(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 accent-blue-600" defaultChecked />
+              I would like to receive important updates and promotions on email.
+            </label>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
             <div className="shrink-0 text-right">
               <button type="submit" disabled={loading}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg flex items-center gap-2 transition disabled:opacity-60 ml-auto">
@@ -830,9 +837,15 @@ function CandidateSignupForm() {
                   <h2 className="font-bold text-zinc-900">Additional</h2>
                 </div>
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
-                    <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300" />
-                    I agree to the <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link> and <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link>.
+                  <label className="flex items-start gap-2.5 text-sm text-zinc-700 cursor-pointer">
+                    <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 mt-0.5 shrink-0" />
+                    <span className="leading-relaxed">
+                      I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that the details I have provided, including my resume, education, skills and work experience, are correct and genuine.
+                      <br /><br />
+                      I agree not to provide false information, fake documents, incorrect qualifications or work experience, or use someone else&rsquo;s identity. I will not misuse the platform, mislead employers, send spam or engage in abusive behaviour.
+                      <br /><br />
+                      I understand that providing false information or misusing Jobtake may lead to suspension of my account / legal action.
+                    </span>
                   </label>
                   <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
                     <input type="checkbox" checked={alerts} onChange={e => setAlerts(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 accent-blue-600" />

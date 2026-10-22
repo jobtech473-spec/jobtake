@@ -29,7 +29,7 @@ const ROLE_STYLE: Record<string, string> = {
 
 const AVATAR_COLORS = ["bg-blue-600", "bg-violet-600", "bg-emerald-600", "bg-orange-500", "bg-rose-500", "bg-indigo-600"];
 
-const PAGE_SIZE = 40;
+const PAGE_SIZE_OPTIONS = [40, 80, 100, 200];
 
 export function UsersTable({
   users,
@@ -44,6 +44,7 @@ export function UsersTable({
   const [roleFilter, setRoleFilter] = useState(initialRole);
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   // Re-sync when navigating between sidebar links (e.g. Users -> Seekers),
   // since the component isn't remounted just because the query string changed.
@@ -62,8 +63,8 @@ export function UsersTable({
     return true;
   }), [users, search, roleFilter, statusFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="flex gap-5">
@@ -117,6 +118,9 @@ export function UsersTable({
             <option value="ACTIVE">Active</option>
             <option value="PENDING">Pending</option>
             <option value="SUSPENDED">Suspended</option>
+          </select>
+          <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400">
+            {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>Show {n}</option>)}
           </select>
         </div>
 
@@ -173,7 +177,7 @@ export function UsersTable({
           {/* Pagination */}
           <div className="px-6 py-3.5 border-t border-zinc-100 flex items-center justify-between">
             <span className="text-xs text-zinc-400">
-              Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} users
+              Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to {Math.min(page * pageSize, filtered.length)} of {filtered.length} users
             </span>
             <div className="flex items-center gap-1">
               <button

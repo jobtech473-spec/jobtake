@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Search, Building2, ShieldCheck, Clock, Star, Briefcase,
   X, Loader2, ExternalLink, MapPin, Users as UsersIcon, Mail, Phone, FileText,
+  ArrowLeft, ArrowRight,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 const AVATAR_COLORS = ["bg-blue-600", "bg-violet-600", "bg-emerald-600", "bg-orange-500", "bg-rose-500", "bg-indigo-600"];
+const PAGE_SIZE_OPTIONS = [40, 80, 100, 200];
 
 export function CompaniesTable({
   companies,
@@ -47,6 +49,8 @@ export function CompaniesTable({
   const [industryFilter, setIndustryFilter] = useState("");
   const [selected, setSelected] = useState<Company | null>(companies[0] ?? null);
   const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   // Re-sync the selected company's detail panel whenever fresh data comes in
   // (e.g. after router.refresh() post-mutation) — otherwise it keeps showing
@@ -66,6 +70,9 @@ export function CompaniesTable({
     }
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   async function patch(id: string, body: object) {
     setBusy(true);
@@ -111,20 +118,23 @@ export function CompaniesTable({
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
             <input
-              value={search} onChange={e => setSearch(e.target.value)}
+              value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search companies by name, email or industry..."
               className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
             />
           </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400">
+          <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400">
             <option value="">All Status</option>
             <option value="ACTIVE">Active</option>
             <option value="PENDING">Pending</option>
             <option value="SUSPENDED">Suspended</option>
           </select>
-          <select value={industryFilter} onChange={e => setIndustryFilter(e.target.value)} className="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400">
+          <select value={industryFilter} onChange={e => { setIndustryFilter(e.target.value); setPage(1); }} className="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400">
             <option value="">All Industries</option>
             {industries.map(i => <option key={i} value={i}>{i}</option>)}
+          </select>
+          <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400">
+            {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>Show {n}</option>)}
           </select>
         </div>
 
@@ -139,11 +149,11 @@ export function CompaniesTable({
             <div>Status</div>
             <div>Jobs</div>
           </div>
-          {filtered.length === 0 ? (
+          {pageRows.length === 0 ? (
             <div className="py-14 text-center text-sm text-zinc-400">No companies match your filters.</div>
           ) : (
             <div className="divide-y divide-zinc-50">
-              {filtered.map((c, i) => {
+              {pageRows.map((c, i) => {
                 const initials = c.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
                 const isSelected = selected?.id === c.id;
                 return (
@@ -183,8 +193,25 @@ export function CompaniesTable({
           )}
           </div>
           </div>
-          <div className="px-6 py-3 border-t border-zinc-100 text-xs text-zinc-400">
-            Showing {filtered.length} of {companies.length} companies
+          <div className="px-6 py-3.5 border-t border-zinc-100 flex items-center justify-between">
+            <span className="text-xs text-zinc-400">
+              Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to {Math.min(page * pageSize, filtered.length)} of {filtered.length} companies
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center disabled:opacity-30"
+              ><ArrowLeft className="h-4 w-4" /></button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                <button key={n} onClick={() => setPage(n)} className={`h-8 w-8 rounded-lg text-sm font-semibold transition ${n === page ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}>{n}</button>
+              ))}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 flex items-center justify-center disabled:opacity-30"
+              ><ArrowRight className="h-4 w-4" /></button>
+            </div>
           </div>
         </div>
       </div>

@@ -13,13 +13,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico?v=3", sizes: "any" },
-      { url: "/favicon-16.png?v=3", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32.png?v=3", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192.png?v=3", sizes: "192x192", type: "image/png" },
-    ],
-    apple: "/apple-touch-icon.png?v=3",
+    icon: "/favicon.png?v=4",
+    apple: "/favicon.png?v=4",
   },
 };
 

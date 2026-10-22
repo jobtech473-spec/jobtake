@@ -6,9 +6,10 @@ import { UsersTable } from "./UsersTable";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminUsers() {
+export default async function AdminUsers({ searchParams }: { searchParams: Promise<{ role?: string }> }) {
   const me = await getCurrentUser();
   if (!me || me.role !== "ADMIN") redirect("/login");
+  const { role } = await searchParams;
 
   const usersRaw = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
@@ -46,6 +47,7 @@ export default async function AdminUsers() {
           savedJobsCount: u._count.savedJobs,
         }))}
         stats={{ totalUsers, activeUsers, inactiveUsers, employers, seekers }}
+        initialRole={role === "SEEKER" || role === "EMPLOYER" || role === "ADMIN" ? role : ""}
       />
     </DashboardShell>
   );

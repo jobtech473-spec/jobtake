@@ -12,6 +12,7 @@ import {
 import { LogoutButton } from "./LogoutButton";
 import { DashboardMobileNav } from "./DashboardMobileNav";
 import { QuickActionsNavItem } from "./QuickActionsNavItem";
+import { UsersNavDropdown } from "./UsersNavDropdown";
 import { prisma } from "@/lib/prisma";
 
 const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[]> = {
@@ -86,6 +87,9 @@ export async function DashboardShell({ children, role, current, hideSidebar }: {
             return <QuickActionsNavItem key={it.label} />;
           }
           const active = current === it.href || (current?.startsWith(it.href + "/") && it.href !== `/${role === "EMPLOYER" ? "employer" : role === "ADMIN" ? "admin" : "dashboard"}`);
+          if (role === "ADMIN" && it.label === "Users") {
+            return <UsersNavDropdown key={it.label} active={!!active} />;
+          }
           return (
             <Link
               key={it.href}

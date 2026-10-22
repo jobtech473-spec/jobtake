@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search, Users as UsersIcon, ShieldCheck, UserX, Building2, User as UserIcon,
@@ -34,14 +34,23 @@ const PAGE_SIZE = 40;
 export function UsersTable({
   users,
   stats,
+  initialRole = "",
 }: {
   users: Row[];
   stats: { totalUsers: number; activeUsers: number; inactiveUsers: number; employers: number; seekers: number };
+  initialRole?: string;
 }) {
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState(initialRole);
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+
+  // Re-sync when navigating between sidebar links (e.g. Users -> Seekers),
+  // since the component isn't remounted just because the query string changed.
+  useEffect(() => {
+    setRoleFilter(initialRole);
+    setPage(1);
+  }, [initialRole]);
 
   const filtered = useMemo(() => users.filter(u => {
     if (roleFilter && u.role !== roleFilter) return false;

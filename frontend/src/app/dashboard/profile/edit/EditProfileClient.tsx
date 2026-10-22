@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, User, MapPin, Phone, FileText, Zap, X, ArrowLeft, Briefcase, IndianRupee } from "lucide-react";
 import Link from "next/link";
+import { isValidIndianMobile } from "@/lib/utils";
 
 const inputCls = "w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white";
 
@@ -101,6 +102,7 @@ export function EditProfileClient({
 
   async function handleSave() {
     if (!avatarUrl) { setError("Profile photo is required."); return; }
+    if (phone.trim() && !isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return; }
     if (bioWordCount > BIO_WORD_LIMIT) { setError(`About Me cannot be more than ${BIO_WORD_LIMIT} words.`); return; }
     setSaving(true); setError(null);
     const res = await fetch("/api/me", {
@@ -209,7 +211,7 @@ export function EditProfileClient({
                 <label className="block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide">Phone Number</label>
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                  <input value={phone} onChange={e => setPhone(e.target.value)} className={inputCls + " pl-10"} placeholder="+91 98765 43210" />
+                  <input type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} className={inputCls + " pl-10"} placeholder="98765 43210" />
                 </div>
               </div>
               <div>

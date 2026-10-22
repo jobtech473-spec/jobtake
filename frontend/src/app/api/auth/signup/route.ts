@@ -5,6 +5,7 @@ import { hashPassword, signSession, setSessionCookie, hashToken } from "@/lib/au
 import { slugify as toSlug } from "@/lib/utils";
 import { mimeFromName } from "@/lib/uploads";
 import { sendResumeCopy } from "@/lib/mailer";
+import { isValidIndianMobile } from "@/lib/utils";
 
 const MAX_RESUME_BYTES = 2 * 1024 * 1024;
 
@@ -68,6 +69,10 @@ export async function POST(req: NextRequest) {
 
   const existing = await prisma.user.findUnique({ where: { email: data.data.email } });
   if (existing) return NextResponse.json({ error: "An account with this email already exists. Please sign in instead." }, { status: 409 });
+
+  if (!isValidIndianMobile(data.data.phone)) {
+    return NextResponse.json({ error: "Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9." }, { status: 400 });
+  }
 
   // One employer account per GST number.
   const gstNumber = (data.data.gstNumber ?? "").replace(/\s+/g, "").toUpperCase();

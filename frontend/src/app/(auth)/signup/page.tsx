@@ -9,6 +9,7 @@ import {
   IndianRupee, MapPin, Clock, FileCheck2,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { isValidIndianMobile } from "@/lib/utils";
 
 const MAX_RESUME_BYTES = 2 * 1024 * 1024;
 const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
@@ -93,6 +94,7 @@ function EmployerSignupForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return; }
     if (!agreed) { setError("Please agree to Terms & Conditions."); return; }
     if (!gstCert) { setError("Please upload your GST certificate."); return; }
     setLoading(true); setError(null);
@@ -249,7 +251,8 @@ function EmployerSignupForm() {
                   </div>
                   <div className="relative flex-1">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                    <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Enter mobile number"
+                    <input required type="tel" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={phone}
+                      onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="Enter mobile number"
                       className="w-full pl-9 pr-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition" />
                   </div>
                 </div>
@@ -426,6 +429,7 @@ function CandidateSignupForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirmPw) { setError("Passwords do not match."); return; }
+    if (!isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return; }
     if (!resumeDataUrl) { setError("Please upload your resume."); return; }
     if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
     if (regType === "FRESHER" && skills.length < 1) { setError("Please add at least 1 key skill."); return; }
@@ -643,7 +647,8 @@ function CandidateSignupForm() {
                     </div>
                     <div className="relative flex-1">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                      <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Enter mobile number"
+                      <input required type="tel" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={phone}
+                        onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="Enter mobile number"
                         className="w-full pl-10 pr-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                     </div>
                   </div>

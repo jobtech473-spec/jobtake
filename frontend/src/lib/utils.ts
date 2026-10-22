@@ -8,6 +8,13 @@ export function jsonOk<T extends Record<string, unknown>>(data: T, status = 200)
   return NextResponse.json(data, { status });
 }
 
+// Indian mobile numbers: 10 digits, always starting with 6, 7, 8 or 9.
+export const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/;
+
+export function isValidIndianMobile(value: string): boolean {
+  return INDIAN_MOBILE_REGEX.test(value.replace(/\D/g, ""));
+}
+
 export function slugify(input: string): string {
   return input
     .toLowerCase()

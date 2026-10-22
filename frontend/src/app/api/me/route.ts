@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { syncUserSkills } from "@/lib/skills";
+import { isValidIndianMobile } from "@/lib/utils";
 
 const BIO_WORD_LIMIT = 500;
 
@@ -36,6 +37,13 @@ const PatchBody = z.object({
       code: z.ZodIssueCode.custom,
       path: ["bio"],
       message: `About Me cannot be more than ${BIO_WORD_LIMIT} words.`,
+    });
+  }
+  if (data.phone && !isValidIndianMobile(data.phone)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["phone"],
+      message: "Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.",
     });
   }
 });

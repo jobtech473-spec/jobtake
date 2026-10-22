@@ -14,10 +14,17 @@ export async function POST(req: NextRequest) {
   if (!data.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
   const user = await prisma.user.findUnique({ where: { email: data.data.email } });
-  if (!user || user.status === "SUSPENDED") return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
   const ok = await verifyPassword(data.data.password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+  // Only reveal the suspension to someone who already proved they know the
+  // password, so a stranger probing random emails can't use this to find
+  // out which accounts are suspended.
+  if (user.status === "SUSPENDED") {
+    return NextResponse.json({ error: "Your account has been suspended. Please contact support." }, { status: 403 });
+  }
 
   // Role guard — if caller specifies expectedRole, enforce it (admins can sign in from any login form)
   if (data.data.expectedRole && user.role !== data.data.expectedRole && user.role !== "ADMIN") {

@@ -119,10 +119,13 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
             </div>
 
             <div className="shrink-0 flex md:flex-col items-center md:items-end gap-3">
-              <div className="text-center md:text-right bg-blue-50 rounded-2xl px-5 py-3">
+              <Link
+                href={`/jobs?q=${encodeURIComponent(company.name)}`}
+                className="text-center md:text-right bg-blue-50 hover:bg-blue-100 transition-colors rounded-2xl px-5 py-3"
+              >
                 <div className="text-2xl font-black text-blue-700 leading-none">{company._count.jobs}</div>
                 <div className="text-xs font-bold text-blue-600 mt-1 uppercase tracking-wide">Open Role{company._count.jobs === 1 ? "" : "s"}</div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

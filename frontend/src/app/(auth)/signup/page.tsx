@@ -359,25 +359,21 @@ function CandidateSignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Managed options (location / education / experience ranges), sourced live
-  // from the same admin-managed data every other page uses.
+  // Managed options (location / education / skills), sourced live from the
+  // same admin-managed data every other page uses.
   const [locations, setLocations] = useState<ManagedOption[]>([]);
   const [educationOptions, setEducationOptions] = useState<ManagedOption[]>([]);
-  const [experienceOptions, setExperienceOptions] = useState<ManagedOption[]>([]);
-  const [ctcOptions, setCtcOptions] = useState<ManagedOption[]>([]);
   const [skillOptions, setSkillOptions] = useState<ManagedOption[]>([]);
   useEffect(() => {
     fetch("/api/options").then(r => r.json()).then(d => {
       setLocations(d.options?.LOCATION ?? []);
       setEducationOptions(d.options?.EDUCATION ?? []);
-      setExperienceOptions(d.options?.EXPERIENCE ?? []);
-      setCtcOptions(d.options?.CTC ?? []);
       setSkillOptions(d.options?.SKILL ?? []);
     }).catch(() => {});
   }, []);
 
   const [regType, setRegType] = useState<"EXPERIENCED" | "FRESHER">("EXPERIENCED");
-  const [expRange, setExpRange] = useState("");
+  const [expYears, setExpYears] = useState("");
   const [currentSalary, setCurrentSalary] = useState("");
   const [expectedSalary, setExpectedSalary] = useState("");
   const [noticePeriod, setNoticePeriod] = useState("");
@@ -436,7 +432,7 @@ function CandidateSignupForm() {
           name, email, password, role: "SEEKER", phone,
           gender, dateOfBirth: dob,
           registrationType: regType,
-          yearsExperience: regType === "EXPERIENCED" ? expRange : "0-0",
+          yearsExperience: regType === "EXPERIENCED" ? expYears : "0",
           currentSalary: regType === "EXPERIENCED" ? currentSalary : "",
           expectedSalary: regType === "EXPERIENCED" ? expectedSalary : "",
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
@@ -692,11 +688,8 @@ function CandidateSignupForm() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Years of Experience <span className="text-red-500">*</span></label>
-                        <select required value={expRange} onChange={e => setExpRange(e.target.value)}
-                          className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
-                          <option value="">Select experience range</option>
-                          {experienceOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                        </select>
+                        <input required type="number" min={0} max={50} step="1" value={expYears} onChange={e => setExpYears(e.target.value)} placeholder="e.g. 4"
+                          className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Notice Period <span className="text-red-500">*</span></label>
@@ -709,23 +702,17 @@ function CandidateSignupForm() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current CTC <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current CTC (Lacs PA) <span className="text-red-500">*</span></label>
                         <div className="relative">
                           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                          <select required value={currentSalary} onChange={e => setCurrentSalary(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                            <option value="">Select CTC range</option>
-                            {ctcOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                          </select>
+                          <input required type="number" min={0} step="0.1" value={currentSalary} onChange={e => setCurrentSalary(e.target.value)} placeholder="e.g. 8" className={inputClass} />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Expected CTC <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Expected CTC (Lacs PA) <span className="text-red-500">*</span></label>
                         <div className="relative">
                           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                          <select required value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                            <option value="">Select CTC range</option>
-                            {ctcOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                          </select>
+                          <input required type="number" min={0} step="0.1" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g. 12" className={inputClass} />
                         </div>
                       </div>
                       <div>

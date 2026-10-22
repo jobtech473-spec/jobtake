@@ -510,49 +510,7 @@ function CandidateSignupForm() {
           </div>
           {/* Illustration */}
           <div className="mt-8 rounded-2xl bg-blue-50 p-5 flex items-center justify-center">
-            <svg viewBox="0 0 260 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[240px]">
-              {/* Background card / resume */}
-              <rect x="40" y="20" width="130" height="160" rx="12" fill="#DBEAFE" />
-              <rect x="40" y="20" width="130" height="160" rx="12" stroke="#93C5FD" strokeWidth="1.5" />
-
-              {/* Avatar circle */}
-              <circle cx="80" cy="58" r="18" fill="#BFDBFE" />
-              <circle cx="80" cy="52" r="8" fill="#60A5FA" />
-              <path d="M62 74c0-10 8-16 18-16s18 6 18 16" fill="#60A5FA" />
-
-              {/* Text lines on resume */}
-              <rect x="108" y="46" width="44" height="6" rx="3" fill="#93C5FD" />
-              <rect x="108" y="58" width="32" height="4" rx="2" fill="#BFDBFE" />
-              <rect x="56" y="88" width="96" height="4" rx="2" fill="#BFDBFE" />
-              <rect x="56" y="98" width="80" height="4" rx="2" fill="#BFDBFE" />
-              <rect x="56" y="108" width="88" height="4" rx="2" fill="#BFDBFE" />
-              <rect x="56" y="122" width="96" height="4" rx="2" fill="#BFDBFE" />
-              <rect x="56" y="132" width="64" height="4" rx="2" fill="#BFDBFE" />
-              <rect x="56" y="146" width="72" height="4" rx="2" fill="#BFDBFE" />
-
-              {/* Plant stem + leaves */}
-              <path d="M200 190 Q200 165 195 155" stroke="#6EE7B7" strokeWidth="3" strokeLinecap="round" />
-              <ellipse cx="189" cy="148" rx="14" ry="9" fill="#34D399" transform="rotate(-30 189 148)" />
-              <ellipse cx="202" cy="142" rx="12" ry="8" fill="#6EE7B7" transform="rotate(20 202 142)" />
-              <ellipse cx="192" cy="135" rx="10" ry="7" fill="#34D399" transform="rotate(-10 192 135)" />
-              {/* Pot */}
-              <path d="M193 190 L207 190 L205 175 L195 175 Z" fill="#93C5FD" />
-              <rect x="191" y="188" width="18" height="4" rx="2" fill="#60A5FA" />
-
-              {/* Magnifying glass */}
-              <circle cx="158" cy="130" r="28" fill="white" fillOpacity="0.9" stroke="#3B82F6" strokeWidth="3" />
-              <circle cx="158" cy="130" r="20" fill="#EFF6FF" stroke="#93C5FD" strokeWidth="1.5" />
-              {/* Glass reflection */}
-              <circle cx="151" cy="122" r="4" fill="white" fillOpacity="0.6" />
-              {/* Handle */}
-              <line x1="179" y1="151" x2="198" y2="170" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" />
-              <line x1="179" y1="151" x2="198" y2="170" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
-
-              {/* Small dots decoration */}
-              <circle cx="30" cy="40" r="4" fill="#BFDBFE" />
-              <circle cx="22" cy="55" r="3" fill="#93C5FD" />
-              <circle cx="35" cy="65" r="2" fill="#BFDBFE" />
-            </svg>
+            <img src="/employragistretion.png" alt="" className="w-full max-w-[240px] rounded-xl" />
           </div>
         </aside>
 

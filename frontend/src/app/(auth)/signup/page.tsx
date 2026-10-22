@@ -405,16 +405,20 @@ function EmployerSignupForm() {
 
           {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>}
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <label className="flex items-start gap-2.5 text-sm text-zinc-700 cursor-pointer">
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 mt-0.5 shrink-0" />
-              <span className="leading-relaxed">
-                I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that my company details, contact information and other information provided on the platform are correct and genuine.
-                <br /><br />
-                I agree to post genuine job openings and provide accurate details about job roles, salaries, locations and employment conditions. I will not post fake jobs, mislead candidates, collect money from candidates through false promises, misuse their personal information, or engage in spam, discrimination or abusive behaviour.
-                <br /><br />
-                I understand that providing false information, posting misleading jobs or misusing Jobtake may lead to account restriction, suspension / legal actions.
-              </span>
+              <div className="space-y-2.5">
+                <p className="leading-relaxed">
+                  I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that my company details, contact information and other information provided on the platform are correct and genuine.
+                </p>
+                <p className="leading-relaxed">
+                  I agree to post genuine job openings and provide accurate details about job roles, salaries, locations and employment conditions. I will not post fake jobs, mislead candidates, collect money from candidates through false promises, misuse their personal information, or engage in spam, discrimination or abusive behaviour.
+                </p>
+                <p className="leading-relaxed">
+                  I understand that providing false information, posting misleading jobs or misusing Jobtake may lead to account restriction, suspension / legal actions.
+                </p>
+              </div>
             </label>
             <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
               <input type="checkbox" checked={updates} onChange={e => setUpdates(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 accent-blue-600" defaultChecked />
@@ -966,16 +970,20 @@ function CandidateSignupForm() {
                   <ShieldCheck className="h-4 w-4 text-blue-600" />
                   <h2 className="font-bold text-zinc-900">Additional</h2>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <label className="flex items-start gap-2.5 text-sm text-zinc-700 cursor-pointer">
                     <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 mt-0.5 shrink-0" />
-                    <span className="leading-relaxed">
-                      I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that the details I have provided, including my resume, education, skills and work experience, are correct and genuine.
-                      <br /><br />
-                      I agree not to provide false information, fake documents, incorrect qualifications or work experience, or use someone else&rsquo;s identity. I will not misuse the platform, mislead employers, send spam or engage in abusive behaviour.
-                      <br /><br />
-                      I understand that providing false information or misusing Jobtake may lead to suspension of my account / legal action.
-                    </span>
+                    <div className="space-y-2.5">
+                      <p className="leading-relaxed">
+                        I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that the details I have provided, including my resume, education, skills and work experience, are correct and genuine.
+                      </p>
+                      <p className="leading-relaxed">
+                        I agree not to provide false information, fake documents, incorrect qualifications or work experience, or use someone else&rsquo;s identity. I will not misuse the platform, mislead employers, send spam or engage in abusive behaviour.
+                      </p>
+                      <p className="leading-relaxed">
+                        I understand that providing false information or misusing Jobtake may lead to suspension of my account / legal action.
+                      </p>
+                    </div>
                   </label>
                   <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
                     <input type="checkbox" checked={alerts} onChange={e => setAlerts(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 accent-blue-600" />

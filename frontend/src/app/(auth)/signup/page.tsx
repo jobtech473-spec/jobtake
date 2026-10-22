@@ -6,7 +6,7 @@ import {
   Loader2, Mail, Lock, Eye, EyeOff, User, Phone, Upload,
   ShieldCheck, Briefcase, TrendingUp, Bell, Building2,
   CalendarDays, UserRound, FileText, GraduationCap, X,
-  IndianRupee, MapPin, Clock, FileCheck2,
+  IndianRupee, MapPin, Clock, FileCheck2, ChevronDown,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { isValidIndianMobile } from "@/lib/utils";
@@ -15,6 +15,58 @@ const MAX_RESUME_BYTES = 2 * 1024 * 1024;
 const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3 Months", "More than 3 Months"];
 
 type ManagedOption = { id: string; label: string; value: string };
+
+// A native <select> opens its popup wherever the browser/OS decides (often
+// centered on the selected option, which can look like it's floating above
+// the field). This controlled, absolute-positioned panel always opens
+// directly below the trigger instead.
+function LocationSelect({
+  value, onChange, locations, placeholder = "Select your location",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  locations: ManagedOption[];
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = search.trim()
+    ? locations.filter(l => l.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : locations;
+
+  return (
+    <div
+      className="relative w-full"
+      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between gap-2 pl-10 pr-3 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white text-left"
+      >
+        <span className={`truncate ${value ? "text-zinc-800" : "text-zinc-400"}`}>{value || placeholder}</span>
+        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search location..."
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div className="max-h-[220px] overflow-y-auto py-1">
+            {filtered.map(l => (
+              <button key={l.id} type="button" onClick={() => { onChange(l.value); setOpen(false); setSearch(""); }}
+                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
+                {l.label}
+              </button>
+            ))}
+            {!filtered.length && <div className="px-3 py-3 text-sm text-zinc-400">No matching location.</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const MAX_GST_CERT_BYTES = 2 * 1024 * 1024;
 
@@ -437,6 +489,7 @@ function CandidateSignupForm() {
     e.preventDefault();
     if (password !== confirmPw) { setError("Passwords do not match."); return; }
     if (!isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return; }
+    if (!location) { setError("Please select your location."); return; }
     if (!resumeDataUrl) { setError("Please upload your resume."); return; }
     if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
     if (regType === "FRESHER" && skills.length < 1) { setError("Please add at least 1 key skill."); return; }
@@ -713,11 +766,8 @@ function CandidateSignupForm() {
                     <div>
                       <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Location <span className="text-red-500">*</span></label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                        <select required value={location} onChange={e => setLocation(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                          <option value="">Select your location</option>
-                          {locations.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                        </select>
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
+                        <LocationSelect value={location} onChange={setLocation} locations={locations} />
                       </div>
                     </div>
                     <div>

@@ -214,7 +214,10 @@ export function CompaniesTable({
 
             {/* Quick actions */}
             <div className="grid grid-cols-2 gap-2 mt-4">
-              <Link href={`/jobs?q=${encodeURIComponent(selected.name)}`} className="flex items-center justify-center gap-1.5 border border-zinc-200 rounded-lg py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50">
+              <Link href={`/companies/${selected.slug}`} target="_blank" className="flex items-center justify-center gap-1.5 border border-zinc-200 rounded-lg py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50">
+                <ExternalLink className="h-3.5 w-3.5" /> View Company Profile
+              </Link>
+              <Link href={`/jobs?q=${encodeURIComponent(selected.name)}`} target="_blank" className="flex items-center justify-center gap-1.5 border border-zinc-200 rounded-lg py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50">
                 <ExternalLink className="h-3.5 w-3.5" /> View Jobs
               </Link>
               <button

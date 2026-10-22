@@ -486,7 +486,7 @@ function CandidateSignupForm() {
 
       <div className="flex flex-1">
         {/* Left — Why register */}
-        <aside className="hidden lg:flex flex-col justify-between px-8 py-10 w-64 bg-blue-50 border-r border-blue-100 shrink-0">
+        <aside className="hidden lg:flex flex-col justify-between px-8 py-10 w-64 bg-blue-50 border-r border-blue-100 shrink-0 lg:sticky lg:top-0 lg:self-start lg:h-screen lg:overflow-y-auto">
           <div>
             <h3 className="font-black text-zinc-900 text-lg mb-6">Why register with Jobtake?</h3>
             <div className="space-y-5">

@@ -68,6 +68,61 @@ function LocationSelect({
   );
 }
 
+// Same "always opens below the trigger" fix as LocationSelect, generalized
+// for any admin-managed option list (used for Education specializations).
+function SearchableSelect({
+  value, onChange, options, placeholder, searchPlaceholder = "Search...",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: ManagedOption[];
+  placeholder: string;
+  searchPlaceholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = search.trim()
+    ? options.filter(o => o.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : options;
+
+  return (
+    <div
+      className="relative w-full"
+      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setSearch(""); } }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between gap-2 px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white text-left"
+      >
+        <span className={`truncate ${value ? "text-zinc-800" : "text-zinc-400"}`}>{value || placeholder}</span>
+        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder={searchPlaceholder}
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div className="max-h-[220px] overflow-y-auto py-1">
+            <button type="button" onClick={() => { onChange(""); setOpen(false); setSearch(""); }}
+              className="block w-full px-3 py-2 text-left text-sm text-zinc-600 hover:bg-blue-50 transition">
+              {placeholder}
+            </button>
+            {filtered.map(o => (
+              <button key={o.id} type="button" onClick={() => { onChange(o.label); setOpen(false); setSearch(""); }}
+                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
+                {o.label}
+              </button>
+            ))}
+            {!filtered.length && <div className="px-3 py-3 text-sm text-zinc-400">No matches.</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const MAX_GST_CERT_BYTES = 2 * 1024 * 1024;
 
 const FIELD_LABEL: Record<string, string> = {
@@ -811,11 +866,13 @@ function CandidateSignupForm() {
                       <>
                         <div>
                           <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
-                          <select value={specialization} onChange={e => setSpecialization(e.target.value)}
-                            className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
-                            <option value="">Select specialization</option>
-                            {specializationGroup.options.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
-                          </select>
+                          <SearchableSelect
+                            value={specialization}
+                            onChange={setSpecialization}
+                            options={specializationGroup.options}
+                            placeholder="Select specialization"
+                            searchPlaceholder="Search specialization..."
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Or type your own</label>

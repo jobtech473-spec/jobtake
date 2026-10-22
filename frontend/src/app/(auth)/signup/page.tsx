@@ -395,21 +395,28 @@ function CandidateSignupForm() {
   const [passingYear, setPassingYear] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
+  const [skillSuggestOpen, setSkillSuggestOpen] = useState(false);
   const [bio, setBio] = useState("");
 
   const [resumeDataUrl, setResumeDataUrl] = useState("");
   const [resumeFileName, setResumeFileName] = useState("");
   const [resumeError, setResumeError] = useState<string | null>(null);
 
-  function addSkill() {
-    const s = skillInput;
+  function addSkill(value?: string) {
+    const s = (value ?? skillInput).trim();
     if (!s) return;
     if (!skills.some(x => x.toLowerCase() === s.toLowerCase())) setSkills(prev => [...prev, s]);
     setSkillInput("");
+    setSkillSuggestOpen(false);
   }
   function removeSkill(s: string) {
     setSkills(prev => prev.filter(x => x !== s));
   }
+
+  const skillSuggestions = skillOptions.filter(o =>
+    !skills.some(s => s.toLowerCase() === o.value.toLowerCase()) &&
+    (!skillInput.trim() || o.label.toLowerCase().includes(skillInput.trim().toLowerCase()))
+  );
 
   async function handleResumeUpload(file: File | undefined) {
     setResumeError(null);
@@ -783,13 +790,31 @@ function CandidateSignupForm() {
                       <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(Minimum 1 required)"}</span>
                     </label>
                     <div className="flex gap-2">
-                      <select value={skillInput} onChange={e => setSkillInput(e.target.value)}
-                        className="flex-1 px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
-                        <option value="">Select a skill to add...</option>
-                        {skillOptions.filter(o => !skills.includes(o.value)).map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                      </select>
+                      <div
+                        className="relative flex-1"
+                        onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setSkillSuggestOpen(false); }}
+                      >
+                        <input
+                          value={skillInput}
+                          onChange={e => { setSkillInput(e.target.value); setSkillSuggestOpen(true); }}
+                          onFocus={() => setSkillSuggestOpen(true)}
+                          onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
+                          placeholder="Type a skill, or pick a suggestion..."
+                          className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+                        />
+                        {skillSuggestOpen && skillSuggestions.length > 0 && (
+                          <div className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl py-1">
+                            {skillSuggestions.map(o => (
+                              <button key={o.id} type="button" onClick={() => addSkill(o.value)}
+                                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
+                                {o.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/{regType === "EXPERIENCED" ? 5 : 1}</span>
-                      <button type="button" onClick={addSkill} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                      <button type="button" onClick={() => addSkill()} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
                         + Add More
                       </button>
                     </div>

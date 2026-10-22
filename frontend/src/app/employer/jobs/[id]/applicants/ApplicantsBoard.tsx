@@ -1,8 +1,11 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users } from "lucide-react";
+import {
+  Loader2, FileDown, Search, MapPin, Bookmark, ExternalLink, Mail, MessageCircle, Users,
+  ChevronDown, ChevronRight,
+} from "lucide-react";
 import { timeAgo, personSlug } from "@/lib/utils";
 
 type Stage = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED" | "WITHDRAWN";
@@ -61,10 +64,10 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
   const [ageMin, setAgeMin] = useState("");
   const [ageMax, setAgeMax] = useState("");
   const [noticePeriodFilter, setNoticePeriodFilter] = useState("");
-  const [degreeFilter, setDegreeFilter] = useState("");
+  const [selectedDegrees, setSelectedDegrees] = useState<Set<string>>(new Set());
+  const [selectedSpecs, setSelectedSpecs] = useState<Set<string>>(new Set());
 
   const stageOf = (a: App) => localStages[a.id] ?? a.stage;
-  const degreeOf = (a: App) => a.user.educations?.[0]?.degree ?? null;
   const ageOf = (a: App) => {
     if (!a.user.dateOfBirth) return null;
     const dob = new Date(a.user.dateOfBirth);
@@ -78,10 +81,68 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     return c;
   }, [list, localStages]);
 
-  const degreeOptions = useMemo(
-    () => Array.from(new Set(list.map(degreeOf).filter((d): d is string => !!d))).sort(),
-    [list]
-  );
+  const educationGroups = useMemo(() => {
+    const map = new Map<string, { count: number; specs: Map<string, number> }>();
+    for (const a of list) {
+      const edu = a.user.educations?.[0];
+      if (!edu) continue;
+      const entry = map.get(edu.degree) ?? { count: 0, specs: new Map<string, number>() };
+      entry.count++;
+      if (edu.field) entry.specs.set(edu.field, (entry.specs.get(edu.field) ?? 0) + 1);
+      map.set(edu.degree, entry);
+    }
+    return Array.from(map.entries())
+      .map(([degree, { count, specs }]) => ({
+        degree,
+        count,
+        specializations: Array.from(specs.entries())
+          .map(([field, c]) => ({ field, count: c }))
+          .sort((a, b) => b.count - a.count),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [list]);
+
+  function toggleDegree(degree: string) {
+    setSelectedDegrees(prev => {
+      const next = new Set(prev);
+      if (next.has(degree)) {
+        next.delete(degree);
+        setSelectedSpecs(specsPrev => {
+          const s = new Set(specsPrev);
+          for (const key of Array.from(s)) if (key.startsWith(`${degree}::`)) s.delete(key);
+          return s;
+        });
+      } else {
+        next.add(degree);
+        const group = educationGroups.find(g => g.degree === degree);
+        if (group) {
+          setSelectedSpecs(specsPrev => {
+            const s = new Set(specsPrev);
+            for (const sp of group.specializations) s.add(`${degree}::${sp.field}`);
+            return s;
+          });
+        }
+      }
+      return next;
+    });
+  }
+
+  function toggleSpec(degree: string, field: string) {
+    const key = `${degree}::${field}`;
+    setSelectedSpecs(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
+  function matchesEducation(a: App) {
+    if (selectedDegrees.size === 0) return true;
+    const edu = a.user.educations?.[0];
+    if (!edu || !selectedDegrees.has(edu.degree)) return false;
+    if (!edu.field) return true;
+    return selectedSpecs.has(`${edu.degree}::${edu.field}`);
+  }
 
   const TABS: { label: string; value: Stage | "ALL" }[] = [
     { label: "Applicants", value: "ALL" },
@@ -106,18 +167,18 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
     (!ageMin || (ageOf(a) != null && ageOf(a)! >= Number(ageMin))) &&
     (!ageMax || (ageOf(a) != null && ageOf(a)! <= Number(ageMax))) &&
     (!noticePeriodFilter || a.user.noticePeriod === noticePeriodFilter) &&
-    (!degreeFilter || degreeOf(a) === degreeFilter)
+    matchesEducation(a)
   );
 
   const sidebarFiltersCount = [
     search, locationFilter, expMin, expMax, expSalaryMin, expSalaryMax, ageMin, ageMax,
-    genderFilter, noticePeriodFilter, degreeFilter,
-  ].filter(Boolean).length;
+    genderFilter, noticePeriodFilter,
+  ].filter(Boolean).length + (selectedDegrees.size > 0 ? 1 : 0);
 
   function resetSidebarFilters() {
     setSearch(""); setLocationFilter(""); setExpMin(""); setExpMax("");
     setExpSalaryMin(""); setExpSalaryMax(""); setAgeMin(""); setAgeMax(""); setGenderFilter("");
-    setNoticePeriodFilter(""); setDegreeFilter("");
+    setNoticePeriodFilter(""); setSelectedDegrees(new Set()); setSelectedSpecs(new Set());
   }
 
   async function updateStage(id: string, stage: Stage) {
@@ -199,11 +260,13 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
           </FilterField>
 
           <FilterField label="Education">
-            <select value={degreeFilter} onChange={e => setDegreeFilter(e.target.value)} disabled={degreeOptions.length === 0}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition appearance-none bg-white disabled:opacity-50">
-              <option value="">Any Education</option>
-              {degreeOptions.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+            <EducationFilter
+              groups={educationGroups}
+              selectedDegrees={selectedDegrees}
+              selectedSpecs={selectedSpecs}
+              onToggleDegree={toggleDegree}
+              onToggleSpec={toggleSpec}
+            />
           </FilterField>
 
           <FilterField label="Gender">
@@ -390,6 +453,109 @@ export function ApplicantsBoard({ applications, jobId }: { applications: App[]; 
       </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type EduGroup = { degree: string; count: number; specializations: { field: string; count: number }[] };
+
+function EducationFilter({
+  groups, selectedDegrees, selectedSpecs, onToggleDegree, onToggleSpec,
+}: {
+  groups: EduGroup[];
+  selectedDegrees: Set<string>;
+  selectedSpecs: Set<string>;
+  onToggleDegree: (degree: string) => void;
+  onToggleSpec: (degree: string, field: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function toggleExpanded(degree: string) {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      next.has(degree) ? next.delete(degree) : next.add(degree);
+      return next;
+    });
+  }
+
+  const filteredGroups = query.trim()
+    ? groups.filter(g => g.degree.toLowerCase().includes(query.trim().toLowerCase()))
+    : groups;
+
+  const label = selectedDegrees.size === 0 ? "Any Education" : `${selectedDegrees.size} selected`;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        disabled={groups.length === 0}
+        className="w-full flex items-center justify-between px-3 py-2 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition bg-white text-left disabled:opacity-50"
+      >
+        <span className={selectedDegrees.size ? "text-zinc-800" : "text-zinc-400"}>{label}</span>
+        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-30 mt-1.5 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Education"
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div className="max-h-[280px] overflow-y-auto py-1">
+            {filteredGroups.length === 0 && <div className="px-3 py-3 text-sm text-zinc-400">No matching education.</div>}
+            {filteredGroups.map(g => (
+              <div key={g.degree}>
+                <div className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-zinc-50">
+                  <label className="flex items-center gap-2 text-sm text-zinc-800 cursor-pointer flex-1 min-w-0">
+                    <input type="checkbox" checked={selectedDegrees.has(g.degree)} onChange={() => onToggleDegree(g.degree)}
+                      className="w-4 h-4 rounded border-zinc-300 shrink-0" />
+                    <span className="truncate">{g.degree}</span>
+                  </label>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs text-zinc-400">{g.count}</span>
+                    {g.specializations.length > 0 && (
+                      <button type="button" onClick={() => toggleExpanded(g.degree)} className="text-zinc-400 hover:text-zinc-700">
+                        <ChevronRight className={`h-3.5 w-3.5 transition-transform ${expanded.has(g.degree) ? "rotate-90" : ""}`} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {expanded.has(g.degree) && g.specializations.length > 0 && (
+                  <div className="pl-7 pb-1.5">
+                    <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide px-1 mb-1">Specialisations for {g.degree}</div>
+                    {g.specializations.map(s => (
+                      <label key={s.field} className="flex items-center justify-between gap-2 px-1 py-1.5 text-sm text-zinc-700 cursor-pointer hover:bg-zinc-50 rounded">
+                        <span className="flex items-center gap-2 min-w-0">
+                          <input type="checkbox" checked={selectedSpecs.has(`${g.degree}::${s.field}`)} onChange={() => onToggleSpec(g.degree, s.field)}
+                            className="w-3.5 h-3.5 rounded border-zinc-300 shrink-0" />
+                          <span className="truncate">{s.field}</span>
+                        </span>
+                        <span className="text-xs text-zinc-400 shrink-0">{s.count}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="p-2 border-t border-zinc-100">
+            <button type="button" onClick={() => setOpen(false)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-2 rounded-lg transition">
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

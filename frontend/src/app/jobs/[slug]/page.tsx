@@ -210,14 +210,6 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                     <span className="text-zinc-700">{job.company.industry}</span>
                   </div>
                 )}
-                {job.collarType && (
-                  <div className="flex gap-2 text-sm">
-                    <span className="font-semibold text-zinc-900 w-40 shrink-0">Department</span>
-                    <span className="text-zinc-700">
-                      {job.collarType === "WHITE" ? "Corporate & Professional" : job.collarType === "BLUE" ? "Operations & Skilled Trades" : job.collarType === "PINK" ? "Service & Support" : job.collarType === "GREY" ? "Technical & Supervisory" : job.collarType === "MSME" ? "MSME & Entrepreneurship" : job.collarType}
-                    </span>
-                  </div>
-                )}
                 <div className="flex gap-2 text-sm">
                   <span className="font-semibold text-zinc-900 w-40 shrink-0">Employment Type</span>
                   <span className="text-zinc-700">

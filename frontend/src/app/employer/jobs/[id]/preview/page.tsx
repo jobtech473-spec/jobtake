@@ -50,7 +50,6 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
   const salaryLabel = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod);
   const empTypeLabel = job.employmentType === "FULL_TIME" ? "Full-time" : job.employmentType === "PART_TIME" ? "Part-time" : job.employmentType === "CONTRACT" ? "Contract" : job.employmentType === "INTERNSHIP" ? "Internship" : "Temporary";
   const workModeLabel = job.workMode === "REMOTE" ? "Remote" : job.workMode === "HYBRID" ? "Hybrid" : "On-site";
-  const dept = job.collarType === "WHITE" ? "Corporate & Professional" : job.collarType === "BLUE" ? "Operations & Trades" : job.collarType === "PINK" ? "Service & Support" : job.collarType === "GREY" ? "Technical & Supervisory" : "MSME & Entrepreneurship";
   const experienceLabel = formatExperienceRange(job.experienceMin, job.experienceMax, SENIORITY_LABEL[job.seniority] ?? job.seniority);
 
   return (
@@ -104,12 +103,11 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
             </div>
 
             {/* Stats row */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 { icon: <TrendingUp className="h-4 w-4 text-blue-500" />, label: "Experience",       value: experienceLabel },
                 { icon: <Briefcase className="h-4 w-4 text-blue-500" />,  label: "Employment Type", value: empTypeLabel },
                 { icon: <Wifi className="h-4 w-4 text-blue-500" />,       label: "Work Mode",       value: workModeLabel },
-                { icon: <Tag className="h-4 w-4 text-blue-500" />,        label: "Department",      value: job.category?.name ?? dept },
               ].map(({ icon, label, value }) => (
                 <div key={label} className="bg-zinc-50 rounded-xl p-3 flex items-start gap-2">
                   <div className="mt-0.5 shrink-0">{icon}</div>
@@ -169,7 +167,6 @@ export default async function JobPreviewPage({ params }: { params: Promise<{ id:
                 { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: workModeLabel },
                 ...(job.benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: job.benefits }] : []),
                 { icon: <MapPin className="h-4 w-4 text-blue-500" />,      label: "Job Location",       value: job.location },
-                { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: dept },
                 ...(job.workMode === "REMOTE" ? [{ icon: <Wifi className="h-4 w-4 text-blue-500" />, label: "Remote Job", value: "Available" }] : []),
                 { icon: <Calendar className="h-4 w-4 text-blue-500" />,    label: "Posted On",          value: job.publishedAt ? new Date(job.publishedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—" },
                 { icon: <TrendingUp className="h-4 w-4 text-blue-500" />,  label: "Experience Level",   value: experienceLabel },

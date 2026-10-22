@@ -425,6 +425,8 @@ function CandidateSignupForm() {
     if (password !== confirmPw) { setError("Passwords do not match."); return; }
     if (!resumeDataUrl) { setError("Please upload your resume."); return; }
     if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
+    if (regType === "FRESHER" && skills.length < 1) { setError("Please add at least 1 key skill."); return; }
+    if (!bio.trim()) { setError("Please fill in About Me."); return; }
     if (!agreed) { setError("Please agree to Terms & Conditions."); return; }
     setLoading(true); setError(null);
     try {
@@ -778,8 +780,8 @@ function CandidateSignupForm() {
 
                   <div>
                     <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                      Key Skills {regType === "EXPERIENCED" && <span className="text-red-500">*</span>}
-                      <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(optional)"}</span>
+                      Key Skills <span className="text-red-500">*</span>
+                      <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(Minimum 1 required)"}</span>
                     </label>
                     <div className="flex gap-2">
                       <select value={skillInput} onChange={e => setSkillInput(e.target.value)}
@@ -787,7 +789,7 @@ function CandidateSignupForm() {
                         <option value="">Select a skill to add...</option>
                         {skillOptions.filter(o => !skills.includes(o.value)).map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
                       </select>
-                      <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/5</span>
+                      <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/{regType === "EXPERIENCED" ? 5 : 1}</span>
                       <button type="button" onClick={addSkill} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
                         + Add More
                       </button>
@@ -805,8 +807,8 @@ function CandidateSignupForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me</label>
-                    <textarea value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short summary about yourself, your experience, key strengths and what you are looking for..."
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me <span className="text-red-500">*</span></label>
+                    <textarea required value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short summary about yourself, your experience, key strengths and what you are looking for..."
                       className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
                     <p className="text-xs text-zinc-400 text-right mt-1">{bio.length}/500</p>
                   </div>
@@ -825,7 +827,7 @@ function CandidateSignupForm() {
                         <Upload className="h-6 w-6 text-blue-500" />
                         <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
                         <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
-                        <input type="file" accept=".pdf,.doc,.docx" className="hidden"
+                        <input required type="file" accept=".pdf,.doc,.docx" className="hidden"
                           onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
                       </label>
                     )}

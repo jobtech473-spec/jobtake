@@ -86,6 +86,8 @@ export async function POST(req: NextRequest) {
     if (gstTaken) return NextResponse.json({ error: "An employer account with this GST number already exists. Please sign in instead." }, { status: 409 });
   }
 
+  const isExperienced = data.data.registrationType !== "FRESHER";
+
   let resumeBuffer: Buffer | null = null;
   if (data.data.role === "SEEKER") {
     if (!data.data.resumeDataUrl || !data.data.resumeFileName) {
@@ -97,11 +99,30 @@ export async function POST(req: NextRequest) {
     if (resumeBuffer.length > MAX_RESUME_BYTES) {
       return NextResponse.json({ error: `Resume is too large (max ${Math.round(MAX_RESUME_BYTES / (1024 * 1024))}MB).` }, { status: 400 });
     }
+    if (!data.data.bio?.trim()) {
+      return NextResponse.json({ error: "Please fill in About Me." }, { status: 400 });
+    }
+    const minSkills = isExperienced ? 5 : 1;
+    if (data.data.skills.filter(s => s.trim()).length < minSkills) {
+      return NextResponse.json({ error: `Please add at least ${minSkills} key skill${minSkills > 1 ? "s" : ""}.` }, { status: 400 });
+    }
+    if (isExperienced) {
+      const missing =
+        !data.data.yearsExperience ? "Years of Experience" :
+        !data.data.noticePeriod ? "Notice Period" :
+        !data.data.currentSalary ? "Current CTC" :
+        !data.data.expectedSalary ? "Expected CTC" :
+        !data.data.currentCompany ? "Current Company" :
+        !data.data.currentDesignation ? "Current Designation" : null;
+      if (missing) return NextResponse.json({ error: `Please fill in ${missing}.` }, { status: 400 });
+    }
+    if (!data.data.location) return NextResponse.json({ error: "Please select your location." }, { status: 400 });
+    if (!data.data.education || !data.data.schoolName || !data.data.passingYear) {
+      return NextResponse.json({ error: "Please fill in your education details." }, { status: 400 });
+    }
   }
 
   const passwordHash = await hashPassword(data.data.password);
-
-  const isExperienced = data.data.registrationType !== "FRESHER";
 
   const user = await prisma.user.create({
     data: {

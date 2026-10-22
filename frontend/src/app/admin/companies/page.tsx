@@ -10,13 +10,15 @@ export default async function AdminCompanies() {
   const me = await getCurrentUser();
   if (!me || me.role !== "ADMIN") redirect("/login");
 
-  const companies = await prisma.company.findMany({
+  const companiesRaw = await prisma.company.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       owner: { select: { name: true, email: true, phone: true } },
       _count: { select: { jobs: true } },
     },
   });
+  // Suspended companies sink to the bottom; most-recent-first order is kept within each group.
+  const companies = [...companiesRaw].sort((a, b) => Number(a.status === "SUSPENDED") - Number(b.status === "SUSPENDED"));
 
   const totalCompanies = companies.length;
   const activeCompanies = companies.filter(c => c.status === "ACTIVE").length;

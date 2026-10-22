@@ -10,7 +10,7 @@ export default async function AdminUsers() {
   const me = await getCurrentUser();
   if (!me || me.role !== "ADMIN") redirect("/login");
 
-  const users = await prisma.user.findMany({
+  const usersRaw = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
       id: true, name: true, email: true, phone: true, role: true, status: true,
@@ -18,6 +18,8 @@ export default async function AdminUsers() {
       _count: { select: { applications: true, savedJobs: true } },
     },
   });
+  // Suspended accounts sink to the bottom; most-recent-first order is kept within each group.
+  const users = [...usersRaw].sort((a, b) => Number(a.status === "SUSPENDED") - Number(b.status === "SUSPENDED"));
 
   const totalUsers = users.length;
   const activeUsers = users.filter(u => u.status === "ACTIVE").length;

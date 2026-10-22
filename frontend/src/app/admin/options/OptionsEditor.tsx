@@ -10,6 +10,7 @@ import {
   EyeOff,
   Filter,
   GraduationCap,
+  IndianRupee,
   ListChecks,
   Loader2,
   MapPin,
@@ -60,6 +61,33 @@ const TYPES: OptionMeta[] = [
     valuePlaceholder: "Sales Executive",
     swatch: "bg-violet-50 text-violet-600",
     icon: UserRound,
+  },
+  {
+    type: "CTC",
+    singular: "CTC Band",
+    hint: "Manage CTC salary bands used in candidate signup and job search.",
+    placeholder: "e.g. 3 - 6 LPA",
+    valuePlaceholder: "3-6",
+    swatch: "bg-fuchsia-50 text-fuchsia-600",
+    icon: IndianRupee,
+  },
+  {
+    type: "EXPERIENCE",
+    singular: "Experience Band",
+    hint: "Manage experience ranges used in candidate signup and job search.",
+    placeholder: "e.g. 1 - 3 years",
+    valuePlaceholder: "1-3",
+    swatch: "bg-lime-50 text-lime-600",
+    icon: CalendarDays,
+  },
+  {
+    type: "SKILL",
+    singular: "Skill",
+    hint: "Manage the skills candidates can pick from at signup and on their profile.",
+    placeholder: "e.g. JavaScript",
+    valuePlaceholder: "JavaScript",
+    swatch: "bg-sky-50 text-sky-600",
+    icon: ListChecks,
   },
   {
     type: "KEYWORD",
@@ -143,6 +171,7 @@ function blankDrafts(): Drafts {
     ITI_SPECIALIZATION: { label: "", value: "" },
     CTC: { label: "3 - 6 LPA", value: "3-6" },
     EXPERIENCE: { label: "1 - 3 years", value: "1-3" },
+    SKILL: { label: "", value: "" },
   };
 }
 

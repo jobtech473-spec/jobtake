@@ -6,7 +6,7 @@ import { groupManagedOptions } from "@/lib/job-options";
 
 const OptionType = z.enum([
   "LOCATION", "INDUSTRY", "ROLE", "CTC", "EXPERIENCE", "KEYWORD", "EDUCATION",
-  "PG_SPECIALIZATION", "UG_SPECIALIZATION", "DIPLOMA_SPECIALIZATION", "ITI_SPECIALIZATION",
+  "PG_SPECIALIZATION", "UG_SPECIALIZATION", "DIPLOMA_SPECIALIZATION", "ITI_SPECIALIZATION", "SKILL",
 ]);
 
 const Schema = z.object({

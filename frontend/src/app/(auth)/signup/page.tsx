@@ -364,11 +364,15 @@ function CandidateSignupForm() {
   const [locations, setLocations] = useState<ManagedOption[]>([]);
   const [educationOptions, setEducationOptions] = useState<ManagedOption[]>([]);
   const [experienceOptions, setExperienceOptions] = useState<ManagedOption[]>([]);
+  const [ctcOptions, setCtcOptions] = useState<ManagedOption[]>([]);
+  const [skillOptions, setSkillOptions] = useState<ManagedOption[]>([]);
   useEffect(() => {
     fetch("/api/options").then(r => r.json()).then(d => {
       setLocations(d.options?.LOCATION ?? []);
       setEducationOptions(d.options?.EDUCATION ?? []);
       setExperienceOptions(d.options?.EXPERIENCE ?? []);
+      setCtcOptions(d.options?.CTC ?? []);
+      setSkillOptions(d.options?.SKILL ?? []);
     }).catch(() => {});
   }, []);
 
@@ -392,7 +396,7 @@ function CandidateSignupForm() {
   const [resumeError, setResumeError] = useState<string | null>(null);
 
   function addSkill() {
-    const s = skillInput.trim();
+    const s = skillInput;
     if (!s) return;
     if (!skills.some(x => x.toLowerCase() === s.toLowerCase())) setSkills(prev => [...prev, s]);
     setSkillInput("");
@@ -703,17 +707,23 @@ function CandidateSignupForm() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current CTC (Lacs PA) <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current CTC <span className="text-red-500">*</span></label>
                         <div className="relative">
                           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                          <input required type="number" min={0} step="0.1" value={currentSalary} onChange={e => setCurrentSalary(e.target.value)} placeholder="e.g. 8" className={inputClass} />
+                          <select required value={currentSalary} onChange={e => setCurrentSalary(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                            <option value="">Select CTC range</option>
+                            {ctcOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                          </select>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Expected CTC (Lacs PA) <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Expected CTC <span className="text-red-500">*</span></label>
                         <div className="relative">
                           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                          <input required type="number" min={0} step="0.1" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g. 12" className={inputClass} />
+                          <select required value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                            <option value="">Select CTC range</option>
+                            {ctcOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                          </select>
                         </div>
                       </div>
                       <div>
@@ -772,10 +782,11 @@ function CandidateSignupForm() {
                       <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(optional)"}</span>
                     </label>
                     <div className="flex gap-2">
-                      <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
-                        placeholder="Enter skills (e.g., Java, Python, Marketing, etc.)"
-                        className="flex-1 px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                      <select value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                        className="flex-1 px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition appearance-none bg-white text-zinc-600">
+                        <option value="">Select a skill to add...</option>
+                        {skillOptions.filter(o => !skills.includes(o.value)).map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                      </select>
                       <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/5</span>
                       <button type="button" onClick={addSkill} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
                         + Add More

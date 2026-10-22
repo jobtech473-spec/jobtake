@@ -1,6 +1,6 @@
 export type ManagedOptionType =
   | "LOCATION" | "INDUSTRY" | "ROLE" | "CTC" | "EXPERIENCE" | "KEYWORD" | "EDUCATION"
-  | "PG_SPECIALIZATION" | "UG_SPECIALIZATION" | "DIPLOMA_SPECIALIZATION" | "ITI_SPECIALIZATION";
+  | "PG_SPECIALIZATION" | "UG_SPECIALIZATION" | "DIPLOMA_SPECIALIZATION" | "ITI_SPECIALIZATION" | "SKILL";
 
 export type ManagedOption = {
   id: string;
@@ -26,12 +26,14 @@ export const OPTION_TYPE_LABELS: Record<ManagedOptionType, string> = {
   UG_SPECIALIZATION: "UG Specializations",
   DIPLOMA_SPECIALIZATION: "Diploma Specializations",
   ITI_SPECIALIZATION: "ITI Specializations",
+  SKILL: "Skills",
 };
 
 export function emptyManagedOptions(): ManagedOptions {
   return {
     LOCATION: [], INDUSTRY: [], ROLE: [], CTC: [], EXPERIENCE: [], KEYWORD: [], EDUCATION: [],
     PG_SPECIALIZATION: [], UG_SPECIALIZATION: [], DIPLOMA_SPECIALIZATION: [], ITI_SPECIALIZATION: [],
+    SKILL: [],
   };
 }
 

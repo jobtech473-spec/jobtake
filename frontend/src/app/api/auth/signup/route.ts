@@ -5,6 +5,7 @@ import { hashPassword, signSession, setSessionCookie, hashToken } from "@/lib/au
 import { slugify as toSlug } from "@/lib/utils";
 import { mimeFromName } from "@/lib/uploads";
 import { sendResumeCopy } from "@/lib/mailer";
+import { parseRange } from "@/lib/job-option-types";
 
 const MAX_RESUME_BYTES = 2 * 1024 * 1024;
 
@@ -56,12 +57,11 @@ function parseDateOfBirth(value?: string) {
   return null;
 }
 
-// EXPERIENCE managed-option values look like "0-0", "1-3", "10-" — take the
-// lower bound as the candidate's representative years of experience.
-function parseExperienceRange(value?: string) {
+// EXPERIENCE/CTC managed-option values look like "0-0", "1-3", "10-" — take
+// the lower bound as the candidate's representative number.
+function parseRangeMin(value?: string) {
   if (!value) return null;
-  const m = value.match(/^(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
+  return parseRange(value).min;
 }
 
 function parseIntOrNull(value?: string) {
@@ -114,10 +114,10 @@ export async function POST(req: NextRequest) {
       gender: data.data.gender || null,
       dateOfBirth: parseDateOfBirth(data.data.dateOfBirth),
       bio: data.data.bio || null,
-      yearsExperience: parseExperienceRange(data.data.yearsExperience),
+      yearsExperience: parseRangeMin(data.data.yearsExperience),
       noticePeriod: isExperienced ? (data.data.noticePeriod || null) : null,
-      currentSalary: isExperienced ? parseIntOrNull(data.data.currentSalary) : null,
-      expectedSalary: isExperienced ? parseIntOrNull(data.data.expectedSalary) : null,
+      currentSalary: isExperienced ? parseRangeMin(data.data.currentSalary) : null,
+      expectedSalary: isExperienced ? parseRangeMin(data.data.expectedSalary) : null,
       currentCompany: isExperienced ? (data.data.currentCompany || null) : null,
       currentDesignation: isExperienced ? (data.data.currentDesignation || null) : null,
     },

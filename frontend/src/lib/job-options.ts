@@ -80,6 +80,13 @@ const FALLBACKS: ManagedOptions = {
     "Information Communication Technology System Maintenance", "Machinist", "Mechanic",
     "Plumber", "Technician", "Welder",
   ].map((label, i) => option("ITI_SPECIALIZATION", label, label, i)),
+  SKILL: [
+    "Communication", "Microsoft Excel", "Sales", "Marketing", "Customer Service",
+    "Project Management", "Leadership", "Teamwork", "Problem Solving", "Accounting",
+    "JavaScript", "Python", "Java", "SQL", "React", "Node.js", "HTML/CSS",
+    "Data Analysis", "Digital Marketing", "Graphic Design", "Content Writing",
+    "Human Resources", "Operations Management", "Supply Chain Management", "Tally",
+  ].map((label, i) => option("SKILL", label, label, i)),
 };
 
 function option(type: ManagedOptionType, label: string, value: string, sortOrder: number): ManagedOption {

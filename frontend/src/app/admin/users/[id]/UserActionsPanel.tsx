@@ -9,11 +9,28 @@ export function UserActionsPanel({ userId, initialStatus }: { userId: string; in
   const router = useRouter();
   const [status, setStatus] = useState<Status>(initialStatus);
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function patch(body: Record<string, string>) {
     setBusy(true);
     await fetch(`/api/admin/users/${userId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     setBusy(false);
+    router.refresh();
+  }
+
+  async function deleteAccount() {
+    if (!confirm("Permanently delete this account? This removes their profile, resumes, applications, saved jobs and (if an employer) their company and job postings. This cannot be undone.")) return;
+    setDeleting(true);
+    setDeleteError(null);
+    const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setDeleteError(data.error || "Failed to delete account");
+      setDeleting(false);
+      return;
+    }
+    router.push("/admin/users");
     router.refresh();
   }
 
@@ -35,6 +52,17 @@ export function UserActionsPanel({ userId, initialStatus }: { userId: string; in
         >
           Mark Pending
         </button>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-zinc-100">
+        <button
+          disabled={deleting}
+          onClick={deleteAccount}
+          className="w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg py-2 text-xs font-semibold disabled:opacity-50 transition"
+        >
+          {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Delete Account"}
+        </button>
+        {deleteError && <p className="text-xs text-red-600 mt-1.5 text-center">{deleteError}</p>}
       </div>
     </div>
   );

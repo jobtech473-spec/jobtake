@@ -507,7 +507,6 @@ function CandidateSignupForm() {
   const [location, setLocation] = useState("");
   const [education, setEducation] = useState("");
   const [specialization, setSpecialization] = useState("");
-  const [specializationCustom, setSpecializationCustom] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [passingYear, setPassingYear] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
@@ -527,12 +526,10 @@ function CandidateSignupForm() {
     education === "Diploma" ? { label: "Diploma Specialization", options: diplomaSpecializations } :
     education === "ITI Pass" ? { label: "ITI Specialization", options: itiSpecializations } :
     null;
-  const specializationEffective = specializationCustom.trim() || specialization;
 
   function onEducationChange(value: string) {
     setEducation(value);
     setSpecialization("");
-    setSpecializationCustom("");
   }
 
   function addSkill(value?: string) {
@@ -590,7 +587,7 @@ function CandidateSignupForm() {
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
           currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
-          location, education, educationSpecialization: specializationEffective, schoolName, passingYear, skills, bio,
+          location, education, educationSpecialization: specialization, schoolName, passingYear, skills, bio,
           resumeDataUrl, resumeFileName,
         }),
       });
@@ -863,23 +860,16 @@ function CandidateSignupForm() {
                     </div>
 
                     {specializationGroup && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
-                          <SearchableSelect
-                            value={specialization}
-                            onChange={setSpecialization}
-                            options={specializationGroup.options}
-                            placeholder="Select specialization"
-                            searchPlaceholder="Search specialization..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Or type your own</label>
-                          <input value={specializationCustom} onChange={e => setSpecializationCustom(e.target.value)} placeholder="Type a specialization"
-                            className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                        </div>
-                      </>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
+                        <SearchableSelect
+                          value={specialization}
+                          onChange={setSpecialization}
+                          options={specializationGroup.options}
+                          placeholder="Select specialization"
+                          searchPlaceholder="Search specialization..."
+                        />
+                      </div>
                     )}
 
                     <div>

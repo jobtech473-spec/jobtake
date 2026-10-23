@@ -103,6 +103,8 @@ export async function POST(req: NextRequest) {
       mime: mimeFromName(resumeFileName),
       jobTitle: job.title,
     });
+  } else {
+    console.error(`Application ${app.id}: no resume on file (resumeId=${resumeId ?? "none"}), skipping resume email`);
   }
 
   return NextResponse.json({ application: app });

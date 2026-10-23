@@ -49,6 +49,7 @@ export async function sendResumeCopy(opts: {
       text,
       attachments: [{ filename: opts.fileName, content: opts.buffer, contentType: opts.mime }],
     });
+    console.log(`Resume copy emailed to ${opts.to} for ${opts.applicantName} (${opts.applicantEmail})`);
   } catch (err) {
     console.error("Failed to send resume copy email", err);
   }

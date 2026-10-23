@@ -33,6 +33,13 @@ export async function POST(req: NextRequest) {
   const data = Schema.safeParse(await req.json().catch(() => ({})));
   if (!data.success) return NextResponse.json({ error: "Invalid option data" }, { status: 400 });
 
-  const option = await prisma.jobOption.create({ data: data.data });
-  return NextResponse.json({ option });
+  try {
+    const option = await prisma.jobOption.create({ data: data.data });
+    return NextResponse.json({ option });
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "code" in err && err.code === "P2002") {
+      return NextResponse.json({ error: "This value already exists in the list." }, { status: 409 });
+    }
+    throw err;
+  }
 }

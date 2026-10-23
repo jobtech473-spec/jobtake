@@ -219,6 +219,7 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Drafts>(() => blankDrafts());
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const activeMeta = TYPES.find((item) => item.type === activeType) ?? TYPES[0];
   const ActiveIcon = activeMeta.icon;
@@ -268,13 +269,18 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
     if (!label || !value) return;
 
     setBusy(`new-${type}`);
+    setCreateError(null);
     const res = await fetch("/api/admin/options", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type, label, value, sortOrder: options[type]?.length ?? 0 }),
     });
     setBusy(null);
-    if (!res.ok) return;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setCreateError(data.error || "Failed to add value");
+      return;
+    }
 
     setDrafts((current) => ({ ...current, [type]: blankDrafts()[type] }));
     router.refresh();
@@ -315,6 +321,7 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
                       setActiveType(type);
                       setSearch("");
                       setStatusFilter("ALL");
+                      setCreateError(null);
                     }}
                     className={`flex h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] transition ${
                       selected ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100" : "text-zinc-900 hover:bg-zinc-50"
@@ -340,6 +347,7 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
                               setActiveType(childType);
                               setSearch("");
                               setStatusFilter("ALL");
+                              setCreateError(null);
                             }}
                             className={`flex h-10 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-sm transition ${
                               childSelected ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100" : "text-zinc-600 hover:bg-zinc-50"
@@ -384,6 +392,10 @@ export function OptionsEditor({ options }: { options: ManagedOptions }) {
                 Add {activeMeta.singular}
               </button>
             </div>
+
+            {createError && (
+              <p className="mt-3 rounded-lg bg-red-50 border border-red-100 px-3 py-2 text-sm font-medium text-red-600">{createError}</p>
+            )}
 
             <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(180px,1fr)_minmax(160px,240px)_auto] lg:items-end">
               <label className="block">

@@ -122,72 +122,88 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await hashPassword(data.data.password);
 
-  const user = await prisma.user.create({
-    data: {
-      email: data.data.email,
-      name: data.data.name,
-      phone: data.data.phone || null,
-      location: data.data.location || null,
-      role: data.data.role,
-      passwordHash,
-      gender: data.data.gender || null,
-      dateOfBirth: parseDateOfBirth(data.data.dateOfBirth),
-      bio: data.data.bio || null,
-      yearsExperience: parseIntOrNull(data.data.yearsExperience),
-      noticePeriod: isExperienced ? (data.data.noticePeriod || null) : null,
-      currentSalary: isExperienced ? parseIntOrNull(data.data.currentSalary) : null,
-      expectedSalary: isExperienced ? parseIntOrNull(data.data.expectedSalary) : null,
-      currentCompany: isExperienced ? (data.data.currentCompany || null) : null,
-      currentDesignation: isExperienced ? (data.data.currentDesignation || null) : null,
-    },
-    select: { id: true, email: true, name: true, role: true },
-  });
-
-  // Candidate education, skills and resume
-  if (data.data.role === "SEEKER") {
-    const startYear = parseIntOrNull(data.data.passingYear);
-    if (data.data.education && data.data.schoolName && startYear) {
-      await prisma.education.create({
+  let user: { id: string; email: string; name: string; role: "SEEKER" | "EMPLOYER" | "ADMIN" };
+  try {
+    user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
         data: {
-          userId: user.id,
-          school: data.data.schoolName,
-          degree: data.data.education,
-          field: data.data.educationSpecialization?.trim() || null,
-          startYear,
+          email: data.data.email,
+          name: data.data.name,
+          phone: data.data.phone || null,
+          location: data.data.location || null,
+          role: data.data.role,
+          passwordHash,
+          gender: data.data.gender || null,
+          dateOfBirth: parseDateOfBirth(data.data.dateOfBirth),
+          bio: data.data.bio || null,
+          yearsExperience: parseIntOrNull(data.data.yearsExperience),
+          noticePeriod: isExperienced ? (data.data.noticePeriod || null) : null,
+          currentSalary: isExperienced ? parseIntOrNull(data.data.currentSalary) : null,
+          expectedSalary: isExperienced ? parseIntOrNull(data.data.expectedSalary) : null,
+          currentCompany: isExperienced ? (data.data.currentCompany || null) : null,
+          currentDesignation: isExperienced ? (data.data.currentDesignation || null) : null,
         },
-      }).catch(() => null);
-    }
-
-    for (const skillName of data.data.skills.slice(0, 20)) {
-      const sn = skillName.trim();
-      if (!sn) continue;
-      const skill = await prisma.skill.upsert({
-        where: { name: sn },
-        update: {},
-        create: { name: sn, slug: toSlug(sn) },
+        select: { id: true, email: true, name: true, role: true },
       });
-      await prisma.userSkill.create({ data: { userId: user.id, skillId: skill.id } }).catch(() => null);
-    }
 
-    if (resumeBuffer && data.data.resumeDataUrl && data.data.resumeFileName) {
-      await prisma.resume.create({
-        data: {
-          userId: user.id,
-          fileName: data.data.resumeFileName,
-          fileUrl: data.data.resumeDataUrl,
-          fileSize: resumeBuffer.length,
-          isPrimary: true,
-        },
-      }).catch(() => null);
-      await sendResumeCopy({
-        to: "resume@jobtake.com",
-        applicantName: user.name,
-        applicantEmail: user.email,
-        fileName: data.data.resumeFileName,
-        buffer: resumeBuffer,
-        mime: mimeFromName(data.data.resumeFileName),
-      }).catch(() => null);
-    }
+      // Candidate education, skills and resume
+      if (data.data.role === "SEEKER") {
+        // Resume is a mandatory field validated above — if the write fails,
+        // the whole signup must roll back rather than leave a resume-less
+        // seeker account behind, so this one is NOT swallowed with .catch().
+        if (resumeBuffer && data.data.resumeDataUrl && data.data.resumeFileName) {
+          await tx.resume.create({
+            data: {
+              userId: created.id,
+              fileName: data.data.resumeFileName,
+              fileUrl: data.data.resumeDataUrl,
+              fileSize: resumeBuffer.length,
+              isPrimary: true,
+            },
+          });
+        }
+
+        const startYear = parseIntOrNull(data.data.passingYear);
+        if (data.data.education && data.data.schoolName && startYear) {
+          await tx.education.create({
+            data: {
+              userId: created.id,
+              school: data.data.schoolName,
+              degree: data.data.education,
+              field: data.data.educationSpecialization?.trim() || null,
+              startYear,
+            },
+          }).catch(() => null);
+        }
+
+        for (const skillName of data.data.skills.slice(0, 20)) {
+          const sn = skillName.trim();
+          if (!sn) continue;
+          const skill = await tx.skill.upsert({
+            where: { name: sn },
+            update: {},
+            create: { name: sn, slug: toSlug(sn) },
+          });
+          await tx.userSkill.create({ data: { userId: created.id, skillId: skill.id } }).catch(() => null);
+        }
+      }
+
+      return created;
+    });
+  } catch (err) {
+    console.error("Signup failed while saving account/resume", err);
+    return NextResponse.json({ error: "Signup failed. Please try again." }, { status: 500 });
+  }
+
+  if (data.data.role === "SEEKER" && resumeBuffer && data.data.resumeFileName) {
+    await sendResumeCopy({
+      to: "resume@jobtake.com",
+      applicantName: user.name,
+      applicantEmail: user.email,
+      fileName: data.data.resumeFileName,
+      buffer: resumeBuffer,
+      mime: mimeFromName(data.data.resumeFileName),
+    }).catch(() => null);
   }
 
   // For employers: create Company record

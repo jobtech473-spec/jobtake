@@ -795,6 +795,16 @@ function CandidateSignupForm() {
                   </button>
                 </div>
 
+                <label className="flex items-center gap-2 mb-5 cursor-pointer w-fit">
+                  <input
+                    type="checkbox"
+                    checked={regType === "FRESHER"}
+                    onChange={e => setRegType(e.target.checked ? "FRESHER" : "EXPERIENCED")}
+                    className="w-4 h-4 rounded border-zinc-300 accent-blue-600"
+                  />
+                  <span className="text-sm font-medium text-zinc-700">I don&rsquo;t have any work experience (Fresher)</span>
+                </label>
+
                 <div className="space-y-4">
                   {regType === "EXPERIENCED" && (
                     <div className="grid md:grid-cols-2 gap-4">

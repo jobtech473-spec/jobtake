@@ -763,36 +763,17 @@ function CandidateSignupForm() {
                 </div>
 
                 {/* Registration type */}
-                <div className="grid sm:grid-cols-2 gap-3 mb-5">
-                  <button type="button" onClick={() => setRegType("EXPERIENCED")}
-                    className={`relative text-left p-4 rounded-xl border-2 transition ${regType === "EXPERIENCED" ? "border-blue-500 bg-blue-50/50" : "border-zinc-200 hover:border-zinc-300"}`}>
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-blue-100 grid place-items-center shrink-0">
-                        <GraduationCap className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-zinc-900 text-sm">Register as Experienced</span>
-                          <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Most Popular</span>
-                        </div>
-                        <p className="text-xs text-zinc-500 mt-0.5">For candidates with prior work experience.</p>
-                      </div>
-                      <span className={`h-4 w-4 rounded-full border-2 shrink-0 mt-0.5 ${regType === "EXPERIENCED" ? "border-blue-500 bg-blue-500" : "border-zinc-300"}`} />
-                    </div>
-                  </button>
-                  <button type="button" onClick={() => setRegType("FRESHER")}
-                    className={`relative text-left p-4 rounded-xl border-2 transition ${regType === "FRESHER" ? "border-blue-500 bg-blue-50/50" : "border-zinc-200 hover:border-zinc-300"}`}>
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-blue-100 grid place-items-center shrink-0">
-                        <Briefcase className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-bold text-zinc-900 text-sm">Register as Fresher</span>
-                        <p className="text-xs text-zinc-500 mt-0.5">For candidates with little or no work experience.</p>
-                      </div>
-                      <span className={`h-4 w-4 rounded-full border-2 shrink-0 mt-0.5 ${regType === "FRESHER" ? "border-blue-500 bg-blue-500" : "border-zinc-300"}`} />
-                    </div>
-                  </button>
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-2">Registration</label>
+                  <label className="flex items-center gap-2 cursor-pointer w-fit">
+                    <input
+                      type="checkbox"
+                      checked={regType === "FRESHER"}
+                      onChange={e => setRegType(e.target.checked ? "FRESHER" : "EXPERIENCED")}
+                      className="w-4 h-4 rounded border-zinc-300 accent-blue-600"
+                    />
+                    <span className="text-sm font-medium text-zinc-700">Registration Fresher (I don&rsquo;t have any work experience)</span>
+                  </label>
                 </div>
 
                 <div className="space-y-4">

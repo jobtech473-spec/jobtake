@@ -511,6 +511,7 @@ function CandidateSignupForm() {
   const [location, setLocation] = useState("");
   const [education, setEducation] = useState("");
   const [specialization, setSpecialization] = useState("");
+  const [specializationDetail, setSpecializationDetail] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [passingYear, setPassingYear] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
@@ -534,6 +535,7 @@ function CandidateSignupForm() {
   function onEducationChange(value: string) {
     setEducation(value);
     setSpecialization("");
+    setSpecializationDetail("");
   }
 
   function addSkill(value?: string) {
@@ -591,7 +593,7 @@ function CandidateSignupForm() {
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
           currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
-          location, education, educationSpecialization: specialization, schoolName, passingYear, skills, bio,
+          location, education, educationSpecialization: specialization, specializationDetail, schoolName, passingYear, skills, bio,
           resumeDataUrl, resumeFileName,
         }),
       });
@@ -870,6 +872,16 @@ function CandidateSignupForm() {
                         placeholder="Select specialization"
                         searchPlaceholder="Search specialization..."
                       />
+                    </div>
+                  )}
+
+                  {specializationGroup && specialization && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                        Specialization details <span className="text-zinc-400 font-normal">(optional)</span>
+                      </label>
+                      <input value={specializationDetail} onChange={e => setSpecializationDetail(e.target.value)} placeholder="Add any extra detail about your specialization"
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                     </div>
                   )}
 

@@ -28,6 +28,7 @@ const Body = z.object({
   currentDesignation: z.string().optional(),
   education: z.string().optional(),
   educationSpecialization: z.string().optional(),
+  specializationDetail: z.string().optional(),
   schoolName: z.string().optional(),
   passingYear: z.string().optional(),
   skills: z.array(z.string()).optional().default([]),
@@ -171,6 +172,7 @@ export async function POST(req: NextRequest) {
               school: data.data.schoolName,
               degree: data.data.education,
               field: data.data.educationSpecialization?.trim() || null,
+              description: data.data.specializationDetail?.trim() || null,
               startYear,
             },
           }).catch(() => null);

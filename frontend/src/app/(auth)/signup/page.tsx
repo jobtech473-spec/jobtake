@@ -834,77 +834,10 @@ function CandidateSignupForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                      Key Skills <span className="text-red-500">*</span>
-                      <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(Minimum 1 required)"}</span>
-                    </label>
-                    <div className="flex gap-2">
-                      <div
-                        className="relative flex-1"
-                        onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setSkillSuggestOpen(false); }}
-                      >
-                        <input
-                          value={skillInput}
-                          onChange={e => { setSkillInput(e.target.value); setSkillSuggestOpen(true); }}
-                          onFocus={() => setSkillSuggestOpen(true)}
-                          onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
-                          placeholder="Type a skill, or pick a suggestion..."
-                          className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
-                        />
-                        {skillSuggestOpen && skillSuggestions.length > 0 && (
-                          <div className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl py-1">
-                            {skillSuggestions.map(o => (
-                              <button key={o.id} type="button" onClick={() => addSkill(o.value)}
-                                className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
-                                {o.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/{regType === "EXPERIENCED" ? 5 : 1}</span>
-                      <button type="button" onClick={() => addSkill()} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
-                        + Add More
-                      </button>
-                    </div>
-                    {skills.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2.5">
-                        {skills.map(s => (
-                          <span key={s} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
-                            {s}
-                            <button type="button" onClick={() => removeSkill(s)} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
                     <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me <span className="text-red-500">*</span></label>
                     <textarea required value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short summary about yourself, your experience, key strengths and what you are looking for..."
                       className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
                     <p className="text-xs text-zinc-400 text-right mt-1">{bio.length}/500</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Attach Resume <span className="text-red-500">*</span></label>
-                    {resumeDataUrl ? (
-                      <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
-                        <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
-                          <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" /> {resumeFileName}
-                        </span>
-                        <button type="button" onClick={() => { setResumeDataUrl(""); setResumeFileName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
-                        <Upload className="h-6 w-6 text-blue-500" />
-                        <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
-                        <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
-                        <input required type="file" accept=".pdf,.doc,.docx" className="hidden"
-                          onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
-                      </label>
-                    )}
-                    {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
                   </div>
                 </div>
               </div>
@@ -950,6 +883,73 @@ function CandidateSignupForm() {
                     <input required type="number" min={1950} max={today.getFullYear() + 10} value={passingYear} onChange={e => setPassingYear(e.target.value)} placeholder="e.g. 2022"
                       className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                   </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                    Key Skills <span className="text-red-500">*</span>
+                    <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(Minimum 1 required)"}</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <div
+                      className="relative flex-1"
+                      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setSkillSuggestOpen(false); }}
+                    >
+                      <input
+                        value={skillInput}
+                        onChange={e => { setSkillInput(e.target.value); setSkillSuggestOpen(true); }}
+                        onFocus={() => setSkillSuggestOpen(true)}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
+                        placeholder="Type a skill, or pick a suggestion..."
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+                      />
+                      {skillSuggestOpen && skillSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl py-1">
+                          {skillSuggestions.map(o => (
+                            <button key={o.id} type="button" onClick={() => addSkill(o.value)}
+                              className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
+                              {o.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/{regType === "EXPERIENCED" ? 5 : 1}</span>
+                    <button type="button" onClick={() => addSkill()} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                      + Add More
+                    </button>
+                  </div>
+                  {skills.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2.5">
+                      {skills.map(s => (
+                        <span key={s} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                          {s}
+                          <button type="button" onClick={() => removeSkill(s)} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Attach Resume <span className="text-red-500">*</span></label>
+                  {resumeDataUrl ? (
+                    <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
+                      <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
+                        <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" /> {resumeFileName}
+                      </span>
+                      <button type="button" onClick={() => { setResumeDataUrl(""); setResumeFileName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                      <Upload className="h-6 w-6 text-blue-500" />
+                      <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
+                      <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
+                      <input required type="file" accept=".pdf,.doc,.docx" className="hidden"
+                        onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
+                    </label>
+                  )}
+                  {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
                 </div>
               </div>
 

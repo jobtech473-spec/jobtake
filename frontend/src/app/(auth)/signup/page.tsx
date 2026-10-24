@@ -825,47 +825,11 @@ function CandidateSignupForm() {
                     </div>
                   )}
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Location <span className="text-red-500">*</span></label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
-                        <LocationSelect value={location} onChange={setLocation} locations={locations} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education <span className="text-red-500">*</span></label>
-                      <div className="relative">
-                        <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                        <select required value={education} onChange={e => onEducationChange(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                          <option value="">Select highest qualification</option>
-                          {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                        </select>
-                      </div>
-                    </div>
-
-                    {specializationGroup && (
-                      <div>
-                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
-                        <SearchableSelect
-                          value={specialization}
-                          onChange={setSpecialization}
-                          options={specializationGroup.options}
-                          placeholder="Select specialization"
-                          searchPlaceholder="Search specialization..."
-                        />
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University <span className="text-red-500">*</span></label>
-                      <input required value={schoolName} onChange={e => setSchoolName(e.target.value)} placeholder="Enter your school or university name"
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year <span className="text-red-500">*</span></label>
-                      <input required type="number" min={1950} max={today.getFullYear() + 10} value={passingYear} onChange={e => setPassingYear(e.target.value)} placeholder="e.g. 2022"
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Location <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
+                      <LocationSelect value={location} onChange={setLocation} locations={locations} />
                     </div>
                   </div>
 
@@ -941,6 +905,50 @@ function CandidateSignupForm() {
                       </label>
                     )}
                     {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Education */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <GraduationCap className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-bold text-zinc-900">Education</h2>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                      <select required value={education} onChange={e => onEducationChange(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                        <option value="">Select highest qualification</option>
+                        {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {specializationGroup && (
+                    <div>
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
+                      <SearchableSelect
+                        value={specialization}
+                        onChange={setSpecialization}
+                        options={specializationGroup.options}
+                        placeholder="Select specialization"
+                        searchPlaceholder="Search specialization..."
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University <span className="text-red-500">*</span></label>
+                    <input required value={schoolName} onChange={e => setSchoolName(e.target.value)} placeholder="Enter your school or university name"
+                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year <span className="text-red-500">*</span></label>
+                    <input required type="number" min={1950} max={today.getFullYear() + 10} value={passingYear} onChange={e => setPassingYear(e.target.value)} placeholder="e.g. 2022"
+                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                   </div>
                 </div>
               </div>

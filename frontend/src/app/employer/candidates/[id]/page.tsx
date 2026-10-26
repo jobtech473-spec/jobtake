@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { DashboardShell } from "@/components/DashboardShell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +13,26 @@ import { CandidateActionBar } from "./CandidateActionBar";
 import mammoth from "mammoth";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const me = await getCurrentUser();
+  if (!me || (me.role !== "EMPLOYER" && me.role !== "ADMIN")) return { title: "Jobtake" };
+
+  const { id: rawId } = await params;
+  const id = idFromPersonSlug(rawId);
+
+  if (me.role !== "ADMIN") {
+    const hasApplied = await prisma.application.findFirst({
+      where: { userId: id, job: { postedById: me.id } },
+      select: { id: true },
+    });
+    if (!hasApplied) return { title: "Jobtake" };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id, role: "SEEKER" }, select: { name: true } });
+  if (!user) return { title: "Jobtake" };
+  return { title: `${user.name} - Jobtake` };
+}
 
 async function buildResumePreview(resume: { id: string; fileName: string; fileUrl: string }) {
   const ext = resume.fileName.split(".").pop()?.toLowerCase();

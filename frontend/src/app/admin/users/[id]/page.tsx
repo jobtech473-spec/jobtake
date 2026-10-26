@@ -5,6 +5,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import { UserActionsPanel } from "./UserActionsPanel";
+import { formatUserId } from "../UsersTable";
 import {
   ArrowLeft, Mail, Phone, MapPin, Clock, CheckCircle2, Zap,
   Briefcase, GraduationCap, FileText, Building2, Globe, Linkedin, Github, Download,
@@ -93,6 +94,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <div className="flex-1 min-w-[200px]">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-xl font-black text-zinc-900">{user.name}</h2>
+                  <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600">{formatUserId(user.serial)}</span>
                   <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${ROLE_STYLE[user.role]}`}>{user.role.charAt(0) + user.role.slice(1).toLowerCase()}</span>
                   <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLE[user.status]}`}>{user.status.toLowerCase()}</span>
                 </div>
@@ -294,7 +296,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               </div>
               <div className="flex items-center justify-between gap-2">
                 <dt className="text-zinc-400">User ID</dt>
-                <dd className="text-zinc-700 font-medium">{user.id.slice(0, 8).toUpperCase()}</dd>
+                <dd className="text-zinc-700 font-medium">{formatUserId(user.serial)}</dd>
               </div>
             </dl>
           </div>

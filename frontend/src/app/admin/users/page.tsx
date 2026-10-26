@@ -14,7 +14,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
   const usersRaw = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
-      id: true, name: true, email: true, phone: true, role: true, status: true,
+      id: true, serial: true, name: true, email: true, phone: true, role: true, status: true,
       avatarUrl: true, emailVerified: true, createdAt: true, updatedAt: true, lastLoginAt: true,
       _count: { select: { applications: true, savedJobs: true } },
     },
@@ -33,6 +33,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
       <UsersTable
         users={users.map(u => ({
           id: u.id,
+          serial: u.serial,
           name: u.name,
           email: u.email,
           phone: u.phone,

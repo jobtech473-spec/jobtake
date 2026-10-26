@@ -8,7 +8,7 @@ import {
 import { timeAgo } from "@/lib/utils";
 
 type Row = {
-  id: string; name: string; email: string; phone: string | null;
+  id: string; serial: number; name: string; email: string; phone: string | null;
   role: "ADMIN" | "EMPLOYER" | "SEEKER"; status: "ACTIVE" | "SUSPENDED" | "PENDING";
   avatarUrl: string | null; emailVerified: boolean;
   createdAt: string; updatedAt: string; lastLoginAt: string | null;
@@ -30,6 +30,10 @@ const ROLE_STYLE: Record<string, string> = {
 const AVATAR_COLORS = ["bg-blue-600", "bg-violet-600", "bg-emerald-600", "bg-orange-500", "bg-rose-500", "bg-indigo-600"];
 
 const PAGE_SIZE_OPTIONS = [40, 80, 100, 200];
+
+export function formatUserId(serial: number) {
+  return `JTK-${String(serial).padStart(4, "0")}`;
+}
 
 export function UsersTable({
   users,
@@ -58,7 +62,12 @@ export function UsersTable({
     if (statusFilter && u.status !== statusFilter) return false;
     if (search) {
       const q = search.toLowerCase();
-      if (!u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q) && !u.role.toLowerCase().includes(q)) return false;
+      if (
+        !u.name.toLowerCase().includes(q) &&
+        !u.email.toLowerCase().includes(q) &&
+        !u.role.toLowerCase().includes(q) &&
+        !formatUserId(u.serial).toLowerCase().includes(q)
+      ) return false;
     }
     return true;
   }), [users, search, roleFilter, statusFilter]);
@@ -155,7 +164,7 @@ export function UsersTable({
                       )}
                       <div className="min-w-0">
                         <div className="font-semibold text-zinc-900 text-sm truncate">{u.name}</div>
-                        <div className="text-xs text-zinc-400 truncate">User ID: {u.id.slice(0, 8).toUpperCase()}</div>
+                        <div className="text-xs text-zinc-400 truncate">User ID: {formatUserId(u.serial)}</div>
                       </div>
                     </div>
                     <div className="text-sm text-zinc-600 truncate">{u.email}</div>

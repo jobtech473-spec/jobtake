@@ -9,6 +9,14 @@ import { isValidIndianMobile } from "@/lib/utils";
 
 const MAX_RESUME_BYTES = 2 * 1024 * 1024;
 
+const EducationEntry = z.object({
+  education: z.string().optional(),
+  specialization: z.string().optional(),
+  specializationDetail: z.string().optional(),
+  schoolName: z.string().optional(),
+  passingYear: z.string().optional(),
+});
+
 const Body = z.object({
   email: z.string().email().toLowerCase(),
   password: z.string().min(8),
@@ -26,11 +34,7 @@ const Body = z.object({
   noticePeriod: z.string().optional(),
   currentCompany: z.string().optional(),
   currentDesignation: z.string().optional(),
-  education: z.string().optional(),
-  educationSpecialization: z.string().optional(),
-  specializationDetail: z.string().optional(),
-  schoolName: z.string().optional(),
-  passingYear: z.string().optional(),
+  educationEntries: z.array(EducationEntry).optional().default([]),
   skills: z.array(z.string()).optional().default([]),
   bio: z.string().optional(),
   resumeDataUrl: z.string().optional(),
@@ -116,7 +120,8 @@ export async function POST(req: NextRequest) {
       if (missing) return NextResponse.json({ error: `Please fill in ${missing}.` }, { status: 400 });
     }
     if (!data.data.location) return NextResponse.json({ error: "Please select your location." }, { status: 400 });
-    if (!data.data.education || !data.data.schoolName || !data.data.passingYear) {
+    const primaryEducation = data.data.educationEntries[0];
+    if (!primaryEducation?.education || !primaryEducation?.schoolName || !primaryEducation?.passingYear) {
       return NextResponse.json({ error: "Please fill in your education details." }, { status: 400 });
     }
   }
@@ -164,18 +169,20 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        const startYear = parseIntOrNull(data.data.passingYear);
-        if (data.data.education && data.data.schoolName && startYear) {
-          await tx.education.create({
-            data: {
-              userId: created.id,
-              school: data.data.schoolName,
-              degree: data.data.education,
-              field: data.data.educationSpecialization?.trim() || null,
-              description: data.data.specializationDetail?.trim() || null,
-              startYear,
-            },
-          }).catch(() => null);
+        for (const entry of data.data.educationEntries) {
+          const startYear = parseIntOrNull(entry.passingYear);
+          if (entry.education && entry.schoolName && startYear) {
+            await tx.education.create({
+              data: {
+                userId: created.id,
+                school: entry.schoolName,
+                degree: entry.education,
+                field: entry.specialization?.trim() || null,
+                description: entry.specializationDetail?.trim() || null,
+                startYear,
+              },
+            }).catch(() => null);
+          }
         }
 
         for (const skillName of data.data.skills.slice(0, 20)) {

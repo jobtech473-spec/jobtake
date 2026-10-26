@@ -16,6 +16,17 @@ const NOTICE_PERIOD_OPTIONS = ["Immediate", "15 Days", "1 Month", "2 Months", "3
 
 type ManagedOption = { id: string; label: string; value: string };
 
+type EducationEntry = {
+  education: string;
+  specialization: string;
+  specializationDetail: string;
+  schoolName: string;
+  passingYear: string;
+};
+function emptyEducationEntry(): EducationEntry {
+  return { education: "", specialization: "", specializationDetail: "", schoolName: "", passingYear: "" };
+}
+
 // A native <select> opens its popup wherever the browser/OS decides (often
 // centered on the selected option, which can look like it's floating above
 // the field). This controlled, absolute-positioned panel always opens
@@ -509,11 +520,7 @@ function CandidateSignupForm() {
   const [currentCompany, setCurrentCompany] = useState("");
   const [currentDesignation, setCurrentDesignation] = useState("");
   const [location, setLocation] = useState("");
-  const [education, setEducation] = useState("");
-  const [specialization, setSpecialization] = useState("");
-  const [specializationDetail, setSpecializationDetail] = useState("");
-  const [schoolName, setSchoolName] = useState("");
-  const [passingYear, setPassingYear] = useState("");
+  const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([emptyEducationEntry()]);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [skillSuggestOpen, setSkillSuggestOpen] = useState(false);
@@ -525,17 +532,27 @@ function CandidateSignupForm() {
 
   // A specialization sub-field only makes sense under UG/PG/Diploma/ITI —
   // same four levels PostJobForm asks employers to narrow down.
-  const specializationGroup =
-    education === "Under Graduate (UG)" ? { label: "UG Specialization", options: ugSpecializations } :
-    education === "Post Graduate (PG)" ? { label: "PG Specialization", options: pgSpecializations } :
-    education === "Diploma" ? { label: "Diploma Specialization", options: diplomaSpecializations } :
-    education === "ITI Pass" ? { label: "ITI Specialization", options: itiSpecializations } :
-    null;
+  function specializationGroupFor(level: string) {
+    return (
+      level === "Under Graduate (UG)" ? { label: "UG Specialization", options: ugSpecializations } :
+      level === "Post Graduate (PG)" ? { label: "PG Specialization", options: pgSpecializations } :
+      level === "Diploma" ? { label: "Diploma Specialization", options: diplomaSpecializations } :
+      level === "ITI Pass" ? { label: "ITI Specialization", options: itiSpecializations } :
+      null
+    );
+  }
 
-  function onEducationChange(value: string) {
-    setEducation(value);
-    setSpecialization("");
-    setSpecializationDetail("");
+  function updateEducationEntry(index: number, patch: Partial<EducationEntry>) {
+    setEducationEntries(prev => prev.map((entry, i) => i === index ? { ...entry, ...patch } : entry));
+  }
+  function onEducationLevelChange(index: number, value: string) {
+    updateEducationEntry(index, { education: value, specialization: "", specializationDetail: "" });
+  }
+  function addEducationEntry() {
+    setEducationEntries(prev => [...prev, emptyEducationEntry()]);
+  }
+  function removeEducationEntry(index: number) {
+    setEducationEntries(prev => prev.filter((_, i) => i !== index));
   }
 
   function addSkill(value?: string) {
@@ -574,6 +591,10 @@ function CandidateSignupForm() {
     if (password !== confirmPw) { setError("Passwords do not match."); return; }
     if (!isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return; }
     if (!location) { setError("Please select your location."); return; }
+    const primaryEducation = educationEntries[0];
+    if (!primaryEducation.education || !primaryEducation.schoolName || !primaryEducation.passingYear) {
+      setError("Please fill in your education details."); return;
+    }
     if (!resumeDataUrl) { setError("Please upload your resume."); return; }
     if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
     if (regType === "FRESHER" && skills.length < 1) { setError("Please add at least 1 key skill."); return; }
@@ -593,7 +614,7 @@ function CandidateSignupForm() {
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
           currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
-          location, education, educationSpecialization: specialization, specializationDetail, schoolName, passingYear, skills, bio,
+          location, educationEntries, skills, bio,
           resumeDataUrl, resumeFileName,
         }),
       });
@@ -850,51 +871,71 @@ function CandidateSignupForm() {
                   <GraduationCap className="h-4 w-4 text-blue-600" />
                   <h2 className="font-bold text-zinc-900">Education</h2>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                      <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                      <select required value={education} onChange={e => onEducationChange(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                        <option value="">Select highest qualification</option>
-                        {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                      </select>
-                    </div>
-                  </div>
 
-                  {specializationGroup && (
-                    <div>
-                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
-                      <SearchableSelect
-                        value={specialization}
-                        onChange={setSpecialization}
-                        options={specializationGroup.options}
-                        placeholder="Select specialization"
-                        searchPlaceholder="Search specialization..."
-                      />
-                    </div>
-                  )}
+                <div className="space-y-5">
+                  {educationEntries.map((entry, index) => {
+                    const specializationGroup = specializationGroupFor(entry.education);
+                    return (
+                      <div key={index} className={index > 0 ? "pt-5 border-t border-zinc-100" : ""}>
+                        {index > 0 && (
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-zinc-500">Additional qualification</span>
+                            <button type="button" onClick={() => removeEducationEntry(index)} className="text-xs text-zinc-400 hover:text-red-500">Remove</button>
+                          </div>
+                        )}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education <span className="text-red-500">*</span></label>
+                            <div className="relative">
+                              <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                              <select required value={entry.education} onChange={e => onEducationLevelChange(index, e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                                <option value="">Select qualification</option>
+                                {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                              </select>
+                            </div>
+                          </div>
 
-                  {specializationGroup && specialization && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                        Specialization details <span className="text-zinc-400 font-normal">(optional)</span>
-                      </label>
-                      <input value={specializationDetail} onChange={e => setSpecializationDetail(e.target.value)} placeholder="Add any extra detail about your specialization"
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                    </div>
-                  )}
+                          {specializationGroup && (
+                            <div>
+                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{specializationGroup.label}</label>
+                              <SearchableSelect
+                                value={entry.specialization}
+                                onChange={v => updateEducationEntry(index, { specialization: v })}
+                                options={specializationGroup.options}
+                                placeholder="Select specialization"
+                                searchPlaceholder="Search specialization..."
+                              />
+                            </div>
+                          )}
 
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University <span className="text-red-500">*</span></label>
-                    <input required value={schoolName} onChange={e => setSchoolName(e.target.value)} placeholder="Enter your school or university name"
-                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year <span className="text-red-500">*</span></label>
-                    <input required type="number" min={1950} max={today.getFullYear() + 10} value={passingYear} onChange={e => setPassingYear(e.target.value)} placeholder="e.g. 2022"
-                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                  </div>
+                          {specializationGroup && entry.specialization && (
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                                Specialization details <span className="text-zinc-400 font-normal">(optional)</span>
+                              </label>
+                              <input value={entry.specializationDetail} onChange={e => updateEducationEntry(index, { specializationDetail: e.target.value })} placeholder="Add any extra detail about your specialization"
+                                className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                            </div>
+                          )}
+
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University <span className="text-red-500">*</span></label>
+                            <input required value={entry.schoolName} onChange={e => updateEducationEntry(index, { schoolName: e.target.value })} placeholder="Enter your school or university name"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year <span className="text-red-500">*</span></label>
+                            <input required type="number" min={1950} max={today.getFullYear() + 10} value={entry.passingYear} onChange={e => updateEducationEntry(index, { passingYear: e.target.value })} placeholder="e.g. 2022"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <button type="button" onClick={addEducationEntry} className="inline-flex items-center gap-1 px-4 py-2.5 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                    + Add another qualification (e.g. Diploma, UG, PG)
+                  </button>
                 </div>
 
                 <div className="mt-4">

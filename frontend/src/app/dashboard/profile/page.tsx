@@ -15,6 +15,7 @@ import { ExperienceManager } from "@/components/profile/ExperienceManager";
 import { EducationManager } from "@/components/profile/EducationManager";
 import { ResumeManager } from "@/components/profile/ResumeManager";
 import { getManagedOptions } from "@/lib/job-options";
+import { buildResumePreview } from "@/lib/resume-preview";
 
 type SP = Promise<{ tab?: string }>;
 
@@ -41,6 +42,9 @@ export default async function ProfilePage({ searchParams }: { searchParams: SP }
   const experiencesJson = JSON.parse(JSON.stringify(experiences));
   const educationsJson = JSON.parse(JSON.stringify(educations));
   const resumesJson = JSON.parse(JSON.stringify(resumes));
+
+  const primaryResume = resumes.find(r => r.isPrimary) ?? resumes[0] ?? null;
+  const resumePreview = tab === "resume" && primaryResume ? await buildResumePreview(primaryResume) : null;
 
   return (
     <DashboardShell role="SEEKER" current="/dashboard/profile">
@@ -129,7 +133,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: SP }
 
       {tab === "resume" && (
         <div className="max-w-xl">
-          <ResumeManager initialResumes={resumesJson} />
+          <ResumeManager initialResumes={resumesJson} preview={resumePreview} />
         </div>
       )}
 

@@ -2,6 +2,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, Loader2, Trash2 } from "lucide-react";
+import type { ResumePreview } from "@/lib/resume-preview";
+import { ResumePreviewPane } from "@/components/profile/ResumePreviewPane";
 
 type Resume = { id: string; fileName: string; fileUrl: string; fileSize: number; isPrimary: boolean; createdAt: string };
 
@@ -11,7 +13,7 @@ function fmtSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function ResumeManager({ initialResumes, compact = false }: { initialResumes: Resume[]; compact?: boolean }) {
+export function ResumeManager({ initialResumes, compact = false, preview = null }: { initialResumes: Resume[]; compact?: boolean; preview?: ResumePreview | null }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [resumes, setResumes] = useState<Resume[]>(initialResumes);
@@ -73,6 +75,12 @@ export function ResumeManager({ initialResumes, compact = false }: { initialResu
         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
         {uploading ? "Uploading..." : "Update Resume"}
       </button>
+
+      {!compact && primary && (
+        <div className="mt-4 pt-4 border-t border-zinc-50">
+          <ResumePreviewPane resume={primary} preview={preview} />
+        </div>
+      )}
 
       {!compact && resumes.length > 1 && (
         <div className="mt-4 space-y-2">

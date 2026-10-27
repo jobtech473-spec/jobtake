@@ -18,22 +18,28 @@ export function PhoneReveal({ phone }: { phone: string | null }) {
 
   return (
     <span className="inline-flex items-center gap-2 flex-wrap">
-      <span className="inline-flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1 font-mono text-sm text-zinc-700">
+      <button
+        type="button"
+        onClick={() => setRevealed(v => !v)}
+        title={revealed ? "Hide number" : "Click to reveal number"}
+        className="inline-flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-1.5 font-mono text-sm text-zinc-700 hover:bg-zinc-100 transition"
+      >
         {revealed ? phone : maskPhone(digits)}
-        <button
-          type="button"
-          onClick={() => setRevealed(v => !v)}
-          className="text-zinc-400 hover:text-zinc-700"
-          title={revealed ? "Hide number" : "Reveal number"}
-        >
-          {revealed ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-        </button>
-      </span>
-      <a href={`tel:+91${digits}`} className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline">
-        <PhoneIcon className="h-3 w-3" /> Call
+        {revealed ? <EyeOff className="h-3.5 w-3.5 text-zinc-400" /> : <Eye className="h-3.5 w-3.5 text-zinc-400" />}
+      </button>
+      <a
+        href={`tel:+91${digits}`}
+        className="inline-flex items-center gap-1.5 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+      >
+        <PhoneIcon className="h-3.5 w-3.5" /> Call candidate
       </a>
-      <a href={`https://wa.me/91${digits}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline">
-        <MessageCircle className="h-3 w-3" /> WhatsApp
+      <a
+        href={`https://wa.me/91${digits}`}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1.5 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition"
+      >
+        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
       </a>
     </span>
   );

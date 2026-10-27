@@ -27,6 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
               yearsExperience: true, currentCompany: true, currentDesignation: true,
               currentSalary: true, expectedSalary: true, noticePeriod: true,
               educations: { orderBy: { startYear: "desc" }, take: 1, select: { degree: true, field: true, school: true } },
+              experiences: { orderBy: [{ current: "desc" }, { startDate: "desc" }], take: 1, select: { title: true, company: true } },
               userSkills: { select: { skill: { select: { name: true } } } },
             },
           },
@@ -61,6 +62,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   for (const app of job.applications) {
     const edu = app.user.educations[0];
+    const exp = app.user.experiences[0];
     sheet.addRow({
       name: app.user.name,
       email: app.user.email,
@@ -68,8 +70,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       location: app.user.location ?? "",
       stage: STAGE_LABEL[app.stage] ?? app.stage,
       experience: app.user.yearsExperience ?? "",
-      company: app.user.currentCompany ?? "",
-      designation: app.user.currentDesignation ?? "",
+      company: app.user.currentCompany ?? exp?.company ?? "",
+      designation: app.user.currentDesignation ?? exp?.title ?? "",
       currentSalary: app.user.currentSalary ?? "",
       expectedSalary: app.user.expectedSalary ?? "",
       noticePeriod: app.user.noticePeriod ?? "",

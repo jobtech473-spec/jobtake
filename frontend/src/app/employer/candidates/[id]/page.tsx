@@ -14,6 +14,7 @@ import { buildResumePreview } from "@/lib/resume-preview";
 import { ResumePreviewPane } from "@/components/profile/ResumePreviewPane";
 import { PhoneReveal } from "@/components/PhoneReveal";
 import { EmailAction } from "@/components/EmailAction";
+import { RevealField } from "@/components/RevealField";
 
 export const dynamic = "force-dynamic";
 
@@ -127,7 +128,7 @@ export default async function CandidateProfilePage({
           <div className="mt-6 grid sm:grid-cols-2 gap-3 text-base text-zinc-600">
             <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-zinc-400 shrink-0" /> <EmailAction email={user.email} /></div>
             <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-zinc-400 shrink-0" /> <PhoneReveal phone={user.phone} /></div>
-            <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-zinc-400" /> {user.location || "Not provided"}</div>
+            <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-zinc-400 shrink-0" /> <RevealField value={user.location} /></div>
           </div>
 
           {(user.websiteUrl || user.linkedinUrl || user.githubUrl) && (

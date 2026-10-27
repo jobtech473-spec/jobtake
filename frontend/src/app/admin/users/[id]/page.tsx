@@ -10,6 +10,7 @@ import { buildResumePreview } from "@/lib/resume-preview";
 import { ResumePreviewPane } from "@/components/profile/ResumePreviewPane";
 import { PhoneReveal } from "@/components/PhoneReveal";
 import { EmailAction } from "@/components/EmailAction";
+import { RevealField } from "@/components/RevealField";
 import {
   ArrowLeft, Mail, Phone, MapPin, Clock, CheckCircle2, Zap,
   Briefcase, GraduationCap, FileText, Building2, Globe, Linkedin, Github, Download,
@@ -93,7 +94,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             <div className="mt-5 grid sm:grid-cols-2 gap-3 text-sm text-zinc-600">
               <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-zinc-400 shrink-0" /> <EmailAction email={user.email} /></div>
               <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-zinc-400 shrink-0" /> <PhoneReveal phone={user.phone} /></div>
-              <div className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-zinc-400" /> {user.location || "Not provided"}</div>
+              <div className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" /> <RevealField value={user.location} /></div>
               <div className="flex items-center gap-2"><Clock className="h-3.5 w-3.5 text-zinc-400" /> Joined {timeAgo(user.createdAt)}</div>
             </div>
 

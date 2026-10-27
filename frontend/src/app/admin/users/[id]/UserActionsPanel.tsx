@@ -11,6 +11,8 @@ export function UserActionsPanel({ userId, initialStatus }: { userId: string; in
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [clearingSessions, setClearingSessions] = useState(false);
+  const [sessionsCleared, setSessionsCleared] = useState(false);
 
   async function patch(body: Record<string, string>) {
     setBusy(true);
@@ -34,6 +36,14 @@ export function UserActionsPanel({ userId, initialStatus }: { userId: string; in
     router.refresh();
   }
 
+  async function clearSessions() {
+    setClearingSessions(true);
+    setSessionsCleared(false);
+    await fetch(`/api/admin/users/${userId}/clear-sessions`, { method: "POST" });
+    setClearingSessions(false);
+    setSessionsCleared(true);
+  }
+
   return (
     <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-5">
       <h3 className="font-bold text-zinc-900 text-sm mb-4">Quick Actions</h3>
@@ -51,6 +61,14 @@ export function UserActionsPanel({ userId, initialStatus }: { userId: string; in
           className="w-full flex items-center justify-center gap-1.5 border border-amber-200 text-amber-600 rounded-lg py-2 text-xs font-semibold hover:bg-amber-50 disabled:opacity-50"
         >
           Mark Pending
+        </button>
+        <button
+          disabled={clearingSessions}
+          onClick={clearSessions}
+          title="Clears this user's logged-in devices, e.g. if they're locked out of logging in elsewhere"
+          className="w-full flex items-center justify-center gap-1.5 border border-zinc-200 text-zinc-600 rounded-lg py-2 text-xs font-semibold hover:bg-zinc-50 disabled:opacity-50"
+        >
+          {clearingSessions ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : sessionsCleared ? "Devices cleared" : "Force Logout (All Devices)"}
         </button>
       </div>
 

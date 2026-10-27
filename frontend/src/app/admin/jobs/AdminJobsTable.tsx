@@ -353,10 +353,10 @@ export function AdminJobsTable({ jobs }: { jobs: Row[] }) {
                       </span>
                     </td>
                     <td className="px-3 py-4 align-middle">
-                      <div className="flex items-center gap-2 text-zinc-700">
+                      <Link href={`/employer/jobs/${job.id}/applicants`} className="flex items-center gap-2 text-zinc-700 hover:text-blue-700 hover:underline w-fit">
                         <Users className="h-4 w-4 text-zinc-500" />
                         <span className="font-semibold">{job.applicants}</span>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-3 py-4 align-middle text-zinc-600">{formatDate(job.createdAt)}</td>
                     <td className="px-4 py-4 align-middle">

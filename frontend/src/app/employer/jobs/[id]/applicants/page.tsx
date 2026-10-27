@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ApplicantsBoard } from "./ApplicantsBoard";
-import { ArrowLeft, ExternalLink, MapPin, Briefcase, Calendar } from "lucide-react";
+import { ArrowLeft, ExternalLink, MapPin, Briefcase, Calendar, FileSpreadsheet } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +85,12 @@ export default async function ApplicantsPage({ params }: { params: Promise<{ id:
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {job.applications.length > 0 && (
+              <a href={`/api/employer/jobs/${id}/applicants/export`}
+                className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 transition">
+                <FileSpreadsheet className="h-3.5 w-3.5" /> Export to Excel
+              </a>
+            )}
             <Link href={`/employer/jobs/${id}/preview`}
               className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-zinc-50 transition">
               View Job Details <ExternalLink className="h-3.5 w-3.5" />

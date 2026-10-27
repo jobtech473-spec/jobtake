@@ -31,6 +31,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
+  // Seekers and employers may only be signed in on one device at a time —
+  // admins are exempt. Logout removes the Session row, so a normal
+  // sign-out/sign-in cycle on the same or a different device still works.
+  if (user.role !== "ADMIN") {
+    const activeSession = await prisma.session.findFirst({
+      where: { userId: user.id, expiresAt: { gt: new Date() } },
+      select: { id: true },
+    });
+    if (activeSession) {
+      return NextResponse.json(
+        { error: "This account is already logged in on another device. Please log out there first." },
+        { status: 409 },
+      );
+    }
+  }
+
   const token = await signSession({ sub: user.id, email: user.email, name: user.name, role: user.role });
   await setSessionCookie(token);
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });

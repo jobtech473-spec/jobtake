@@ -14,13 +14,6 @@ export function ResumePreviewPane({
   return (
     <>
       <div className="mb-3 text-xs text-zinc-500">{resume.fileName}</div>
-      {preview?.type === "pdf" && (
-        <iframe
-          src={`/api/resumes/${resume.id}`}
-          className="w-full h-[700px] rounded-xl border border-zinc-100"
-          title="Resume preview"
-        />
-      )}
       {preview?.type === "html" && (
         <div
           className="prose prose-sm prose-zinc max-w-none border border-zinc-100 rounded-xl p-5 max-h-[700px] overflow-y-auto"

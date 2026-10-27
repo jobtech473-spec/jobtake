@@ -5,7 +5,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import { UserActionsPanel } from "./UserActionsPanel";
-import { formatUserId } from "../UsersTable";
+import { formatUserId } from "@/lib/user-id";
 import { buildResumePreview } from "@/lib/resume-preview";
 import { ResumePreviewPane } from "@/components/profile/ResumePreviewPane";
 import { PhoneReveal } from "@/components/PhoneReveal";

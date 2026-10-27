@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import { maskPhone } from "@/components/PhoneReveal";
+import { formatUserId } from "@/lib/user-id";
 
 type Row = {
   id: string; serial: number; name: string; email: string; phone: string | null;
@@ -31,10 +32,6 @@ const ROLE_STYLE: Record<string, string> = {
 const AVATAR_COLORS = ["bg-blue-600", "bg-violet-600", "bg-emerald-600", "bg-orange-500", "bg-rose-500", "bg-indigo-600"];
 
 const PAGE_SIZE_OPTIONS = [40, 80, 100, 200];
-
-export function formatUserId(serial: number) {
-  return `JTK-${String(serial).padStart(4, "0")}`;
-}
 
 export function UsersTable({
   users,

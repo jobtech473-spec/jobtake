@@ -901,6 +901,16 @@ function CandidateSignupForm() {
                       className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                   </div>
 
+                  {educationEntry.education && !specializationGroupFor(educationEntry.education) && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                        Other qualification <span className="text-zinc-400 font-normal">(optional)</span>
+                      </label>
+                      <input value={educationEntry.specializationDetail} onChange={e => updateEducationEntry({ specializationDetail: e.target.value })} placeholder="e.g. Diploma in Mechanical Engineering, ABC Polytechnic, 2015"
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                    </div>
+                  )}
+
                 </div>
 
                 <div className="mt-4">

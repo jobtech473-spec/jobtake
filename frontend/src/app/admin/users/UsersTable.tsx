@@ -6,6 +6,7 @@ import {
   ArrowLeft, ArrowRight,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
+import { maskPhone } from "@/components/PhoneReveal";
 
 type Row = {
   id: string; serial: number; name: string; email: string; phone: string | null;
@@ -136,10 +137,11 @@ export function UsersTable({
         {/* Table */}
         <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-          <div className="min-w-[720px]">
-          <div className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
+          <div className="min-w-[860px]">
+          <div className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
             <div>User</div>
             <div>Email</div>
+            <div>Phone</div>
             <div>Role</div>
             <div>Status</div>
             <div>Joined</div>
@@ -154,7 +156,7 @@ export function UsersTable({
                   <Link
                     key={u.id}
                     href={`/admin/users/${u.id}`}
-                    className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5 cursor-pointer transition-colors hover:bg-zinc-50"
+                    className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5 cursor-pointer transition-colors hover:bg-zinc-50"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {u.avatarUrl ? (
@@ -168,6 +170,7 @@ export function UsersTable({
                       </div>
                     </div>
                     <div className="text-sm text-zinc-600 truncate">{u.email}</div>
+                    <div className="text-sm text-zinc-600 font-mono truncate">{u.phone ? maskPhone(u.phone.replace(/\D/g, "")) : "—"}</div>
                     <div>
                       <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${ROLE_STYLE[u.role]}`}>{u.role.charAt(0) + u.role.slice(1).toLowerCase()}</span>
                     </div>

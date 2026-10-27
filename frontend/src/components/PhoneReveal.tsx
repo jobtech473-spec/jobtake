@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Phone as PhoneIcon, MessageCircle } from "lucide-react";
 
-function maskPhone(digits: string) {
+export function maskPhone(digits: string) {
   if (digits.length <= 4) return "•".repeat(digits.length);
   return `${digits.slice(0, 2)}${"•".repeat(digits.length - 4)}${digits.slice(-2)}`;
 }

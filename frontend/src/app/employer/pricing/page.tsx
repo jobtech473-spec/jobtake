@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { PricingPlans } from "./PricingPlans";
+import { getClaimedFreePlanIds } from "@/lib/free-plan";
 
 export const dynamic = "force-dynamic";
 
@@ -13,17 +14,10 @@ export default async function PricingPage() {
 
   const [plans, company] = await Promise.all([
     prisma.subscriptionPlan.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
-    prisma.company.findFirst({ where: { ownerId: me.id }, orderBy: { createdAt: "asc" }, select: { id: true, jobCredits: true } }),
+    prisma.company.findFirst({ where: { ownerId: me.id }, orderBy: { createdAt: "asc" }, select: { id: true, jobCredits: true, gstNumber: true } }),
   ]);
 
-  const claimedFreePlanIds = company
-    ? new Set(
-        (await prisma.creditTransaction.findMany({
-          where: { companyId: company.id, plan: { in: plans.filter(p => p.price === 0).map(p => p.id) } },
-          select: { plan: true },
-        })).map(t => t.plan),
-      )
-    : new Set<string>();
+  const claimedFreePlanIds = await getClaimedFreePlanIds(me.id, company?.gstNumber ?? null, plans.filter(p => p.price === 0).map(p => p.id));
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/pricing">

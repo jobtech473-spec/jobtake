@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getClaimedFreePlanIds } from "@/lib/free-plan";
 
 const Body = z.object({ planId: z.string() });
 
@@ -22,13 +23,11 @@ export async function POST(req: NextRequest) {
   const company = await prisma.company.findFirst({ where: { ownerId: me.id }, orderBy: { createdAt: "asc" } });
   if (!company) return NextResponse.json({ error: "No company found on your account" }, { status: 400 });
 
-  // Free plans (e.g. a launch offer) can only be claimed once per company.
+  // Free plans (e.g. a launch offer) can only be claimed once per employer
+  // account and once per GST number — not once per company.
   if (plan.price === 0) {
-    const alreadyClaimed = await prisma.creditTransaction.findFirst({
-      where: { companyId: company.id, plan: plan.id },
-      select: { id: true },
-    });
-    if (alreadyClaimed) return NextResponse.json({ error: "You've already claimed this free plan" }, { status: 409 });
+    const claimed = await getClaimedFreePlanIds(me.id, company.gstNumber, [plan.id]);
+    if (claimed.has(plan.id)) return NextResponse.json({ error: "You've already claimed this free plan" }, { status: 409 });
   }
 
   const dummyOrderId = plan.price > 0 ? `order_dummy_${Date.now()}` : null;

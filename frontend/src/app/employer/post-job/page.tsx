@@ -2,10 +2,12 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getManagedOptions } from "@/lib/job-options";
+import { getClaimedFreePlanIds } from "@/lib/free-plan";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ShieldAlert, CreditCard } from "lucide-react";
 import { PostJobForm } from "./PostJobForm";
+import { PricingPlans } from "../pricing/PricingPlans";
 
 export const dynamic = "force-dynamic";
 
@@ -20,13 +22,20 @@ export default async function PostJobPage() {
       where: { ownerId: me.id },
       orderBy: { createdAt: "asc" },
       select: {
-        name: true, logoUrl: true, description: true, headquarters: true, founded: true, verified: true, jobCredits: true,
+        name: true, logoUrl: true, description: true, headquarters: true, founded: true, verified: true, jobCredits: true, gstNumber: true,
       },
     }),
   ]);
 
   const blocked = me.role === "EMPLOYER" && !company?.verified;
   const outOfCredits = me.role === "EMPLOYER" && !!company?.verified && (company?.jobCredits ?? 0) <= 0;
+
+  const plans = outOfCredits
+    ? await prisma.subscriptionPlan.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } })
+    : [];
+  const claimedFreePlanIds = outOfCredits
+    ? await getClaimedFreePlanIds(me.id, company?.gstNumber ?? null, plans.filter(p => p.price === 0).map(p => p.id))
+    : new Set<string>();
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/post-job">
@@ -47,15 +56,26 @@ export default async function PostJobPage() {
           </Link>
         </div>
       ) : outOfCredits ? (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center max-w-xl mx-auto">
-          <CreditCard className="h-10 w-10 text-blue-500 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-zinc-900">You&apos;re out of job posting credits</h2>
-          <p className="text-sm text-zinc-600 mt-2">
-            Choose a plan to get more job posting credits and publish your next job.
-          </p>
-          <Link href="/employer/pricing" className="inline-flex items-center gap-1.5 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition">
-            View Plans
-          </Link>
+        <div>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center max-w-2xl mx-auto mb-8">
+            <CreditCard className="h-9 w-9 text-blue-500 mx-auto mb-2" />
+            <h2 className="text-lg font-bold text-zinc-900">You&apos;re out of job posting credits</h2>
+            <p className="text-sm text-zinc-600 mt-1">
+              Choose a plan below to get more job posting credits and publish your next job.
+            </p>
+          </div>
+          {plans.length === 0 ? (
+            <p className="text-center text-zinc-400 text-sm">No plans are available right now. Please check back soon.</p>
+          ) : (
+            <PricingPlans
+              plans={plans.map(p => ({
+                id: p.id, name: p.name, tagline: p.tagline, price: p.price, jobs: p.jobs,
+                perJob: p.perJob, save: p.save, badge: p.badge, features: p.features,
+              }))}
+              claimedFreePlanIds={Array.from(claimedFreePlanIds)}
+              isEmployer={me.role === "EMPLOYER"}
+            />
+          )}
         </div>
       ) : (
         <PostJobForm categories={cats.map(c => ({ id: c.id, name: c.name }))} options={options} isAdmin={me.role === "ADMIN"} company={company} />

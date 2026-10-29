@@ -546,7 +546,7 @@ function CandidateSignupForm() {
     setEducationEntry(prev => ({ ...prev, ...patch }));
   }
   function onEducationLevelChange(value: string) {
-    updateEducationEntry({ education: value, specialization: "" });
+    updateEducationEntry({ education: value, specialization: "", specializationDetail: "" });
   }
 
   function addSkill(value?: string) {
@@ -587,6 +587,9 @@ function CandidateSignupForm() {
     if (!location) { setError("Please select your location."); return; }
     if (!educationEntry.education || !educationEntry.schoolName || !educationEntry.passingYear) {
       setError("Please fill in your education details."); return;
+    }
+    if (educationEntry.education === "Diploma" && !educationEntry.specializationDetail) {
+      setError("Please select whether your Diploma was after 10th or 12th."); return;
     }
     if (!resumeDataUrl) { setError("Please upload your resume."); return; }
     if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
@@ -887,6 +890,22 @@ function CandidateSignupForm() {
                         placeholder="Select specialization"
                         searchPlaceholder="Search specialization..."
                       />
+                    </div>
+                  )}
+
+                  {educationEntry.education === "Diploma" && (
+                    <div>
+                      <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Diploma pursued after <span className="text-red-500">*</span></label>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => updateEducationEntry({ specializationDetail: "After 10th" })}
+                          className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${educationEntry.specializationDetail === "After 10th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                          After 10th
+                        </button>
+                        <button type="button" onClick={() => updateEducationEntry({ specializationDetail: "After 12th" })}
+                          className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${educationEntry.specializationDetail === "After 12th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                          After 12th
+                        </button>
+                      </div>
                     </div>
                   )}
 

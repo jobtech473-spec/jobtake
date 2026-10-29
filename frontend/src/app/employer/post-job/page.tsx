@@ -5,9 +5,9 @@ import { getManagedOptions } from "@/lib/job-options";
 import { getClaimedFreePlanIds } from "@/lib/free-plan";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ShieldAlert, CreditCard } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { PostJobForm } from "./PostJobForm";
-import { PricingPlans } from "../pricing/PricingPlans";
+import { PlansGateModal } from "./PlansGateModal";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ export default async function PostJobPage() {
       where: { ownerId: me.id },
       orderBy: { createdAt: "asc" },
       select: {
-        name: true, logoUrl: true, description: true, headquarters: true, founded: true, verified: true, jobCredits: true, gstNumber: true,
+        id: true, name: true, logoUrl: true, description: true, headquarters: true, founded: true, verified: true, jobCredits: true, gstNumber: true,
       },
     }),
   ]);
@@ -30,10 +30,19 @@ export default async function PostJobPage() {
   const blocked = me.role === "EMPLOYER" && !company?.verified;
   const outOfCredits = me.role === "EMPLOYER" && !!company?.verified && (company?.jobCredits ?? 0) <= 0;
 
-  const plans = outOfCredits
+  // Show the plan-picker popup right after GST verification (before this
+  // company has ever posted a job — dismissible, they still have their
+  // starter credit) and again whenever credits run out (mandatory).
+  const jobsPostedCount = me.role === "EMPLOYER" && company?.verified
+    ? await prisma.job.count({ where: { companyId: company.id } })
+    : 0;
+  const isFirstTime = me.role === "EMPLOYER" && !!company?.verified && jobsPostedCount === 0 && !outOfCredits;
+  const showGate = isFirstTime || outOfCredits;
+
+  const plans = showGate
     ? await prisma.subscriptionPlan.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } })
     : [];
-  const claimedFreePlanIds = outOfCredits
+  const claimedFreePlanIds = showGate
     ? await getClaimedFreePlanIds(me.id, company?.gstNumber ?? null, plans.filter(p => p.price === 0).map(p => p.id))
     : new Set<string>();
 
@@ -55,30 +64,20 @@ export default async function PostJobPage() {
             Go to Company Profile
           </Link>
         </div>
-      ) : outOfCredits ? (
-        <div>
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center max-w-2xl mx-auto mb-8">
-            <CreditCard className="h-9 w-9 text-blue-500 mx-auto mb-2" />
-            <h2 className="text-lg font-bold text-zinc-900">You&apos;re out of job posting credits</h2>
-            <p className="text-sm text-zinc-600 mt-1">
-              Choose a plan below to get more job posting credits and publish your next job.
-            </p>
-          </div>
-          {plans.length === 0 ? (
-            <p className="text-center text-zinc-400 text-sm">No plans are available right now. Please check back soon.</p>
-          ) : (
-            <PricingPlans
+      ) : (
+        <>
+          <PostJobForm categories={cats.map(c => ({ id: c.id, name: c.name }))} options={options} isAdmin={me.role === "ADMIN"} company={company} />
+          {showGate && (
+            <PlansGateModal
               plans={plans.map(p => ({
                 id: p.id, name: p.name, tagline: p.tagline, price: p.price, jobs: p.jobs,
                 perJob: p.perJob, save: p.save, badge: p.badge, features: p.features,
               }))}
               claimedFreePlanIds={Array.from(claimedFreePlanIds)}
-              isEmployer={me.role === "EMPLOYER"}
+              dismissible={!outOfCredits}
             />
           )}
-        </div>
-      ) : (
-        <PostJobForm categories={cats.map(c => ({ id: c.id, name: c.name }))} options={options} isAdmin={me.role === "ADMIN"} company={company} />
+        </>
       )}
     </DashboardShell>
   );

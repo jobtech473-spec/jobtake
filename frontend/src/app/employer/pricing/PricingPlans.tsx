@@ -18,11 +18,12 @@ export type PricingPlan = {
 const PLAN_ICONS = [Gift, FileText, Users, Rocket];
 
 export function PricingPlans({
-  plans, claimedFreePlanIds, isEmployer,
+  plans, claimedFreePlanIds, isEmployer, onObtained,
 }: {
   plans: PricingPlan[];
   claimedFreePlanIds: string[];
   isEmployer: boolean;
+  onObtained?: () => void;
 }) {
   const router = useRouter();
   const [checkoutPlan, setCheckoutPlan] = useState<PricingPlan | null>(null);
@@ -39,6 +40,7 @@ export function PricingPlans({
     const data = await res.json().catch(() => ({}));
     setClaiming(null);
     if (!res.ok) { setError(data.error || "Failed to claim plan"); return; }
+    onObtained?.();
     router.refresh();
   }
 
@@ -116,7 +118,7 @@ export function PricingPlans({
       </div>
 
       {checkoutPlan && (
-        <DummyCheckoutModal plan={checkoutPlan} onClose={() => setCheckoutPlan(null)} onSuccess={() => { setCheckoutPlan(null); router.refresh(); }} />
+        <DummyCheckoutModal plan={checkoutPlan} onClose={() => setCheckoutPlan(null)} onSuccess={() => { setCheckoutPlan(null); onObtained?.(); router.refresh(); }} />
       )}
     </>
   );

@@ -42,6 +42,7 @@ export default async function AdminCompanies() {
           featured: c.featured,
           createdAt: c.createdAt.toISOString(),
           jobsCount: c._count.jobs,
+          jobCredits: c.jobCredits,
           gstNumber: c.gstNumber,
           gstCertificateUrl: c.gstCertificateUrl,
           owner: c.owner,

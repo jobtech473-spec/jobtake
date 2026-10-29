@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Search, Building2, ShieldCheck, Clock, Star, Briefcase,
   X, Loader2, ExternalLink, MapPin, Users as UsersIcon, Mail, Phone, FileText,
-  ArrowLeft, ArrowRight,
+  ArrowLeft, ArrowRight, CreditCard, Plus, Minus,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ type Company = {
   featured: boolean;
   createdAt: string;
   jobsCount: number;
+  jobCredits: number;
   gstNumber: string | null;
   gstCertificateUrl: string | null;
   owner: { name: string; email: string; phone: string | null };
@@ -51,6 +52,8 @@ export function CompaniesTable({
   const [busy, setBusy] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+  const [creditAmount, setCreditAmount] = useState("1");
+  const [creditBusy, setCreditBusy] = useState(false);
 
   // Re-sync the selected company's detail panel whenever fresh data comes in
   // (e.g. after router.refresh() post-mutation) — otherwise it keeps showing
@@ -78,6 +81,16 @@ export function CompaniesTable({
     setBusy(true);
     await fetch(`/api/admin/companies/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     setBusy(false);
+    router.refresh();
+  }
+
+  async function adjustCredits(id: string, delta: number) {
+    if (!delta) return;
+    setCreditBusy(true);
+    await fetch(`/api/admin/companies/${id}/credits`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ delta, note: "Adjusted by admin" }),
+    });
+    setCreditBusy(false);
     router.refresh();
   }
 
@@ -141,13 +154,14 @@ export function CompaniesTable({
         {/* Table */}
         <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-          <div className="min-w-[720px]">
-          <div className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
+          <div className="min-w-[820px]">
+          <div className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
             <div>Company</div>
             <div>Owner</div>
             <div>Industry</div>
             <div>Status</div>
             <div>Jobs</div>
+            <div>Credits</div>
           </div>
           {pageRows.length === 0 ? (
             <div className="py-14 text-center text-sm text-zinc-400">No companies match your filters.</div>
@@ -160,7 +174,7 @@ export function CompaniesTable({
                   <div
                     key={c.id}
                     onClick={() => setSelected(c)}
-                    className={`grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5 cursor-pointer transition-colors ${isSelected ? "bg-blue-50/60" : "hover:bg-zinc-50"}`}
+                    className={`grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5 cursor-pointer transition-colors ${isSelected ? "bg-blue-50/60" : "hover:bg-zinc-50"}`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {c.logoUrl ? (
@@ -186,6 +200,9 @@ export function CompaniesTable({
                       <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLE[c.status]}`}>{c.status.toLowerCase()}</span>
                     </div>
                     <div className="text-sm font-semibold text-zinc-700">{c.jobsCount}</div>
+                    <div className="text-sm font-semibold text-zinc-700 flex items-center gap-1.5">
+                      <CreditCard className="h-3.5 w-3.5 text-zinc-400" /> {c.jobCredits}
+                    </div>
                   </div>
                 );
               })}
@@ -337,6 +354,33 @@ export function CompaniesTable({
               <div className="bg-zinc-50 rounded-xl p-3 text-center">
                 <div className="text-lg font-black text-zinc-900">{timeAgo(selected.createdAt)}</div>
                 <div className="text-[10px] text-zinc-500">Joined</div>
+              </div>
+            </div>
+
+            {/* Job credits */}
+            <div className="mt-5">
+              <div className="text-xs font-bold text-zinc-900 mb-2 flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Job Posting Credits</div>
+              <div className="flex items-center justify-between bg-zinc-50 rounded-xl p-3 mb-2">
+                <span className="text-xs text-zinc-500">Remaining credits</span>
+                <span className="text-lg font-black text-zinc-900">{selected.jobCredits}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button disabled={creditBusy || !Number(creditAmount)} onClick={() => adjustCredits(selected.id, -Math.abs(Number(creditAmount) || 0))}
+                  title={`Deduct ${creditAmount || 0}`}
+                  className="h-9 w-9 flex items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50">
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <input
+                  type="number" min={1} value={creditAmount} onChange={e => setCreditAmount(e.target.value)}
+                  className="w-16 h-9 text-center border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400"
+                />
+                <button
+                  disabled={creditBusy || !Number(creditAmount)}
+                  onClick={() => adjustCredits(selected.id, Math.abs(Number(creditAmount) || 0))}
+                  className="flex-1 h-9 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold disabled:opacity-50"
+                >
+                  {creditBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />} Grant {creditAmount || 0}
+                </button>
               </div>
             </div>
           </div>

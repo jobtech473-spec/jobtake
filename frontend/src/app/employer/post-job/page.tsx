@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getManagedOptions } from "@/lib/job-options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, CreditCard } from "lucide-react";
 import { PostJobForm } from "./PostJobForm";
 
 export const dynamic = "force-dynamic";
@@ -20,12 +20,13 @@ export default async function PostJobPage() {
       where: { ownerId: me.id },
       orderBy: { createdAt: "asc" },
       select: {
-        name: true, logoUrl: true, description: true, headquarters: true, founded: true, verified: true,
+        name: true, logoUrl: true, description: true, headquarters: true, founded: true, verified: true, jobCredits: true,
       },
     }),
   ]);
 
   const blocked = me.role === "EMPLOYER" && !company?.verified;
+  const outOfCredits = me.role === "EMPLOYER" && !!company?.verified && (company?.jobCredits ?? 0) <= 0;
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/post-job">
@@ -43,6 +44,17 @@ export default async function PostJobPage() {
           </p>
           <Link href="/employer/company" className="inline-flex items-center gap-1.5 mt-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition">
             Go to Company Profile
+          </Link>
+        </div>
+      ) : outOfCredits ? (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center max-w-xl mx-auto">
+          <CreditCard className="h-10 w-10 text-blue-500 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-zinc-900">You&apos;re out of job posting credits</h2>
+          <p className="text-sm text-zinc-600 mt-2">
+            Choose a plan to get more job posting credits and publish your next job.
+          </p>
+          <Link href="/employer/pricing" className="inline-flex items-center gap-1.5 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition">
+            View Plans
           </Link>
         </div>
       ) : (

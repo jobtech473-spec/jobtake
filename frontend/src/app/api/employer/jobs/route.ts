@@ -115,38 +115,66 @@ export async function POST(req: NextRequest) {
   const base = slugify(data.data.title);
   const slug = `${base}-${Math.random().toString(36).slice(2, 7)}`;
 
-  const job = await prisma.job.create({
-    data: {
-      companyId,
-      postedById: user.id,
-      categoryId,
-      title: data.data.title,
-      slug,
-      description: data.data.description,
-      responsibilities: data.data.responsibilities,
-      requirements: data.data.requirements,
-      benefits: data.data.benefits,
-      location: data.data.location,
-      workMode: data.data.workMode,
-      employmentType: data.data.employmentType,
-      seniority: data.data.seniority,
-      experienceMin: data.data.experienceMin,
-      experienceMax: data.data.experienceMax,
-      salaryMin: data.data.salaryMin,
-      salaryMax: data.data.salaryMax,
-      salaryCurrency: data.data.salaryCurrency,
-      salaryPeriod: data.data.salaryPeriod,
-      collarType: data.data.collarType,
-      isMsme: data.data.isMsme,
-      hideSalary: data.data.hideSalary,
-      minEducation: data.data.minEducation,
-      educationSpecialization: data.data.educationSpecialization,
-      keySkills: data.data.keySkills.filter(s => data.data.skills.includes(s)).slice(0, 5),
-      // GST verification already gates who can reach this point, so jobs go live immediately.
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-    },
-  });
+  let job;
+  try {
+    job = await prisma.$transaction(async (tx) => {
+      // Each job post spends one credit, except for admin-posted jobs. The
+      // `gt: 0` guard makes the decrement atomic under concurrent requests —
+      // updateMany matches 0 rows (instead of going negative) once credits
+      // run out, which is how we detect "out of credits" below.
+      if (user.role === "EMPLOYER") {
+        const spent = await tx.company.updateMany({
+          where: { id: companyId, jobCredits: { gt: 0 } },
+          data: { jobCredits: { decrement: 1 } },
+        });
+        if (spent.count === 0) throw new Error("NO_CREDITS");
+        await tx.creditTransaction.create({
+          data: { companyId, plan: "JOB_POST", jobs: -1, amount: 0, status: "PAID" },
+        });
+      }
+
+      return tx.job.create({
+        data: {
+          companyId,
+          postedById: user.id,
+          categoryId,
+          title: data.data.title,
+          slug,
+          description: data.data.description,
+          responsibilities: data.data.responsibilities,
+          requirements: data.data.requirements,
+          benefits: data.data.benefits,
+          location: data.data.location,
+          workMode: data.data.workMode,
+          employmentType: data.data.employmentType,
+          seniority: data.data.seniority,
+          experienceMin: data.data.experienceMin,
+          experienceMax: data.data.experienceMax,
+          salaryMin: data.data.salaryMin,
+          salaryMax: data.data.salaryMax,
+          salaryCurrency: data.data.salaryCurrency,
+          salaryPeriod: data.data.salaryPeriod,
+          collarType: data.data.collarType,
+          isMsme: data.data.isMsme,
+          hideSalary: data.data.hideSalary,
+          minEducation: data.data.minEducation,
+          educationSpecialization: data.data.educationSpecialization,
+          keySkills: data.data.keySkills.filter(s => data.data.skills.includes(s)).slice(0, 5),
+          // GST verification already gates who can reach this point, so jobs go live immediately.
+          status: "PUBLISHED",
+          publishedAt: new Date(),
+        },
+      });
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "NO_CREDITS") {
+      return NextResponse.json(
+        { error: "You don't have any job posting credits left. Please choose a plan to continue.", code: "NO_CREDITS" },
+        { status: 402 },
+      );
+    }
+    throw err;
+  }
 
   // skills
   for (const skillName of data.data.skills) {

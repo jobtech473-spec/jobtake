@@ -195,16 +195,35 @@ model Company {
   status             CompanyStatus    @default(PENDING)
   verified     Boolean          @default(false)
   featured     Boolean          @default(false)
+  jobCredits   Int              @default(1)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   owner        User             @relation("CompanyOwner", fields: [ownerId], references: [id])
   benefits     CompanyBenefit[]
   members      CompanyMember[]
   jobs         Job[]
+  creditTransactions CreditTransaction[]
 
   @@index([status])
   @@index([slug])
   @@index([featured])
+}
+
+model CreditTransaction {
+  id                String   @id @default(cuid())
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan              String
+  jobs              Int
+  amount            Int      @default(0)
+  status            String   @default("PAID")
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  note              String?
+  createdById       String?
+  createdAt         DateTime @default(now())
+
+  @@index([companyId])
 }
 
 model CompanyMember {

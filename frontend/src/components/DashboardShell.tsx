@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Briefcase, Bookmark, User as UserIcon,
   FileText, ShieldCheck, Building2, Users as UsersIcon,
   ListChecks, Settings, ExternalLink, Plus, Database,
-  Image as ImageIcon, Quote, Search,
+  Image as ImageIcon, Quote, Search, CreditCard,
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { DashboardMobileNav } from "./DashboardMobileNav";
@@ -29,6 +29,7 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
     { label: "Overview",        href: "/employer",               icon: LayoutDashboard },
     { label: "My Jobs",         href: "/employer/jobs",          icon: Briefcase },
     { label: "Post a Job",      href: "/employer/post-job",      icon: FileText },
+    { label: "Pricing",         href: "/employer/pricing",       icon: CreditCard },
     { label: "Company Profile", href: "/employer/company",       icon: Building2 },
     { label: "Settings",        href: "/employer/settings",      icon: Settings },
   ],

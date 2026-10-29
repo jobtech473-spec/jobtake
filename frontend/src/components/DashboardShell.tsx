@@ -57,13 +57,31 @@ export async function DashboardShell({ children, role, current, hideSidebar }: {
   const items = NAV[role];
   const initials = user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Get company slug + logo for employer
+  // Get company slug + logo + current plan/credits for employer
   let companySlug: string | null = null;
   let companyLogoUrl: string | null = null;
+  let jobCredits: number | null = null;
+  let currentPlanName: string | null = null;
   if (role === "EMPLOYER") {
-    const company = await prisma.company.findFirst({ where: { ownerId: user.id }, orderBy: { createdAt: "asc" }, select: { slug: true, logoUrl: true } });
+    const company = await prisma.company.findFirst({
+      where: { ownerId: user.id },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, slug: true, logoUrl: true, jobCredits: true },
+    });
     companySlug = company?.slug ?? null;
     companyLogoUrl = company?.logoUrl ?? null;
+    jobCredits = company?.jobCredits ?? null;
+    if (company) {
+      const lastPlanTxn = await prisma.creditTransaction.findFirst({
+        where: { companyId: company.id, plan: { notIn: ["JOB_POST", "ADMIN_GRANT"] } },
+        orderBy: { createdAt: "desc" },
+        select: { plan: true },
+      });
+      if (lastPlanTxn) {
+        const plan = await prisma.subscriptionPlan.findUnique({ where: { id: lastPlanTxn.plan }, select: { name: true } });
+        currentPlanName = plan?.name ?? null;
+      }
+    }
   }
 
   const sidebarImageUrl = user.avatarUrl ?? companyLogoUrl;
@@ -72,12 +90,19 @@ export async function DashboardShell({ children, role, current, hideSidebar }: {
     <>
       {/* Post a New Job button — employer only */}
       {role === "EMPLOYER" && (
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-4 space-y-2">
           <Link
             href="/employer/post-job"
             className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-2.5 rounded-xl transition-colors"
           >
             <Plus className="h-4 w-4" /> Post a New Job
+          </Link>
+          <Link
+            href="/employer/pricing"
+            className="flex items-center justify-between gap-2 w-full text-xs bg-zinc-50 border border-zinc-100 hover:border-zinc-200 rounded-xl px-3 py-2 transition-colors"
+          >
+            <span className="text-zinc-500 truncate">{currentPlanName ?? "No plan yet"}</span>
+            <span className="font-semibold text-zinc-700 shrink-0">{jobCredits ?? 0} credit{jobCredits === 1 ? "" : "s"}</span>
           </Link>
         </div>
       )}

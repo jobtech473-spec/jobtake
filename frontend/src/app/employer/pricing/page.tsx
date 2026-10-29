@@ -11,18 +11,19 @@ export default async function PricingPage() {
   if (!me) redirect("/employers/login");
   if (me.role !== "EMPLOYER" && me.role !== "ADMIN") redirect("/dashboard");
 
-  const company = await prisma.company.findFirst({
-    where: { ownerId: me.id },
-    orderBy: { createdAt: "asc" },
-    select: { id: true, jobCredits: true },
-  });
+  const [plans, company] = await Promise.all([
+    prisma.subscriptionPlan.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
+    prisma.company.findFirst({ where: { ownerId: me.id }, orderBy: { createdAt: "asc" }, select: { id: true, jobCredits: true } }),
+  ]);
 
-  const launchOfferClaimed = company
-    ? !!(await prisma.creditTransaction.findFirst({
-        where: { companyId: company.id, plan: "LAUNCH_FREE" },
-        select: { id: true },
-      }))
-    : false;
+  const claimedFreePlanIds = company
+    ? new Set(
+        (await prisma.creditTransaction.findMany({
+          where: { companyId: company.id, plan: { in: plans.filter(p => p.price === 0).map(p => p.id) } },
+          select: { plan: true },
+        })).map(t => t.plan),
+      )
+    : new Set<string>();
 
   return (
     <DashboardShell role={me.role === "ADMIN" ? "ADMIN" : "EMPLOYER"} current="/employer/pricing">
@@ -40,7 +41,18 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      <PricingPlans launchOfferClaimed={launchOfferClaimed} isEmployer={me.role === "EMPLOYER"} />
+      {plans.length === 0 ? (
+        <p className="text-center text-zinc-400 text-sm">No plans are available right now. Please check back soon.</p>
+      ) : (
+        <PricingPlans
+          plans={plans.map(p => ({
+            id: p.id, name: p.name, tagline: p.tagline, price: p.price, jobs: p.jobs,
+            perJob: p.perJob, save: p.save, badge: p.badge, features: p.features,
+          }))}
+          claimedFreePlanIds={Array.from(claimedFreePlanIds)}
+          isEmployer={me.role === "EMPLOYER"}
+        />
+      )}
     </DashboardShell>
   );
 }

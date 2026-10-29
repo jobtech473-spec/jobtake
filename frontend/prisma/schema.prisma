@@ -226,6 +226,24 @@ model CreditTransaction {
   @@index([companyId])
 }
 
+model SubscriptionPlan {
+  id        String   @id @default(cuid())
+  name      String
+  tagline   String?
+  price     Int      @default(0)
+  jobs      Int      @default(1)
+  perJob    Int?
+  save      Int?
+  badge     String?
+  features  String[] @default([])
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
 model CompanyMember {
   id        String   @id @default(cuid())
   companyId String

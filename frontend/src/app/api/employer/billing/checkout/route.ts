@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { getPlan } from "@/lib/plans";
 
-const Body = z.object({ plan: z.string() });
+const Body = z.object({ planId: z.string() });
 
 // Dummy/test-mode checkout — no real Razorpay account is wired up yet, so
 // this simulates an always-successful payment. Swap this for a real
@@ -17,14 +16,23 @@ export async function POST(req: NextRequest) {
   const data = Body.safeParse(await req.json().catch(() => ({})));
   if (!data.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
-  const plan = getPlan(data.data.plan);
-  if (!plan || plan.price <= 0) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+  const plan = await prisma.subscriptionPlan.findUnique({ where: { id: data.data.planId } });
+  if (!plan || !plan.active) return NextResponse.json({ error: "This plan isn't available" }, { status: 400 });
 
   const company = await prisma.company.findFirst({ where: { ownerId: me.id }, orderBy: { createdAt: "asc" } });
   if (!company) return NextResponse.json({ error: "No company found on your account" }, { status: 400 });
 
-  const dummyOrderId = `order_dummy_${Date.now()}`;
-  const dummyPaymentId = `pay_dummy_${Date.now()}`;
+  // Free plans (e.g. a launch offer) can only be claimed once per company.
+  if (plan.price === 0) {
+    const alreadyClaimed = await prisma.creditTransaction.findFirst({
+      where: { companyId: company.id, plan: plan.id },
+      select: { id: true },
+    });
+    if (alreadyClaimed) return NextResponse.json({ error: "You've already claimed this free plan" }, { status: 409 });
+  }
+
+  const dummyOrderId = plan.price > 0 ? `order_dummy_${Date.now()}` : null;
+  const dummyPaymentId = plan.price > 0 ? `pay_dummy_${Date.now()}` : null;
 
   const [, transaction] = await prisma.$transaction([
     prisma.company.update({ where: { id: company.id }, data: { jobCredits: { increment: plan.jobs } } }),

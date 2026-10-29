@@ -1,20 +1,8 @@
-export type PlanId = "LAUNCH_FREE" | "SINGLE" | "HIRING_PACK" | "GROWTH_PACK";
-
-export type Plan = {
-  id: PlanId;
-  name: string;
-  tagline: string;
-  price: number; // rupees, 0 for free
-  jobs: number;
-  perJob: number | null;
-  save: number | null;
-  badge: string | null;
-  features: string[];
-};
-
-export const PLANS: Plan[] = [
+// Starter plans seeded into the SubscriptionPlan table the first time it's
+// empty. After that, plans are fully admin-managed (src/app/admin/plans) —
+// this file is not read by the live pricing/checkout flow.
+export const SEED_PLANS = [
   {
-    id: "LAUNCH_FREE",
     name: "Launch Offer",
     tagline: "Get started with your first job post — absolutely free!",
     price: 0,
@@ -23,9 +11,9 @@ export const PLANS: Plan[] = [
     save: null,
     badge: "LIMITED TIME OFFER",
     features: ["1 job posting", "30-day listing", "Standard listing and applications dashboard"],
+    sortOrder: 0,
   },
   {
-    id: "SINGLE",
     name: "Single Post",
     tagline: "Perfect for small businesses and occasional hiring.",
     price: 200,
@@ -34,9 +22,9 @@ export const PLANS: Plan[] = [
     save: null,
     badge: null,
     features: ["1 job posting", "30-day listing", "Applications managed through Jobtake"],
+    sortOrder: 1,
   },
   {
-    id: "HIRING_PACK",
     name: "Hiring Pack",
     tagline: "Best value for multiple vacancies and growing teams.",
     price: 899,
@@ -45,9 +33,9 @@ export const PLANS: Plan[] = [
     save: 101,
     badge: "POPULAR",
     features: ["5 job postings", "Each job live for 30 days", "Use for multiple vacancies"],
+    sortOrder: 2,
   },
   {
-    id: "GROWTH_PACK",
     name: "Growth Pack",
     tagline: "For employers who hire regularly and need more reach.",
     price: 1599,
@@ -56,9 +44,6 @@ export const PLANS: Plan[] = [
     save: 401,
     badge: null,
     features: ["10 job postings", "Each job live for 30 days", "For employers hiring regularly"],
+    sortOrder: 3,
   },
 ];
-
-export function getPlan(id: string): Plan | undefined {
-  return PLANS.find(p => p.id === id);
-}

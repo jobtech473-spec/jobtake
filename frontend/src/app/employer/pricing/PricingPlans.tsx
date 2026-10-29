@@ -2,28 +2,43 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Clock, Gift, FileText, Users, Rocket, Check, Loader2, X, ShieldCheck } from "lucide-react";
-import { PLANS, type Plan } from "@/lib/plans";
 
-const PLAN_ICON: Record<string, typeof Gift> = {
-  LAUNCH_FREE: Gift,
-  SINGLE: FileText,
-  HIRING_PACK: Users,
-  GROWTH_PACK: Rocket,
+export type PricingPlan = {
+  id: string;
+  name: string;
+  tagline: string | null;
+  price: number;
+  jobs: number;
+  perJob: number | null;
+  save: number | null;
+  badge: string | null;
+  features: string[];
 };
 
-export function PricingPlans({ launchOfferClaimed, isEmployer }: { launchOfferClaimed: boolean; isEmployer: boolean }) {
-  const router = useRouter();
-  const [checkoutPlan, setCheckoutPlan] = useState<Plan | null>(null);
-  const [claiming, setClaiming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const PLAN_ICONS = [Gift, FileText, Users, Rocket];
 
-  async function claimLaunchOffer() {
-    setClaiming(true);
+export function PricingPlans({
+  plans, claimedFreePlanIds, isEmployer,
+}: {
+  plans: PricingPlan[];
+  claimedFreePlanIds: string[];
+  isEmployer: boolean;
+}) {
+  const router = useRouter();
+  const [checkoutPlan, setCheckoutPlan] = useState<PricingPlan | null>(null);
+  const [claiming, setClaiming] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const claimed = new Set(claimedFreePlanIds);
+
+  async function claimFreePlan(plan: PricingPlan) {
+    setClaiming(plan.id);
     setError(null);
-    const res = await fetch("/api/employer/billing/claim-launch-offer", { method: "POST" });
+    const res = await fetch("/api/employer/billing/checkout", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId: plan.id }),
+    });
     const data = await res.json().catch(() => ({}));
-    setClaiming(false);
-    if (!res.ok) { setError(data.error || "Failed to claim offer"); return; }
+    setClaiming(null);
+    if (!res.ok) { setError(data.error || "Failed to claim plan"); return; }
     router.refresh();
   }
 
@@ -32,9 +47,10 @@ export function PricingPlans({ launchOfferClaimed, isEmployer }: { launchOfferCl
       {error && <div className="max-w-2xl mx-auto mb-5 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3 text-center">{error}</div>}
 
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
-        {PLANS.map(plan => {
-          const Icon = PLAN_ICON[plan.id];
-          const isFree = plan.id === "LAUNCH_FREE";
+        {plans.map((plan, i) => {
+          const Icon = PLAN_ICONS[i % PLAN_ICONS.length];
+          const isFree = plan.price === 0;
+          const alreadyClaimed = isFree && claimed.has(plan.id);
           return (
             <div key={plan.id} className={`relative rounded-2xl border p-6 flex flex-col ${plan.badge === "LIMITED TIME OFFER" ? "border-blue-200 bg-blue-50/40" : "border-zinc-200 bg-white"}`}>
               {plan.badge && (
@@ -46,10 +62,9 @@ export function PricingPlans({ launchOfferClaimed, isEmployer }: { launchOfferCl
                 <Icon className="h-5 w-5 text-zinc-700" />
               </div>
               <h3 className="font-black text-zinc-900 text-lg">{plan.name}</h3>
-              <p className="text-sm text-zinc-500 mt-1 flex-1">{plan.tagline}</p>
+              {plan.tagline && <p className="text-sm text-zinc-500 mt-1 flex-1">{plan.tagline}</p>}
 
               <div className="mt-4">
-                {isFree && <div className="text-sm text-zinc-400 line-through">₹{200}</div>}
                 <div className="flex items-baseline gap-1">
                   {isFree ? (
                     <span className="text-3xl font-black text-blue-600">FREE</span>
@@ -64,26 +79,27 @@ export function PricingPlans({ launchOfferClaimed, isEmployer }: { launchOfferCl
                 {plan.perJob != null && plan.save != null && (
                   <div className="text-xs text-zinc-500 mt-1">₹{plan.perJob} per job &nbsp;|&nbsp; <span className="text-emerald-600 font-semibold">Save ₹{plan.save}</span></div>
                 )}
-                {isFree && <div className="text-xs text-zinc-400 mt-1">For eligible early employers</div>}
               </div>
 
-              <ul className="mt-4 space-y-2 border-t border-zinc-100 pt-4">
-                {plan.features.map(f => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-zinc-600">
-                    <Check className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" /> {f}
-                  </li>
-                ))}
-              </ul>
+              {plan.features.length > 0 && (
+                <ul className="mt-4 space-y-2 border-t border-zinc-100 pt-4">
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-zinc-600">
+                      <Check className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" /> {f}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {isEmployer && (
                 isFree ? (
                   <button
-                    disabled={claiming || launchOfferClaimed}
-                    onClick={claimLaunchOffer}
+                    disabled={claiming === plan.id || alreadyClaimed}
+                    onClick={() => claimFreePlan(plan)}
                     className="mt-5 w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-sm py-2.5 rounded-xl transition flex items-center justify-center gap-2"
                   >
-                    {claiming ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {launchOfferClaimed ? "Already Claimed" : "Post a Job Free"}
+                    {claiming === plan.id ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {alreadyClaimed ? "Already Claimed" : "Post a Job Free"}
                   </button>
                 ) : (
                   <button
@@ -106,14 +122,14 @@ export function PricingPlans({ launchOfferClaimed, isEmployer }: { launchOfferCl
   );
 }
 
-function DummyCheckoutModal({ plan, onClose, onSuccess }: { plan: Plan; onClose: () => void; onSuccess: () => void }) {
+function DummyCheckoutModal({ plan, onClose, onSuccess }: { plan: PricingPlan; onClose: () => void; onSuccess: () => void }) {
   const [stage, setStage] = useState<"review" | "processing" | "error">("review");
   const [error, setError] = useState<string | null>(null);
 
   async function pay() {
     setStage("processing");
     const res = await fetch("/api/employer/billing/checkout", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: plan.id }),
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId: plan.id }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(data.error || "Payment failed"); setStage("error"); return; }

@@ -113,6 +113,100 @@ function SelectDropdown({
   );
 }
 
+function MultiSelectDropdown({
+  values, onChange, options, placeholder,
+}: {
+  values: string[];
+  onChange: (v: string[]) => void;
+  options: DropdownOption[];
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filteredOptions = search.trim()
+    ? options.filter(o => `${o.label} ${o.sub ?? ""}`.toLowerCase().includes(search.trim().toLowerCase()))
+    : options;
+
+  function toggle(value: string) {
+    onChange(values.includes(value) ? values.filter(v => v !== value) : [...values, value]);
+  }
+
+  return (
+    <div
+      className="relative"
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setOpen(false);
+          setSearch("");
+        }
+      }}
+    >
+      <button
+        type="button"
+        className={`${inputCls} flex items-center justify-between gap-2 text-left`}
+        onClick={() => setOpen(v => { if (v) setSearch(""); return !v; })}
+      >
+        <span className={`truncate ${values.length ? "text-zinc-900" : "text-zinc-400"}`}>
+          {values.length ? `${values.length} selected` : placeholder}
+        </span>
+        <ChevronDown className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-zinc-200 bg-white shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-zinc-100">
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Type to search..."
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+          <div className="max-h-[200px] overflow-y-auto py-1">
+            {filteredOptions.map(o => {
+              const selected = values.includes(o.value);
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); toggle(o.value); }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-blue-50"
+                >
+                  <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${selected ? "bg-blue-600 border-blue-600" : "border-zinc-300"}`}>
+                    {selected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-zinc-950">{o.label}</span>
+                    {o.sub && <span className="mt-0.5 block text-xs font-medium text-zinc-600">{o.sub}</span>}
+                  </span>
+                </button>
+              );
+            })}
+            {!filteredOptions.length && (
+              <div className="px-4 py-3 text-sm font-medium text-zinc-500">No matching options.</div>
+            )}
+          </div>
+        </div>
+      )}
+      {values.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {values.map(v => {
+            const label = options.find(o => o.value === v)?.label ?? v;
+            return (
+              <span key={v} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-blue-50 text-blue-700 border-blue-100 font-medium">
+                {label}
+                <button type="button" onClick={() => toggle(v)} className="hover:text-red-500 transition-colors">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function formatExperienceRange(min: string, max: string) {
   if (!min && !max) return undefined;
   if (min && max) return `${min}-${max} yrs`;
@@ -186,7 +280,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const collarType = collarTypes[0] ?? ""; // primary for API
   const [title, setTitle]                 = useState("");
   const [categoryName, setCategoryName]   = useState("");
-  const [industryName, setIndustryName]   = useState("");
+  const [industryNames, setIndustryNames] = useState<string[]>([]);
   const [employmentType, setEmploymentType] = useState("");
   const [experienceMin, setExperienceMin] = useState("");
   const [experienceMax, setExperienceMax] = useState("");
@@ -238,6 +332,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
 
   const locationOptions = options.LOCATION;
   const industryOptions = options.INDUSTRY;
+  const industryLabels = industryNames.map(v => industryOptions.find(o => o.value === v)?.label ?? v);
   const roleOptions = options.ROLE;
   const educationOptions = options.EDUCATION.map((o) => ({
     value: o.value,
@@ -384,7 +479,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     const body = {
       title, description, responsibilities, requirements, benefits,
       location: remoteJob ? "Remote" : location,
-      industry: industryName.trim() || undefined,
+      industries: industryNames,
       workMode: remoteJob ? "REMOTE" : workMode,
       employmentType: employmentType || jobType || "FULL_TIME",
       seniority,
@@ -428,7 +523,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
   const summaryFields = [
     { label: "Job Title",       value: title },
     { label: "MSME Registered", value: isMsme === "YES" ? "Yes" : isMsme === "NO" ? "No" : undefined },
-    { label: "Type of Industrie", value: industryName },
+    { label: "Type of Industrie", value: industryLabels.length ? industryLabels.join(", ") : undefined },
     { label: "Department",      value: categoryName },
     { label: "Location",        value: remoteJob ? "Remote" : location },
     { label: "Employment Type", value: EMPLOYMENT_TYPES.find(e => e.value === (employmentType || jobType))?.label },
@@ -534,10 +629,10 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industrie</label>
-              <SelectDropdown
-                value={industryName}
-                onChange={setIndustryName}
+              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Type of Industrie <span className="text-xs font-normal text-zinc-400">(select one or more)</span></label>
+              <MultiSelectDropdown
+                values={industryNames}
+                onChange={setIndustryNames}
                 placeholder="Select type of industry"
                 options={industryOptions.map(o => ({ value: o.value, label: o.label }))}
               />
@@ -1115,7 +1210,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                   {[
                     { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Department",         value: categoryName || "—" },
-                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Type of Industrie", value: industryName || "—" },
+                    { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Type of Industrie", value: industryLabels.length ? industryLabels.join(", ") : "—" },
                     { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: (salaryMinDisplay || salaryMaxDisplay) ? `${salaryMinDisplay || "?"} – ${salaryMaxDisplay || "?"} LPA` : "Not specified" },
                     { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: remoteJob ? "Remote" : workModeLabelOf(workMode) },
                     ...(benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: benefits }] : []),

@@ -304,6 +304,7 @@ model Job {
   salaryCurrency   String         @default("USD")
   salaryPeriod     String         @default("year")
   collarType       String?        @default("WHITE")
+  industries       String[]       @default([])
   isMsme           Boolean?
   hideSalary       Boolean        @default(false)
   minEducation     String[]       @default([])

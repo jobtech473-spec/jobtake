@@ -153,6 +153,7 @@ export default async function AdminJobPreviewPage({ params }: { params: Promise<
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
               {[
                 { icon: <Tag className="h-4 w-4 text-blue-500" />,         label: "Job Category",       value: job.category?.name ?? "—" },
+                ...(job.industries.length ? [{ icon: <Building2 className="h-4 w-4 text-blue-500" />, label: "Industries", value: job.industries.join(", ") }] : []),
                 { icon: <BadgeDollarSign className="h-4 w-4 text-blue-500" />, label: "Salary Range",   value: salaryLabel || "Not specified" },
                 { icon: <Wifi className="h-4 w-4 text-blue-500" />,        label: "Work Mode",          value: workModeLabel },
                 ...(job.benefits ? [{ icon: <Star className="h-4 w-4 text-blue-500" />, label: "Additional Benefits", value: job.benefits }] : []),

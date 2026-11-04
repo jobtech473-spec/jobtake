@@ -517,9 +517,11 @@ function CandidateSignupForm() {
   }, []);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const STEPS = ["Account Info", "Professional Details", "Complete"] as const;
 
   const [regType, setRegType] = useState<"EXPERIENCED" | "FRESHER">("EXPERIENCED");
+  // Experienced candidates finish everything on Step 2 (no separate Complete
+  // step), so the progress bar only shows 2 steps for them.
+  const STEPS = regType === "FRESHER" ? (["Account Info", "Professional Details", "Complete"] as const) : (["Account Info", "Professional Details"] as const);
   const [expYears, setExpYears] = useState("");
   const [currentSalary, setCurrentSalary] = useState("");
   const [expectedSalary, setExpectedSalary] = useState("");
@@ -755,7 +757,7 @@ function CandidateSignupForm() {
               <button type="button" onClick={() => step > 1 ? backToStep((step - 1) as 1 | 2) : window.history.back()} className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 transition mb-4">
                 ← Back
               </button>
-              <h1 className="text-2xl font-black text-zinc-900">Step {step} of 3 · {STEPS[step - 1]}</h1>
+              <h1 className="text-2xl font-black text-zinc-900">Step {Math.min(step, STEPS.length)} of {STEPS.length} · {STEPS[Math.min(step, STEPS.length) - 1]}</h1>
               <p className="text-zinc-500 mt-1 text-sm">One step closer to the right opportunities.</p>
 
               {/* Step progress */}

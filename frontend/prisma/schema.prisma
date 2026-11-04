@@ -33,6 +33,9 @@ model User {
   currentDesignation String?
   currentIndustry    String?
   employmentStatus   String?
+  preferredCategory  String?
+  preferredRole      String?
+  internshipDetails  String?
   preferredLocations String[]        @default([])
   openToWork       Boolean           @default(true)
   profileVisible   Boolean           @default(true)
@@ -103,6 +106,8 @@ model Education {
   startYear   Int
   endYear     Int?
   description String?
+  status      String?
+  percentage  String?
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

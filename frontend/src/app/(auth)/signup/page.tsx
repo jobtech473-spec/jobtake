@@ -22,10 +22,14 @@ type EducationEntry = {
   specializationDetail: string;
   schoolName: string;
   passingYear: string;
+  status: string;
+  percentage: string;
 };
 function emptyEducationEntry(): EducationEntry {
-  return { education: "", specialization: "", specializationDetail: "", schoolName: "", passingYear: "" };
+  return { education: "", specialization: "", specializationDetail: "", schoolName: "", passingYear: "", status: "", percentage: "" };
 }
+
+const EDUCATION_STATUS_OPTIONS = ["Completed", "Pursuing"];
 
 // A native <select> opens its popup wherever the browser/OS decides (often
 // centered on the selected option, which can look like it's floating above
@@ -500,6 +504,7 @@ function CandidateSignupForm() {
   const [pgSpecializations, setPgSpecializations] = useState<ManagedOption[]>([]);
   const [diplomaSpecializations, setDiplomaSpecializations] = useState<ManagedOption[]>([]);
   const [itiSpecializations, setItiSpecializations] = useState<ManagedOption[]>([]);
+  const [roleOptions, setRoleOptions] = useState<ManagedOption[]>([]);
   useEffect(() => {
     fetch("/api/options").then(r => r.json()).then(d => {
       setLocations(d.options?.LOCATION ?? []);
@@ -509,6 +514,7 @@ function CandidateSignupForm() {
       setPgSpecializations(d.options?.PG_SPECIALIZATION ?? []);
       setDiplomaSpecializations(d.options?.DIPLOMA_SPECIALIZATION ?? []);
       setItiSpecializations(d.options?.ITI_SPECIALIZATION ?? []);
+      setRoleOptions(d.options?.ROLE ?? []);
     }).catch(() => {});
   }, []);
 
@@ -525,6 +531,9 @@ function CandidateSignupForm() {
   const [currentIndustry, setCurrentIndustry] = useState("");
   const [employmentStatus, setEmploymentStatus] = useState<"CURRENTLY_WORKING" | "NOT_WORKING" | "">("");
   const [location, setLocation] = useState("");
+  const [preferredCategory, setPreferredCategory] = useState("");
+  const [preferredRole, setPreferredRole] = useState("");
+  const [internshipDetails, setInternshipDetails] = useState("");
   const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([emptyEducationEntry()]);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
@@ -611,9 +620,27 @@ function CandidateSignupForm() {
       if (!currentCompany.trim()) { setError("Please enter your current company."); return false; }
       if (!currentDesignation.trim()) { setError("Please enter your current designation."); return false; }
       if (!employmentStatus) { setError("Please select your current employment status."); return false; }
+      if (!location) { setError("Please select your location."); return false; }
+      if (!bio.trim()) { setError("Please fill in About Me."); return false; }
+    } else {
+      const primaryEducation = educationEntries[0];
+      if (!primaryEducation.education || !primaryEducation.schoolName || !primaryEducation.passingYear) {
+        setError("Please fill in your education details."); return false;
+      }
+      for (const entry of educationEntries) {
+        if (!entry.education) continue;
+        if (!entry.schoolName || !entry.passingYear) { setError("Please fill in all fields for each qualification you've added."); return false; }
+        if (entry.education === "Diploma" && !entry.specializationDetail) {
+          setError("Please select whether your Diploma was after 10th or 12th."); return false;
+        }
+      }
+      if (!preferredCategory) { setError("Please select your preferred job category."); return false; }
+      if (!preferredRole.trim()) { setError("Please enter your preferred department / role."); return false; }
+      if (!location) { setError("Please select your preferred location."); return false; }
+      if (skills.length < 1) { setError("Please add at least 1 key skill."); return false; }
+      if (!bio.trim()) { setError("Please fill in About Me."); return false; }
+      if (!agreed) { setError("Please confirm that your information is genuine and accurate."); return false; }
     }
-    if (!location) { setError("Please select your location."); return false; }
-    if (!bio.trim()) { setError("Please fill in About Me."); return false; }
     setError(null);
     return true;
   }
@@ -638,7 +665,7 @@ function CandidateSignupForm() {
         setError("Please select whether your Diploma was after 10th or 12th."); return;
       }
     }
-    if (!resumeDataUrl) { setError("Please upload your resume."); return; }
+    if (regType === "EXPERIENCED" && !resumeDataUrl) { setError("Please upload your resume."); return; }
     if (regType === "EXPERIENCED" && skills.length < 5) { setError("Please add at least 5 key skills."); return; }
     if (regType === "FRESHER" && skills.length < 1) { setError("Please add at least 1 key skill."); return; }
     if (!bio.trim()) { setError("Please fill in About Me."); return; }
@@ -653,12 +680,15 @@ function CandidateSignupForm() {
           registrationType: regType,
           yearsExperience: regType === "EXPERIENCED" ? expYears : "0",
           currentSalary: regType === "EXPERIENCED" ? currentSalary : "",
-          expectedSalary: regType === "EXPERIENCED" ? expectedSalary : "",
+          expectedSalary,
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
           currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
           currentIndustry: regType === "EXPERIENCED" ? currentIndustry : "",
           employmentStatus: regType === "EXPERIENCED" ? (employmentStatus || undefined) : undefined,
+          preferredCategory: regType === "FRESHER" ? preferredCategory : "",
+          preferredRole: regType === "FRESHER" ? preferredRole : "",
+          internshipDetails: regType === "FRESHER" ? internshipDetails : "",
           location, educationEntries, skills, bio,
           resumeDataUrl, resumeFileName,
         }),
@@ -958,22 +988,243 @@ function CandidateSignupForm() {
                     </div>
                   )}
 
+                  {regType === "EXPERIENCED" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Location <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
+                          <LocationSelect value={location} onChange={setLocation} locations={locations} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me <span className="text-red-500">*</span></label>
+                        <textarea required value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short summary about yourself, your experience, key strengths and what you are looking for..."
+                          className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
+                        <p className="text-xs text-zinc-400 text-right mt-1">{bio.length}/500</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {regType === "FRESHER" && (
+              <>
+              {/* Education Details */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <GraduationCap className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-bold text-zinc-900">Education Details</h2>
+                </div>
+                <div className="space-y-5">
+                  {educationEntries.map((entry, index) => {
+                    const group = specializationGroupFor(entry.education);
+                    return (
+                      <div key={index} className={index > 0 ? "pt-5 border-t border-zinc-100" : ""}>
+                        {index > 0 && (
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-zinc-500">Additional qualification</span>
+                            <button type="button" onClick={() => removeEducationEntry(index)} className="text-xs text-zinc-400 hover:text-red-500">Remove</button>
+                          </div>
+                        )}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Highest Qualification {index === 0 && <span className="text-red-500">*</span>}</label>
+                            <div className="relative">
+                              <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                              <select required={index === 0} value={entry.education} onChange={e => onEducationLevelChange(index, e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                                <option value="">Select qualification</option>
+                                {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                              </select>
+                            </div>
+                          </div>
+
+                          {group && (
+                            <div>
+                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{group.label}</label>
+                              <SearchableSelect
+                                value={entry.specialization}
+                                onChange={v => updateEducationEntry(index, { specialization: v })}
+                                options={group.options}
+                                placeholder="Select specialization"
+                                searchPlaceholder="Search specialization..."
+                              />
+                            </div>
+                          )}
+
+                          {entry.education === "Diploma" && (
+                            <div>
+                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Diploma pursued after <span className="text-red-500">*</span></label>
+                              <div className="flex gap-2">
+                                <button type="button" onClick={() => updateEducationEntry(index, { specializationDetail: "After 10th" })}
+                                  className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.specializationDetail === "After 10th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                                  After 10th
+                                </button>
+                                <button type="button" onClick={() => updateEducationEntry(index, { specializationDetail: "After 12th" })}
+                                  className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.specializationDetail === "After 12th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                                  After 12th
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">College / Institution {index === 0 && <span className="text-red-500">*</span>}</label>
+                            <input required={index === 0} value={entry.schoolName} onChange={e => updateEducationEntry(index, { schoolName: e.target.value })} placeholder="Enter college or institution name"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year {index === 0 && <span className="text-red-500">*</span>}</label>
+                            <input required={index === 0} type="number" min={1950} max={today.getFullYear() + 10} value={entry.passingYear} onChange={e => updateEducationEntry(index, { passingYear: e.target.value })} placeholder="e.g. 2026"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education Status</label>
+                            <select value={entry.status} onChange={e => updateEducationEntry(index, { status: e.target.value })} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                              <option value="">Completed / Pursuing</option>
+                              {EDUCATION_STATUS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Percentage / CGPA <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                            <input value={entry.percentage} onChange={e => updateEducationEntry(index, { percentage: e.target.value })} placeholder="Enter percentage or CGPA"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <button type="button" onClick={addEducationEntry} className="inline-flex items-center gap-1 px-4 py-2.5 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                    + Add More Education
+                  </button>
+                </div>
+              </div>
+
+              {/* Career Preferences */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Briefcase className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-bold text-zinc-900">Career Preferences</h2>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Location <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Preferred Job Category <span className="text-red-500">*</span></label>
+                    <select required value={preferredCategory} onChange={e => setPreferredCategory(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                      <option value="">Select category</option>
+                      {roleOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Preferred Department / Role <span className="text-red-500">*</span></label>
+                    <input required value={preferredRole} onChange={e => setPreferredRole(e.target.value)} placeholder="e.g. Software Development, Sales..."
+                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Preferred Location <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
-                      <LocationSelect value={location} onChange={setLocation} locations={locations} />
+                      <LocationSelect value={location} onChange={setLocation} locations={locations} placeholder="Select city or location" />
                     </div>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me <span className="text-red-500">*</span></label>
-                    <textarea required value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short summary about yourself, your experience, key strengths and what you are looking for..."
-                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
-                    <p className="text-xs text-zinc-400 text-right mt-1">{bio.length}/500</p>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Expected CTC (Lacs PA) <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                    <div className="relative">
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                      <input type="number" min={0} step="0.1" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g. 4" className={inputClass} />
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Skills & Profile */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <UserRound className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-bold text-zinc-900">Skills &amp; Profile</h2>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                      Key Skills <span className="text-red-500">*</span>
+                      <span className="text-zinc-400 font-normal"> (Minimum 1 required)</span>
+                    </label>
+                    <div
+                      className="relative"
+                      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setSkillSuggestOpen(false); }}
+                    >
+                      <input
+                        value={skillInput}
+                        onChange={e => { setSkillInput(e.target.value); setSkillSuggestOpen(true); }}
+                        onFocus={() => setSkillSuggestOpen(true)}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
+                        placeholder="Add your key skills (e.g. Communication, Excel, Marketing...)"
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+                      />
+                      {skillSuggestOpen && skillSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl py-1">
+                          {skillSuggestions.map(o => (
+                            <button key={o.id} type="button" onClick={() => addSkill(o.value)}
+                              className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
+                              {o.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {skills.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2.5">
+                        {skills.map(s => (
+                          <span key={s} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                            {s}
+                            <button type="button" onClick={() => removeSkill(s)} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Internship / Training / Projects <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                    <textarea value={internshipDetails} onChange={e => setInternshipDetails(e.target.value.slice(0, 500))} rows={1} placeholder="Tell us about your internship, training or projects"
+                      className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">About Me <span className="text-red-500">*</span></label>
+                  <textarea required value={bio} onChange={e => setBio(e.target.value.slice(0, 500))} rows={3} placeholder="Write a short introduction about yourself, your strengths and career interests..."
+                    className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none" />
+                  <p className="text-xs text-zinc-400 text-right mt-1">{bio.length}/500</p>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Upload Resume <span className="text-zinc-400 font-normal">(Recommended)</span></label>
+                  {resumeDataUrl ? (
+                    <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
+                      <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
+                        <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" /> {resumeFileName}
+                      </span>
+                      <button type="button" onClick={() => { setResumeDataUrl(""); setResumeFileName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                      <Upload className="h-6 w-6 text-blue-500" />
+                      <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
+                      <span className="text-xs text-zinc-400">PDF or DOCX up to 5MB</span>
+                      <input type="file" accept=".pdf,.doc,.docx" className="hidden"
+                        onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
+                    </label>
+                  )}
+                  {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
+                </div>
+
+                <label className="flex items-start gap-2.5 text-sm text-zinc-700 cursor-pointer mt-4">
+                  <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 mt-0.5 shrink-0" />
+                  I confirm that my education, skills and other information provided are genuine and accurate.
+                </label>
+              </div>
+              </>
+              )}
 
               {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>}
 
@@ -991,6 +1242,8 @@ function CandidateSignupForm() {
               )}
 
               {step === 3 && (
+              <>
+              {regType === "EXPERIENCED" && (
               <>
               {/* Education */}
               <div>
@@ -1138,6 +1391,8 @@ function CandidateSignupForm() {
                   {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
                 </div>
               </div>
+              </>
+              )}
 
               {/* Additional */}
               <div>

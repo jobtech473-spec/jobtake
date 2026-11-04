@@ -15,6 +15,8 @@ const EducationEntry = z.object({
   specializationDetail: z.string().optional(),
   schoolName: z.string().optional(),
   passingYear: z.string().optional(),
+  status: z.string().optional(),
+  percentage: z.string().optional(),
 });
 
 const Body = z.object({
@@ -36,6 +38,9 @@ const Body = z.object({
   currentDesignation: z.string().optional(),
   currentIndustry: z.string().optional(),
   employmentStatus: z.enum(["CURRENTLY_WORKING", "NOT_WORKING"]).optional(),
+  preferredCategory: z.string().optional(),
+  preferredRole: z.string().optional(),
+  internshipDetails: z.string().optional(),
   educationEntries: z.array(EducationEntry).optional().default([]),
   skills: z.array(z.string()).optional().default([]),
   bio: z.string().optional(),
@@ -95,14 +100,16 @@ export async function POST(req: NextRequest) {
 
   let resumeBuffer: Buffer | null = null;
   if (data.data.role === "SEEKER") {
-    if (!data.data.resumeDataUrl || !data.data.resumeFileName) {
+    if (isExperienced && (!data.data.resumeDataUrl || !data.data.resumeFileName)) {
       return NextResponse.json({ error: "Please upload your resume." }, { status: 400 });
     }
-    const commaIdx = data.data.resumeDataUrl.indexOf(",");
-    const base64 = commaIdx >= 0 ? data.data.resumeDataUrl.slice(commaIdx + 1) : data.data.resumeDataUrl;
-    resumeBuffer = Buffer.from(base64, "base64");
-    if (resumeBuffer.length > MAX_RESUME_BYTES) {
-      return NextResponse.json({ error: `Resume is too large (max ${Math.round(MAX_RESUME_BYTES / (1024 * 1024))}MB).` }, { status: 400 });
+    if (data.data.resumeDataUrl && data.data.resumeFileName) {
+      const commaIdx = data.data.resumeDataUrl.indexOf(",");
+      const base64 = commaIdx >= 0 ? data.data.resumeDataUrl.slice(commaIdx + 1) : data.data.resumeDataUrl;
+      resumeBuffer = Buffer.from(base64, "base64");
+      if (resumeBuffer.length > MAX_RESUME_BYTES) {
+        return NextResponse.json({ error: `Resume is too large (max ${Math.round(MAX_RESUME_BYTES / (1024 * 1024))}MB).` }, { status: 400 });
+      }
     }
     if (!data.data.bio?.trim()) {
       return NextResponse.json({ error: "Please fill in About Me." }, { status: 400 });
@@ -120,6 +127,11 @@ export async function POST(req: NextRequest) {
         !data.data.currentCompany ? "Current Company" :
         !data.data.currentDesignation ? "Current Designation" :
         !data.data.employmentStatus ? "Current Employment Status" : null;
+      if (missing) return NextResponse.json({ error: `Please fill in ${missing}.` }, { status: 400 });
+    } else {
+      const missing =
+        !data.data.preferredCategory ? "Preferred Job Category" :
+        !data.data.preferredRole ? "Preferred Department / Role" : null;
       if (missing) return NextResponse.json({ error: `Please fill in ${missing}.` }, { status: 400 });
     }
     if (!data.data.location) return NextResponse.json({ error: "Please select your location." }, { status: 400 });
@@ -148,11 +160,14 @@ export async function POST(req: NextRequest) {
           yearsExperience: parseIntOrNull(data.data.yearsExperience),
           noticePeriod: isExperienced ? (data.data.noticePeriod || null) : null,
           currentSalary: isExperienced ? parseIntOrNull(data.data.currentSalary) : null,
-          expectedSalary: isExperienced ? parseIntOrNull(data.data.expectedSalary) : null,
+          expectedSalary: parseIntOrNull(data.data.expectedSalary),
           currentCompany: isExperienced ? (data.data.currentCompany || null) : null,
           currentDesignation: isExperienced ? (data.data.currentDesignation || null) : null,
           currentIndustry: isExperienced ? (data.data.currentIndustry || null) : null,
           employmentStatus: isExperienced ? (data.data.employmentStatus || null) : null,
+          preferredCategory: !isExperienced ? (data.data.preferredCategory || null) : null,
+          preferredRole: !isExperienced ? (data.data.preferredRole || null) : null,
+          internshipDetails: !isExperienced ? (data.data.internshipDetails || null) : null,
         },
         select: { id: true, email: true, name: true, role: true },
       });
@@ -184,6 +199,8 @@ export async function POST(req: NextRequest) {
                 degree: entry.education,
                 field: entry.specialization?.trim() || null,
                 description: entry.specializationDetail?.trim() || null,
+                status: entry.status?.trim() || null,
+                percentage: entry.percentage?.trim() || null,
                 startYear,
               },
             }).catch(() => null);

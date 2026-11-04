@@ -152,7 +152,7 @@ export default async function CandidateProfilePage({
             <div className="flex justify-between gap-2"><span className="text-zinc-400">Latest Education</span><span className="font-medium text-zinc-900 text-right">{latestEdu?.degree ?? "—"}</span></div>
             <div className="flex justify-between gap-2"><span className="text-zinc-400">Notice Period</span><span className="font-medium text-zinc-900 text-right">{user.noticePeriod ?? "—"}</span></div>
             <div className="flex justify-between gap-2"><span className="text-zinc-400">Industry</span><span className="font-medium text-zinc-900 text-right">{user.currentIndustry ?? "—"}</span></div>
-            <div className="flex justify-between gap-2"><span className="text-zinc-400">Employment Status</span><span className="font-medium text-zinc-900 text-right">{user.employmentStatus === "CURRENTLY_WORKING" ? "Currently working" : user.employmentStatus === "NOT_WORKING" ? "Not currently working" : "—"}</span></div>
+            <div className="flex justify-between gap-2"><span className="text-zinc-400">Employment Status</span><span className="font-medium text-zinc-900 text-right">{user.employmentStatus === "CURRENTLY_WORKING" ? "Currently working" : user.employmentStatus === "NOT_WORKING" ? `Not working since ${user.notWorkingSince ?? "—"}` : "—"}</span></div>
             {application && (
               <div className="flex justify-between gap-2"><span className="text-zinc-400">Application Date</span><span className="font-medium text-zinc-900 text-right">{new Date(application.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></div>
             )}

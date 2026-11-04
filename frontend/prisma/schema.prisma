@@ -33,6 +33,7 @@ model User {
   currentDesignation String?
   currentIndustry    String?
   employmentStatus   String?
+  notWorkingSince    String?
   preferredCategory  String?
   preferredRole      String?
   internshipDetails  String?

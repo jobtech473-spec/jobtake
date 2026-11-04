@@ -530,6 +530,7 @@ function CandidateSignupForm() {
   const [currentDesignation, setCurrentDesignation] = useState("");
   const [currentIndustry, setCurrentIndustry] = useState("");
   const [employmentStatus, setEmploymentStatus] = useState<"CURRENTLY_WORKING" | "NOT_WORKING" | "">("");
+  const [notWorkingSince, setNotWorkingSince] = useState("");
   const [location, setLocation] = useState("");
   const [preferredCategory, setPreferredCategory] = useState("");
   const [preferredRole, setPreferredRole] = useState("");
@@ -620,6 +621,7 @@ function CandidateSignupForm() {
       if (!currentCompany.trim()) { setError("Please enter your current company."); return false; }
       if (!currentDesignation.trim()) { setError("Please enter your current designation."); return false; }
       if (!employmentStatus) { setError("Please select your current employment status."); return false; }
+      if (employmentStatus === "NOT_WORKING" && !notWorkingSince) { setError("Please select since when you've not been working."); return false; }
       if (!location) { setError("Please select your location."); return false; }
       if (!bio.trim()) { setError("Please fill in About Me."); return false; }
     } else {
@@ -686,6 +688,7 @@ function CandidateSignupForm() {
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
           currentIndustry: regType === "EXPERIENCED" ? currentIndustry : "",
           employmentStatus: regType === "EXPERIENCED" ? (employmentStatus || undefined) : undefined,
+          notWorkingSince: regType === "EXPERIENCED" && employmentStatus === "NOT_WORKING" ? notWorkingSince : "",
           preferredCategory: regType === "FRESHER" ? preferredCategory : "",
           preferredRole: regType === "FRESHER" ? preferredRole : "",
           internshipDetails: regType === "FRESHER" ? internshipDetails : "",
@@ -975,6 +978,16 @@ function CandidateSignupForm() {
                           </button>
                         </div>
                       </div>
+                      {employmentStatus === "NOT_WORKING" && (
+                        <div>
+                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Not working since <span className="text-red-500">*</span></label>
+                          <div className="relative">
+                            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
+                            <input required type="month" max={today.toISOString().slice(0, 7)} value={notWorkingSince} onChange={e => setNotWorkingSince(e.target.value)}
+                              className={inputClass + " bg-white text-zinc-600 [color-scheme:light]"} />
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Industry</label>
                         <div className="relative">
@@ -1008,6 +1021,185 @@ function CandidateSignupForm() {
                   )}
                 </div>
               </div>
+
+              {regType === "EXPERIENCED" && (
+              <>
+              {/* Education */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <GraduationCap className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-bold text-zinc-900">Education</h2>
+                </div>
+
+                <div className="space-y-5">
+                  {educationEntries.map((entry, index) => {
+                    const group = specializationGroupFor(entry.education);
+                    return (
+                      <div key={index} className={index > 0 ? "pt-5 border-t border-zinc-100" : ""}>
+                        {index > 0 && (
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-zinc-500">Additional qualification</span>
+                            <button type="button" onClick={() => removeEducationEntry(index)} className="text-xs text-zinc-400 hover:text-red-500">Remove</button>
+                          </div>
+                        )}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education {index === 0 && <span className="text-red-500">*</span>}</label>
+                            <div className="relative">
+                              <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                              <select required={index === 0} value={entry.education} onChange={e => onEducationLevelChange(index, e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                                <option value="">Select qualification</option>
+                                {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
+                              </select>
+                            </div>
+                          </div>
+
+                          {group && (
+                            <div>
+                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{group.label}</label>
+                              <SearchableSelect
+                                value={entry.specialization}
+                                onChange={v => updateEducationEntry(index, { specialization: v })}
+                                options={group.options}
+                                placeholder="Select specialization"
+                                searchPlaceholder="Search specialization..."
+                              />
+                            </div>
+                          )}
+
+                          {entry.education === "Diploma" && (
+                            <div>
+                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Diploma pursued after <span className="text-red-500">*</span></label>
+                              <div className="flex gap-2">
+                                <button type="button" onClick={() => updateEducationEntry(index, { specializationDetail: "After 10th" })}
+                                  className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.specializationDetail === "After 10th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                                  After 10th
+                                </button>
+                                <button type="button" onClick={() => updateEducationEntry(index, { specializationDetail: "After 12th" })}
+                                  className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.specializationDetail === "After 12th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                                  After 12th
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University {index === 0 && <span className="text-red-500">*</span>}</label>
+                            <input required={index === 0} value={entry.schoolName} onChange={e => updateEducationEntry(index, { schoolName: e.target.value })} placeholder="Enter your school or university name"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year {index === 0 && <span className="text-red-500">*</span>}</label>
+                            <input required={index === 0} type="number" min={1950} max={today.getFullYear() + 10} value={entry.passingYear} onChange={e => updateEducationEntry(index, { passingYear: e.target.value })} placeholder="e.g. 2022"
+                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <button type="button" onClick={addEducationEntry} className="inline-flex items-center gap-1 px-4 py-2.5 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                    + Add More Education
+                  </button>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                    Key Skills <span className="text-red-500">*</span>
+                    <span className="text-zinc-400 font-normal"> (Minimum 5 required)</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <div
+                      className="relative flex-1"
+                      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setSkillSuggestOpen(false); }}
+                    >
+                      <input
+                        value={skillInput}
+                        onChange={e => { setSkillInput(e.target.value); setSkillSuggestOpen(true); }}
+                        onFocus={() => setSkillSuggestOpen(true)}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
+                        placeholder="Type a skill, or pick a suggestion..."
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+                      />
+                      {skillSuggestOpen && skillSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl py-1">
+                          {skillSuggestions.map(o => (
+                            <button key={o.id} type="button" onClick={() => addSkill(o.value)}
+                              className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
+                              {o.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/5</span>
+                    <button type="button" onClick={() => addSkill()} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                      + Add More
+                    </button>
+                  </div>
+                  {skills.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2.5">
+                      {skills.map(s => (
+                        <span key={s} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                          {s}
+                          <button type="button" onClick={() => removeSkill(s)} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Attach Resume <span className="text-red-500">*</span></label>
+                  {resumeDataUrl ? (
+                    <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
+                      <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
+                        <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" /> {resumeFileName}
+                      </span>
+                      <button type="button" onClick={() => { setResumeDataUrl(""); setResumeFileName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                      <Upload className="h-6 w-6 text-blue-500" />
+                      <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
+                      <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
+                      <input required type="file" accept=".pdf,.doc,.docx" className="hidden"
+                        onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
+                    </label>
+                  )}
+                  {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
+                </div>
+              </div>
+
+              {/* Additional */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <ShieldCheck className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-bold text-zinc-900">Additional</h2>
+                </div>
+                <div className="space-y-4">
+                  <label className="flex items-start gap-2.5 text-sm text-zinc-700 cursor-pointer">
+                    <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 mt-0.5 shrink-0" />
+                    <div className="space-y-2.5">
+                      <p className="leading-relaxed">
+                        I have read and agree to Jobtake&rsquo;s <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link> and <Link href="/terms" className="text-blue-600 underline">Terms & Conditions</Link>. I confirm that the details I have provided, including my resume, education, skills and work experience, are correct and genuine.
+                      </p>
+                      <p className="leading-relaxed">
+                        I agree not to provide false information, fake documents, incorrect qualifications or work experience, or use someone else&rsquo;s identity. I will not misuse the platform, mislead employers, send spam or engage in abusive behaviour.
+                      </p>
+                      <p className="leading-relaxed">
+                        I understand that providing false information or misusing Jobtake may lead to suspension of my account / legal action.
+                      </p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-2.5 text-sm text-zinc-700 cursor-pointer">
+                    <input type="checkbox" checked={alerts} onChange={e => setAlerts(e.target.checked)} className="w-4 h-4 rounded border-zinc-300 accent-blue-600" />
+                    I want to receive job alerts and updates on email.
+                  </label>
+                </div>
+              </div>
+              </>
+              )}
 
               {regType === "FRESHER" && (
               <>
@@ -1233,166 +1425,24 @@ function CandidateSignupForm() {
                   className="px-6 py-3.5 rounded-lg border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition">
                   Back
                 </button>
-                <button type="button" onClick={goToStep3}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg transition text-base">
-                  Continue →
-                </button>
+                {regType === "FRESHER" ? (
+                  <button type="button" onClick={goToStep3}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg transition text-base">
+                    Continue →
+                  </button>
+                ) : (
+                  <button type="submit" disabled={loading}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition text-base disabled:opacity-60">
+                    {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+                    Create Account →
+                  </button>
+                )}
               </div>
               </>
               )}
 
               {step === 3 && (
               <>
-              {regType === "EXPERIENCED" && (
-              <>
-              {/* Education */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <GraduationCap className="h-4 w-4 text-blue-600" />
-                  <h2 className="font-bold text-zinc-900">Education</h2>
-                </div>
-
-                <div className="space-y-5">
-                  {educationEntries.map((entry, index) => {
-                    const group = specializationGroupFor(entry.education);
-                    return (
-                      <div key={index} className={index > 0 ? "pt-5 border-t border-zinc-100" : ""}>
-                        {index > 0 && (
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-semibold text-zinc-500">Additional qualification</span>
-                            <button type="button" onClick={() => removeEducationEntry(index)} className="text-xs text-zinc-400 hover:text-red-500">Remove</button>
-                          </div>
-                        )}
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education {index === 0 && <span className="text-red-500">*</span>}</label>
-                            <div className="relative">
-                              <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                              <select required={index === 0} value={entry.education} onChange={e => onEducationLevelChange(index, e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                                <option value="">Select qualification</option>
-                                {educationOptions.map(o => <option key={o.id} value={o.value}>{o.label}</option>)}
-                              </select>
-                            </div>
-                          </div>
-
-                          {group && (
-                            <div>
-                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">{group.label}</label>
-                              <SearchableSelect
-                                value={entry.specialization}
-                                onChange={v => updateEducationEntry(index, { specialization: v })}
-                                options={group.options}
-                                placeholder="Select specialization"
-                                searchPlaceholder="Search specialization..."
-                              />
-                            </div>
-                          )}
-
-                          {entry.education === "Diploma" && (
-                            <div>
-                              <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Diploma pursued after <span className="text-red-500">*</span></label>
-                              <div className="flex gap-2">
-                                <button type="button" onClick={() => updateEducationEntry(index, { specializationDetail: "After 10th" })}
-                                  className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.specializationDetail === "After 10th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
-                                  After 10th
-                                </button>
-                                <button type="button" onClick={() => updateEducationEntry(index, { specializationDetail: "After 12th" })}
-                                  className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.specializationDetail === "After 12th" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
-                                  After 12th
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          <div>
-                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">School / University {index === 0 && <span className="text-red-500">*</span>}</label>
-                            <input required={index === 0} value={entry.schoolName} onChange={e => updateEducationEntry(index, { schoolName: e.target.value })} placeholder="Enter your school or university name"
-                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year {index === 0 && <span className="text-red-500">*</span>}</label>
-                            <input required={index === 0} type="number" min={1950} max={today.getFullYear() + 10} value={entry.passingYear} onChange={e => updateEducationEntry(index, { passingYear: e.target.value })} placeholder="e.g. 2022"
-                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  <button type="button" onClick={addEducationEntry} className="inline-flex items-center gap-1 px-4 py-2.5 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
-                    + Add More Education
-                  </button>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                    Key Skills <span className="text-red-500">*</span>
-                    <span className="text-zinc-400 font-normal"> {regType === "EXPERIENCED" ? "(Minimum 5 required)" : "(Minimum 1 required)"}</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <div
-                      className="relative flex-1"
-                      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setSkillSuggestOpen(false); }}
-                    >
-                      <input
-                        value={skillInput}
-                        onChange={e => { setSkillInput(e.target.value); setSkillSuggestOpen(true); }}
-                        onFocus={() => setSkillSuggestOpen(true)}
-                        onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkill(); } }}
-                        placeholder="Type a skill, or pick a suggestion..."
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
-                      />
-                      {skillSuggestOpen && skillSuggestions.length > 0 && (
-                        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-[220px] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl py-1">
-                          {skillSuggestions.map(o => (
-                            <button key={o.id} type="button" onClick={() => addSkill(o.value)}
-                              className="block w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-blue-50 transition truncate">
-                              {o.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <span className="shrink-0 flex items-center text-xs text-zinc-400 px-1">{skills.length}/{regType === "EXPERIENCED" ? 5 : 1}</span>
-                    <button type="button" onClick={() => addSkill()} className="shrink-0 flex items-center gap-1 px-4 py-3 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
-                      + Add More
-                    </button>
-                  </div>
-                  {skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2.5">
-                      {skills.map(s => (
-                        <span key={s} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
-                          {s}
-                          <button type="button" onClick={() => removeSkill(s)} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Attach Resume <span className="text-red-500">*</span></label>
-                  {resumeDataUrl ? (
-                    <div className="flex items-center justify-between gap-3 border border-zinc-200 rounded-lg px-4 py-3">
-                      <span className="flex items-center gap-2 text-sm text-zinc-700 truncate">
-                        <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" /> {resumeFileName}
-                      </span>
-                      <button type="button" onClick={() => { setResumeDataUrl(""); setResumeFileName(""); }} className="text-xs text-zinc-400 hover:text-red-500 shrink-0">Remove</button>
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-xl py-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
-                      <Upload className="h-6 w-6 text-blue-500" />
-                      <span className="text-sm text-zinc-600 font-medium">Click to upload or drag and drop</span>
-                      <span className="text-xs text-zinc-400">PDF, DOC, DOCX (Max 2 MB)</span>
-                      <input required type="file" accept=".pdf,.doc,.docx" className="hidden"
-                        onChange={e => { handleResumeUpload(e.target.files?.[0]); e.target.value = ""; }} />
-                    </label>
-                  )}
-                  {resumeError && <p className="text-xs text-red-600 mt-1.5">{resumeError}</p>}
-                </div>
-              </div>
-              </>
-              )}
 
               {/* Additional */}
               <div>

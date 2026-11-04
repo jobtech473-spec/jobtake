@@ -504,20 +504,25 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
       diplomaSpecialization: diplomaSpecializationCustom.trim() || undefined,
       itiSpecialization: itiSpecializationCustom.trim() || undefined,
     };
-    const res = await fetch("/api/employer/jobs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) { setError(data.error || "Failed to post"); return; }
-    if (status === "DRAFT") {
-      router.push(isAdmin ? "/admin/jobs" : "/employer/jobs");
-    } else {
-      router.push(`/employer/jobs/${data.job.id}/preview`);
+    try {
+      const res = await fetch("/api/employer/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error || `Failed to post (status ${res.status})`); return; }
+      if (status === "DRAFT") {
+        router.push(isAdmin ? "/admin/jobs" : "/employer/jobs");
+      } else {
+        router.push(`/employer/jobs/${data.job.id}/preview`);
+      }
+      router.refresh();
+    } catch {
+      setError("Something went wrong while posting. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    router.refresh();
   }
 
   const summaryFields = [

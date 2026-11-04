@@ -34,6 +34,7 @@ model User {
   currentIndustry    String?
   employmentStatus   String?
   notWorkingSince    String?
+  workingSince       String?
   preferredCategory  String?
   preferredRole      String?
   internshipDetails  String?

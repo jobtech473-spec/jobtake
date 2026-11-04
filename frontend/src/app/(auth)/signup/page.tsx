@@ -541,6 +541,7 @@ function CandidateSignupForm() {
   const [currentIndustry, setCurrentIndustry] = useState("");
   const [employmentStatus, setEmploymentStatus] = useState<"CURRENTLY_WORKING" | "NOT_WORKING" | "">("");
   const [notWorkingSince, setNotWorkingSince] = useState("");
+  const [workingSince, setWorkingSince] = useState("");
   const [location, setLocation] = useState("");
   const [preferredCategory, setPreferredCategory] = useState("");
   const [preferredRole, setPreferredRole] = useState("");
@@ -642,6 +643,7 @@ function CandidateSignupForm() {
       if (!currentCompany.trim()) { setError("Please enter your current company."); return false; }
       if (!currentDesignation.trim()) { setError("Please enter your current designation."); return false; }
       if (!employmentStatus) { setError("Please select your current employment status."); return false; }
+      if (employmentStatus === "CURRENTLY_WORKING" && !workingSince) { setError("Please select since when you've been working."); return false; }
       if (employmentStatus === "NOT_WORKING" && !notWorkingSince) { setError("Please select since when you've not been working."); return false; }
       if (!location) { setError("Please select your location."); return false; }
       if (!bio.trim()) { setError("Please fill in About Me."); return false; }
@@ -710,6 +712,7 @@ function CandidateSignupForm() {
           currentIndustry: regType === "EXPERIENCED" ? currentIndustry : "",
           employmentStatus: regType === "EXPERIENCED" ? (employmentStatus || undefined) : undefined,
           notWorkingSince: regType === "EXPERIENCED" && employmentStatus === "NOT_WORKING" ? notWorkingSince : "",
+          workingSince: regType === "EXPERIENCED" && employmentStatus === "CURRENTLY_WORKING" ? workingSince : "",
           preferredCategory: regType === "FRESHER" ? preferredCategory : "",
           preferredRole: regType === "FRESHER" ? preferredRole : "",
           internshipDetails: regType === "FRESHER" ? internshipDetails : "",
@@ -1000,6 +1003,16 @@ function CandidateSignupForm() {
                           </button>
                         </div>
                       </div>
+                      {employmentStatus === "CURRENTLY_WORKING" && (
+                        <div>
+                          <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Working since <span className="text-red-500">*</span></label>
+                          <div className="relative">
+                            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 z-10 pointer-events-none" />
+                            <input required type="month" max={today.toISOString().slice(0, 7)} value={workingSince} onChange={e => setWorkingSince(e.target.value)}
+                              className={inputClass + " bg-white text-zinc-600 [color-scheme:light]"} />
+                          </div>
+                        </div>
+                      )}
                       {employmentStatus === "NOT_WORKING" && (
                         <div>
                           <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Not working since <span className="text-red-500">*</span></label>

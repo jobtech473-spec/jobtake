@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     }
     if (!data.data.location) return NextResponse.json({ error: "Please select your location." }, { status: 400 });
     const primaryEducation = data.data.educationEntries[0];
-    if (!primaryEducation?.education || !primaryEducation?.schoolName || !primaryEducation?.passingYear) {
+    if (!primaryEducation?.education || !primaryEducation?.schoolName || (primaryEducation?.status !== "Pursuing" && !primaryEducation?.passingYear)) {
       return NextResponse.json({ error: "Please fill in your education details." }, { status: 400 });
     }
   }
@@ -192,7 +192,9 @@ export async function POST(req: NextRequest) {
         }
 
         for (const entry of data.data.educationEntries) {
-          const startYear = parseIntOrNull(entry.passingYear);
+          // Pursuing entries have no passing year yet — fall back to the
+          // current year so the record (and its "Pursuing" status) still saves.
+          const startYear = parseIntOrNull(entry.passingYear) ?? (entry.status === "Pursuing" ? new Date().getFullYear() : null);
           if (entry.education && entry.schoolName && startYear) {
             await tx.education.create({
               data: {

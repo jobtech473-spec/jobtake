@@ -29,8 +29,6 @@ function emptyEducationEntry(): EducationEntry {
   return { education: "", specialization: "", specializationDetail: "", schoolName: "", passingYear: "", status: "", percentage: "" };
 }
 
-const EDUCATION_STATUS_OPTIONS = ["Completed", "Pursuing"];
-
 // A native <select> opens its popup wherever the browser/OS decides (often
 // centered on the selected option, which can look like it's floating above
 // the field). This controlled, absolute-positioned panel always opens
@@ -626,12 +624,12 @@ function CandidateSignupForm() {
       if (!bio.trim()) { setError("Please fill in About Me."); return false; }
     } else {
       const primaryEducation = educationEntries[0];
-      if (!primaryEducation.education || !primaryEducation.schoolName || !primaryEducation.passingYear) {
+      if (!primaryEducation.education || !primaryEducation.schoolName || (primaryEducation.status !== "Pursuing" && !primaryEducation.passingYear)) {
         setError("Please fill in your education details."); return false;
       }
       for (const entry of educationEntries) {
         if (!entry.education) continue;
-        if (!entry.schoolName || !entry.passingYear) { setError("Please fill in all fields for each qualification you've added."); return false; }
+        if (!entry.schoolName || (entry.status !== "Pursuing" && !entry.passingYear)) { setError("Please fill in all fields for each qualification you've added."); return false; }
         if (entry.education === "Diploma" && !entry.specializationDetail) {
           setError("Please select whether your Diploma was after 10th or 12th."); return false;
         }
@@ -657,12 +655,12 @@ function CandidateSignupForm() {
     if (!validateStep2()) { setStep(2); return; }
     if (!location) { setError("Please select your location."); return; }
     const primaryEducation = educationEntries[0];
-    if (!primaryEducation.education || !primaryEducation.schoolName || !primaryEducation.passingYear) {
+    if (!primaryEducation.education || !primaryEducation.schoolName || (primaryEducation.status !== "Pursuing" && !primaryEducation.passingYear)) {
       setError("Please fill in your education details."); return;
     }
     for (const entry of educationEntries) {
       if (!entry.education) continue;
-      if (!entry.schoolName || !entry.passingYear) { setError("Please fill in all fields for each qualification you've added."); return; }
+      if (!entry.schoolName || (entry.status !== "Pursuing" && !entry.passingYear)) { setError("Please fill in all fields for each qualification you've added."); return; }
       if (entry.education === "Diploma" && !entry.specializationDetail) {
         setError("Please select whether your Diploma was after 10th or 12th."); return;
       }
@@ -1267,22 +1265,32 @@ function CandidateSignupForm() {
                               className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year {index === 0 && <span className="text-red-500">*</span>}</label>
-                            <input required={index === 0} type="number" min={1950} max={today.getFullYear() + 10} value={entry.passingYear} onChange={e => updateEducationEntry(index, { passingYear: e.target.value })} placeholder="e.g. 2026"
-                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                          </div>
-                          <div>
                             <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Education Status</label>
-                            <select value={entry.status} onChange={e => updateEducationEntry(index, { status: e.target.value })} className={inputClass + " appearance-none bg-white text-zinc-600"}>
-                              <option value="">Completed / Pursuing</option>
-                              {EDUCATION_STATUS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                            </select>
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => updateEducationEntry(index, { status: "Completed" })}
+                                className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.status === "Completed" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                                Completed
+                              </button>
+                              <button type="button" onClick={() => updateEducationEntry(index, { status: "Pursuing", passingYear: "", percentage: "" })}
+                                className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${entry.status === "Pursuing" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                                Pursuing
+                              </button>
+                            </div>
                           </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Percentage / CGPA <span className="text-zinc-400 font-normal">(Optional)</span></label>
-                            <input value={entry.percentage} onChange={e => updateEducationEntry(index, { percentage: e.target.value })} placeholder="Enter percentage or CGPA"
-                              className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-                          </div>
+                          {entry.status !== "Pursuing" && (
+                            <>
+                              <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Passing Year {index === 0 && <span className="text-red-500">*</span>}</label>
+                                <input required={index === 0} type="number" min={1950} max={today.getFullYear() + 10} value={entry.passingYear} onChange={e => updateEducationEntry(index, { passingYear: e.target.value })} placeholder="e.g. 2026"
+                                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Percentage / CGPA <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                                <input value={entry.percentage} onChange={e => updateEducationEntry(index, { percentage: e.target.value })} placeholder="Enter percentage or CGPA"
+                                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     );

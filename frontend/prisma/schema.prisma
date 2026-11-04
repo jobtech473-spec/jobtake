@@ -31,6 +31,8 @@ model User {
   expectedSalary   Int?
   currentCompany     String?
   currentDesignation String?
+  currentIndustry    String?
+  employmentStatus   String?
   preferredLocations String[]        @default([])
   openToWork       Boolean           @default(true)
   profileVisible   Boolean           @default(true)

@@ -34,6 +34,8 @@ const Body = z.object({
   noticePeriod: z.string().optional(),
   currentCompany: z.string().optional(),
   currentDesignation: z.string().optional(),
+  currentIndustry: z.string().optional(),
+  employmentStatus: z.enum(["CURRENTLY_WORKING", "NOT_WORKING"]).optional(),
   educationEntries: z.array(EducationEntry).optional().default([]),
   skills: z.array(z.string()).optional().default([]),
   bio: z.string().optional(),
@@ -116,7 +118,8 @@ export async function POST(req: NextRequest) {
         !data.data.currentSalary ? "Current CTC" :
         !data.data.expectedSalary ? "Expected CTC" :
         !data.data.currentCompany ? "Current Company" :
-        !data.data.currentDesignation ? "Current Designation" : null;
+        !data.data.currentDesignation ? "Current Designation" :
+        !data.data.employmentStatus ? "Current Employment Status" : null;
       if (missing) return NextResponse.json({ error: `Please fill in ${missing}.` }, { status: 400 });
     }
     if (!data.data.location) return NextResponse.json({ error: "Please select your location." }, { status: 400 });
@@ -148,6 +151,8 @@ export async function POST(req: NextRequest) {
           expectedSalary: isExperienced ? parseIntOrNull(data.data.expectedSalary) : null,
           currentCompany: isExperienced ? (data.data.currentCompany || null) : null,
           currentDesignation: isExperienced ? (data.data.currentDesignation || null) : null,
+          currentIndustry: isExperienced ? (data.data.currentIndustry || null) : null,
+          employmentStatus: isExperienced ? (data.data.employmentStatus || null) : null,
         },
         select: { id: true, email: true, name: true, role: true },
       });

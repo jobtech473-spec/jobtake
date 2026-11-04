@@ -6,7 +6,7 @@ import {
   Loader2, Mail, Lock, Eye, EyeOff, User, Phone, Upload,
   ShieldCheck, Briefcase, TrendingUp, Bell, Building2,
   CalendarDays, UserRound, FileText, GraduationCap, X,
-  IndianRupee, MapPin, Clock, FileCheck2, ChevronDown,
+  IndianRupee, MapPin, Clock, FileCheck2, ChevronDown, Check,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { isValidIndianMobile } from "@/lib/utils";
@@ -512,6 +512,9 @@ function CandidateSignupForm() {
     }).catch(() => {});
   }, []);
 
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const STEPS = ["Account Info", "Professional Details", "Complete"] as const;
+
   const [regType, setRegType] = useState<"EXPERIENCED" | "FRESHER">("EXPERIENCED");
   const [expYears, setExpYears] = useState("");
   const [currentSalary, setCurrentSalary] = useState("");
@@ -519,6 +522,8 @@ function CandidateSignupForm() {
   const [noticePeriod, setNoticePeriod] = useState("");
   const [currentCompany, setCurrentCompany] = useState("");
   const [currentDesignation, setCurrentDesignation] = useState("");
+  const [currentIndustry, setCurrentIndustry] = useState("");
+  const [employmentStatus, setEmploymentStatus] = useState<"CURRENTLY_WORKING" | "NOT_WORKING" | "">("");
   const [location, setLocation] = useState("");
   const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([emptyEducationEntry()]);
   const [skills, setSkills] = useState<string[]>([]);
@@ -586,10 +591,41 @@ function CandidateSignupForm() {
     }
   }
 
+  function validateStep1(): boolean {
+    if (!name.trim()) { setError("Please enter your full name."); return false; }
+    if (password !== confirmPw) { setError("Passwords do not match."); return false; }
+    if (password.length < 8) { setError("Password must be at least 8 characters."); return false; }
+    if (!gender) { setError("Please select your gender."); return false; }
+    if (!dob) { setError("Please enter your date of birth."); return false; }
+    if (!isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return false; }
+    setError(null);
+    return true;
+  }
+
+  function validateStep2(): boolean {
+    if (regType === "EXPERIENCED") {
+      if (!expYears) { setError("Please enter your years of experience."); return false; }
+      if (!noticePeriod) { setError("Please select your notice period."); return false; }
+      if (!currentSalary) { setError("Please enter your current CTC."); return false; }
+      if (!expectedSalary) { setError("Please enter your expected CTC."); return false; }
+      if (!currentCompany.trim()) { setError("Please enter your current company."); return false; }
+      if (!currentDesignation.trim()) { setError("Please enter your current designation."); return false; }
+      if (!employmentStatus) { setError("Please select your current employment status."); return false; }
+    }
+    if (!location) { setError("Please select your location."); return false; }
+    if (!bio.trim()) { setError("Please fill in About Me."); return false; }
+    setError(null);
+    return true;
+  }
+
+  function goToStep2() { if (validateStep1()) setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function goToStep3() { if (validateStep2()) setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function backToStep(n: 1 | 2) { setStep(n); window.scrollTo({ top: 0, behavior: "smooth" }); }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password !== confirmPw) { setError("Passwords do not match."); return; }
-    if (!isValidIndianMobile(phone)) { setError("Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9."); return; }
+    if (!validateStep1()) { setStep(1); return; }
+    if (!validateStep2()) { setStep(2); return; }
     if (!location) { setError("Please select your location."); return; }
     const primaryEducation = educationEntries[0];
     if (!primaryEducation.education || !primaryEducation.schoolName || !primaryEducation.passingYear) {
@@ -621,6 +657,8 @@ function CandidateSignupForm() {
           noticePeriod: regType === "EXPERIENCED" ? noticePeriod : "",
           currentCompany: regType === "EXPERIENCED" ? currentCompany : "",
           currentDesignation: regType === "EXPERIENCED" ? currentDesignation : "",
+          currentIndustry: regType === "EXPERIENCED" ? currentIndustry : "",
+          employmentStatus: regType === "EXPERIENCED" ? (employmentStatus || undefined) : undefined,
           location, educationEntries, skills, bio,
           resumeDataUrl, resumeFileName,
         }),
@@ -682,15 +720,37 @@ function CandidateSignupForm() {
         {/* Right — Form */}
         <section className="flex-1 px-8 md:px-12 lg:px-16 py-10 overflow-y-auto">
           <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-                <UserRound className="h-3.5 w-3.5" /> Join Jobtake
-              </div>
-              <h1 className="text-3xl font-black text-zinc-900">Create your job seeker account</h1>
+            <div className="mb-6">
+              <button type="button" onClick={() => step > 1 ? backToStep((step - 1) as 1 | 2) : window.history.back()} className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 transition mb-4">
+                ← Back
+              </button>
+              <h1 className="text-2xl font-black text-zinc-900">Step {step} of 3 · {STEPS[step - 1]}</h1>
               <p className="text-zinc-500 mt-1 text-sm">One step closer to the right opportunities.</p>
+
+              {/* Step progress */}
+              <div className="flex items-center mt-5">
+                {STEPS.map((label, i) => {
+                  const n = i + 1;
+                  const done = n < step;
+                  const active = n === step;
+                  return (
+                    <div key={label} className={`flex items-center ${i < STEPS.length - 1 ? "flex-1" : ""}`}>
+                      <div className="flex flex-col items-center">
+                        <div className={`h-8 w-8 rounded-full grid place-items-center text-xs font-bold shrink-0 ${done ? "bg-blue-600 text-white" : active ? "bg-blue-600 text-white ring-4 ring-blue-100" : "bg-zinc-100 text-zinc-400"}`}>
+                          {done ? <Check className="h-4 w-4" /> : n}
+                        </div>
+                        <span className={`mt-1.5 text-[11px] font-semibold whitespace-nowrap ${active || done ? "text-blue-700" : "text-zinc-400"}`}>{label}</span>
+                      </div>
+                      {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 ${n < step ? "bg-blue-600" : "bg-zinc-100"}`} />}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <form onSubmit={onSubmit} className="mt-7 space-y-7">
+              {step === 1 && (
+              <>
               {/* Personal Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -785,25 +845,45 @@ function CandidateSignupForm() {
                 </div>
               </div>
 
+              {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>}
+
+              <button type="button" onClick={goToStep2}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg transition text-base">
+                Continue →
+              </button>
+              </>
+              )}
+
+              {step === 2 && (
+              <>
               {/* Professional Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Briefcase className="h-4 w-4 text-blue-600" />
-                  <h2 className="font-bold text-zinc-900">Professional Information</h2>
+                  <h2 className="font-bold text-zinc-900">Professional Details</h2>
                 </div>
 
                 {/* Registration type */}
                 <div className="mb-5">
-                  <label className="block text-sm font-semibold text-zinc-700 mb-2">Registration</label>
-                  <label className="flex items-center gap-2 cursor-pointer w-fit">
-                    <input
-                      type="checkbox"
-                      checked={regType === "FRESHER"}
-                      onChange={e => setRegType(e.target.checked ? "FRESHER" : "EXPERIENCED")}
-                      className="w-4 h-4 rounded border-zinc-300 accent-blue-600"
-                    />
-                    <span className="text-sm font-medium text-zinc-700">Registration Fresher (I don&rsquo;t have any work experience)</span>
-                  </label>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-2">Work Experience <span className="text-red-500">*</span></label>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <button type="button" onClick={() => setRegType("FRESHER")}
+                      className={`flex items-start gap-2 text-left px-4 py-3 rounded-lg border transition ${regType === "FRESHER" ? "border-blue-500 bg-blue-50/50" : "border-zinc-200 hover:bg-zinc-50"}`}>
+                      <span className={`mt-0.5 h-4 w-4 rounded-full border-2 shrink-0 ${regType === "FRESHER" ? "border-blue-600 bg-blue-600" : "border-zinc-300"}`} />
+                      <span>
+                        <span className="block text-sm font-semibold text-zinc-900">Fresher</span>
+                        <span className="block text-xs text-zinc-500 mt-0.5">I have never worked in a full-time or part-time job</span>
+                      </span>
+                    </button>
+                    <button type="button" onClick={() => setRegType("EXPERIENCED")}
+                      className={`flex items-start gap-2 text-left px-4 py-3 rounded-lg border transition ${regType === "EXPERIENCED" ? "border-blue-500 bg-blue-50/50" : "border-zinc-200 hover:bg-zinc-50"}`}>
+                      <span className={`mt-0.5 h-4 w-4 rounded-full border-2 shrink-0 ${regType === "EXPERIENCED" ? "border-blue-600 bg-blue-600" : "border-zinc-300"}`} />
+                      <span>
+                        <span className="block text-sm font-semibold text-zinc-900">Experienced</span>
+                        <span className="block text-xs text-zinc-500 mt-0.5">I have previous work experience</span>
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -852,6 +932,29 @@ function CandidateSignupForm() {
                           <input required value={currentDesignation} onChange={e => setCurrentDesignation(e.target.value)} placeholder="Enter your current designation" className={inputClass} />
                         </div>
                       </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Current Employment Status <span className="text-red-500">*</span></label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => setEmploymentStatus("CURRENTLY_WORKING")}
+                            className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${employmentStatus === "CURRENTLY_WORKING" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                            Currently working
+                          </button>
+                          <button type="button" onClick={() => setEmploymentStatus("NOT_WORKING")}
+                            className={`flex-1 py-3 rounded-lg border text-sm font-medium transition ${employmentStatus === "NOT_WORKING" ? "border-blue-500 bg-blue-50/50 text-blue-700" : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"}`}>
+                            Not currently working
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Industry</label>
+                        <div className="relative">
+                          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <select value={currentIndustry} onChange={e => setCurrentIndustry(e.target.value)} className={inputClass + " appearance-none bg-white text-zinc-600"}>
+                            <option value="">Select industry</option>
+                            {INDUSTRY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -872,6 +975,23 @@ function CandidateSignupForm() {
                 </div>
               </div>
 
+              {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>}
+
+              <div className="flex gap-3">
+                <button type="button" onClick={() => backToStep(1)}
+                  className="px-6 py-3.5 rounded-lg border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition">
+                  Back
+                </button>
+                <button type="button" onClick={goToStep3}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg transition text-base">
+                  Continue →
+                </button>
+              </div>
+              </>
+              )}
+
+              {step === 3 && (
+              <>
               {/* Education */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -1049,11 +1169,19 @@ function CandidateSignupForm() {
 
               {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>}
 
-              <button type="submit" disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition text-base disabled:opacity-60">
-                {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                Create Account →
-              </button>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => backToStep(2)}
+                  className="px-6 py-3.5 rounded-lg border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition">
+                  Back
+                </button>
+                <button type="submit" disabled={loading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition text-base disabled:opacity-60">
+                  {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+                  Create Account →
+                </button>
+              </div>
+              </>
+              )}
             </form>
 
             {/* Bottom trust section */}

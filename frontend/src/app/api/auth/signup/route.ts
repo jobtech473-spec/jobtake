@@ -19,6 +19,13 @@ const EducationEntry = z.object({
   percentage: z.string().optional(),
 });
 
+const ExperienceEntry = z.object({
+  title: z.string().optional(),
+  company: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+});
+
 const Body = z.object({
   email: z.string().email().toLowerCase(),
   password: z.string().min(8),
@@ -43,6 +50,7 @@ const Body = z.object({
   preferredRole: z.string().optional(),
   internshipDetails: z.string().optional(),
   educationEntries: z.array(EducationEntry).optional().default([]),
+  experienceEntries: z.array(ExperienceEntry).optional().default([]),
   skills: z.array(z.string()).optional().default([]),
   bio: z.string().optional(),
   resumeDataUrl: z.string().optional(),
@@ -75,6 +83,11 @@ function parseIntOrNull(value?: string) {
   if (!value) return null;
   const n = parseInt(value, 10);
   return Number.isFinite(n) ? n : null;
+}
+
+function parseMonthYear(value?: string) {
+  if (!value || !/^\d{4}-\d{2}$/.test(value)) return null;
+  return new Date(`${value}-01T00:00:00.000Z`);
 }
 
 export async function POST(req: NextRequest) {
@@ -206,6 +219,22 @@ export async function POST(req: NextRequest) {
                 status: entry.status?.trim() || null,
                 percentage: entry.percentage?.trim() || null,
                 startYear,
+              },
+            }).catch(() => null);
+          }
+        }
+
+        for (const entry of data.data.experienceEntries) {
+          const startDate = parseMonthYear(entry.startDate);
+          if (entry.title && entry.company && startDate) {
+            await tx.experience.create({
+              data: {
+                userId: created.id,
+                title: entry.title,
+                company: entry.company,
+                startDate,
+                endDate: parseMonthYear(entry.endDate),
+                current: false,
               },
             }).catch(() => null);
           }

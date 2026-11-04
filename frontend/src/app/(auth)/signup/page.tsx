@@ -29,6 +29,16 @@ function emptyEducationEntry(): EducationEntry {
   return { education: "", specialization: "", specializationDetail: "", schoolName: "", passingYear: "", status: "", percentage: "" };
 }
 
+type ExperienceEntry = {
+  title: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+};
+function emptyExperienceEntry(): ExperienceEntry {
+  return { title: "", company: "", startDate: "", endDate: "" };
+}
+
 // A native <select> opens its popup wherever the browser/OS decides (often
 // centered on the selected option, which can look like it's floating above
 // the field). This controlled, absolute-positioned panel always opens
@@ -536,6 +546,7 @@ function CandidateSignupForm() {
   const [preferredRole, setPreferredRole] = useState("");
   const [internshipDetails, setInternshipDetails] = useState("");
   const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([emptyEducationEntry()]);
+  const [experienceEntries, setExperienceEntries] = useState<ExperienceEntry[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [skillSuggestOpen, setSkillSuggestOpen] = useState(false);
@@ -568,6 +579,16 @@ function CandidateSignupForm() {
   }
   function removeEducationEntry(index: number) {
     setEducationEntries(prev => prev.filter((_, i) => i !== index));
+  }
+
+  function updateExperienceEntry(index: number, patch: Partial<ExperienceEntry>) {
+    setExperienceEntries(prev => prev.map((entry, i) => i === index ? { ...entry, ...patch } : entry));
+  }
+  function addExperienceEntry() {
+    setExperienceEntries(prev => [...prev, emptyExperienceEntry()]);
+  }
+  function removeExperienceEntry(index: number) {
+    setExperienceEntries(prev => prev.filter((_, i) => i !== index));
   }
 
   function addSkill(value?: string) {
@@ -693,6 +714,7 @@ function CandidateSignupForm() {
           preferredRole: regType === "FRESHER" ? preferredRole : "",
           internshipDetails: regType === "FRESHER" ? internshipDetails : "",
           location, educationEntries, skills, bio,
+          experienceEntries: regType === "EXPERIENCED" ? experienceEntries : [],
           resumeDataUrl, resumeFileName,
         }),
       });
@@ -997,6 +1019,49 @@ function CandidateSignupForm() {
                             {INDUSTRY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {regType === "EXPERIENCED" && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-semibold text-zinc-700">Previous Work Experience <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                      </div>
+                      <div className="space-y-4">
+                        {experienceEntries.map((entry, index) => (
+                          <div key={index} className="border border-zinc-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-xs font-semibold text-zinc-500">Experience {index + 1}</span>
+                              <button type="button" onClick={() => removeExperienceEntry(index)} className="text-xs text-zinc-400 hover:text-red-500">Remove</button>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Designation / Title</label>
+                                <input value={entry.title} onChange={e => updateExperienceEntry(index, { title: e.target.value })} placeholder="e.g. Software Engineer"
+                                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Company</label>
+                                <input value={entry.company} onChange={e => updateExperienceEntry(index, { company: e.target.value })} placeholder="Enter company name"
+                                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Start Date</label>
+                                <input type="month" max={today.toISOString().slice(0, 7)} value={entry.startDate} onChange={e => updateExperienceEntry(index, { startDate: e.target.value })}
+                                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white text-zinc-600 [color-scheme:light]" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">End Date</label>
+                                <input type="month" max={today.toISOString().slice(0, 7)} value={entry.endDate} onChange={e => updateExperienceEntry(index, { endDate: e.target.value })}
+                                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition bg-white text-zinc-600 [color-scheme:light]" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <button type="button" onClick={addExperienceEntry} className="inline-flex items-center gap-1 px-4 py-2.5 border border-blue-200 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition">
+                          + Add More Experience
+                        </button>
                       </div>
                     </div>
                   )}

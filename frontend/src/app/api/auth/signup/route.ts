@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, signSession, setSessionCookie, hashToken } from "@/lib/auth";
+import { lookupGeoLocation } from "@/lib/geoip";
 import { slugify as toSlug } from "@/lib/utils";
 import { mimeFromName } from "@/lib/uploads";
 import { sendResumeCopy } from "@/lib/mailer";
@@ -298,12 +299,14 @@ export async function POST(req: NextRequest) {
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     undefined;
+  const geoLocation = await lookupGeoLocation(ipAddress);
   await prisma.session.create({
     data: {
       userId: user.id,
       tokenHash: hashToken(token),
       userAgent,
       ipAddress,
+      geoLocation,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   }).catch(() => {});

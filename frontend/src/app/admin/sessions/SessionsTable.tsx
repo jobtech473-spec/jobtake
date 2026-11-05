@@ -16,6 +16,7 @@ type Row = {
   userLabel: string;
   userAgent: string | null;
   ipAddress: string | null;
+  geoLocation: string | null;
   createdAt: string;
   lastActiveAt: string;
 };
@@ -89,11 +90,12 @@ export function SessionsTable({ sessions }: { sessions: Row[] }) {
       {/* Table */}
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="min-w-[900px]">
-            <div className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
+          <div className="min-w-[1050px]">
+            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-[11px] uppercase tracking-[0.14em] text-zinc-400 font-semibold">
               <div>User</div>
               <div>Role</div>
               <div>Device</div>
+              <div>Location</div>
               <div>IP Address</div>
               <div>Last Active</div>
               <div>Actions</div>
@@ -105,7 +107,7 @@ export function SessionsTable({ sessions }: { sessions: Row[] }) {
                 {filtered.map(s => {
                   const initials = s.userName.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
                   return (
-                    <div key={s.sessionId} className="grid grid-cols-[2fr_1.3fr_1fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5">
+                    <div key={s.sessionId} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 items-center px-6 py-3.5">
                       <Link href={`/admin/users/${s.userId}`} className="flex items-center gap-3 min-w-0 hover:opacity-80">
                         {s.userAvatarUrl ? (
                           <img src={s.userAvatarUrl} alt="" className="h-10 w-10 rounded-full object-cover shrink-0" />
@@ -121,6 +123,7 @@ export function SessionsTable({ sessions }: { sessions: Row[] }) {
                         <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${ROLE_STYLE[s.userRole]}`}>{s.userRole.charAt(0) + s.userRole.slice(1).toLowerCase()}</span>
                       </div>
                       <div className="text-sm text-zinc-600 truncate">{formatDeviceLabel(s.userAgent)}</div>
+                      <div className="text-sm text-zinc-600 truncate">{s.geoLocation || "—"}</div>
                       <div className="text-sm text-zinc-600 font-mono truncate">{s.ipAddress || "—"}</div>
                       <div className="text-xs text-zinc-500">{timeAgo(s.lastActiveAt)}</div>
                       <div>

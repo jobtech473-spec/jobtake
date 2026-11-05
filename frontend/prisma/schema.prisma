@@ -74,6 +74,7 @@ model Session {
   tokenHash String   @unique
   userAgent String?
   ipAddress String?
+  geoLocation String?
   expiresAt DateTime
   createdAt DateTime @default(now())
   lastActiveAt DateTime @default(now())

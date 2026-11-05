@@ -30,6 +30,7 @@ export default async function AdminSessionsPage() {
     userLabel: formatUserId(s.user.serial),
     userAgent: s.userAgent,
     ipAddress: s.ipAddress,
+    geoLocation: s.geoLocation,
     createdAt: s.createdAt.toISOString(),
     lastActiveAt: s.lastActiveAt.toISOString(),
   }));

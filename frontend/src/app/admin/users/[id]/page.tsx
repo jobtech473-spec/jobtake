@@ -53,7 +53,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const activeSessions = await prisma.session.findMany({
     where: { userId: user.id, expiresAt: { gt: new Date() } },
     orderBy: { lastActiveAt: "desc" },
-    select: { id: true, userAgent: true, ipAddress: true, createdAt: true, lastActiveAt: true },
+    select: { id: true, userAgent: true, ipAddress: true, geoLocation: true, createdAt: true, lastActiveAt: true },
   });
 
   const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
@@ -278,6 +278,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 {activeSessions.map(s => (
                   <div key={s.id} className="text-xs border border-zinc-100 rounded-xl px-3 py-2.5">
                     <div className="font-semibold text-zinc-800">{formatDeviceLabel(s.userAgent)}</div>
+                    {s.geoLocation && <div className="text-zinc-400 mt-0.5">{s.geoLocation}</div>}
                     <div className="text-zinc-400 mt-0.5">{s.ipAddress || "Unknown IP"}</div>
                     <div className="text-zinc-400 mt-0.5">Active {timeAgo(s.lastActiveAt)}</div>
                   </div>

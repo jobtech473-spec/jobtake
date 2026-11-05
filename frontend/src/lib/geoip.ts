@@ -1,7 +1,7 @@
-// Resolves a public IP address to an approximate "City, Country" string for
-// showing where a login session came from. Browsers never expose the actual
-// device name or precise location to a website, so this is IP-based and
-// approximate — the closest a server can get.
+// Resolves a public IP address to a "City, Region, ZIP, Country" string for
+// showing where a login session came from. This is the most detail IP-based
+// geolocation can ever give — an exact street address requires GPS, which no
+// website can read without the device's explicit permission.
 export async function lookupGeoLocation(ip?: string | null): Promise<string | null> {
   if (!ip) return null;
   const clean = ip.trim();
@@ -11,12 +11,12 @@ export async function lookupGeoLocation(ip?: string | null): Promise<string | nu
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2500);
-    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(clean)}?fields=status,city,country`, { signal: controller.signal });
+    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(clean)}?fields=status,city,regionName,zip,country`, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) return null;
     const data = await res.json();
     if (data.status !== "success") return null;
-    return [data.city, data.country].filter(Boolean).join(", ") || null;
+    return [data.city, data.regionName, data.zip, data.country].filter(Boolean).join(", ") || null;
   } catch {
     return null;
   }

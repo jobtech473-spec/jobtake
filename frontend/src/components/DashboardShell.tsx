@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Briefcase, Bookmark, User as UserIcon,
   FileText, ShieldCheck, Building2, Users as UsersIcon,
   ListChecks, Settings, ExternalLink, Plus, Database,
-  Image as ImageIcon, Quote, Search, CreditCard,
+  Image as ImageIcon, Quote, Search, CreditCard, Monitor,
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { DashboardMobileNav } from "./DashboardMobileNav";
@@ -39,6 +39,7 @@ const NAV: Record<Role, { label: string; href: string; icon: React.ComponentType
     { label: "Companies",       href: "/admin/companies",        icon: Building2 },
     { label: "Plans",           href: "/admin/plans",            icon: CreditCard },
     { label: "Users",           href: "/admin/users",            icon: UsersIcon },
+    { label: "Sessions",        href: "/admin/sessions",         icon: Monitor },
     { label: "Master Data",     href: "/admin/options",          icon: Database },
     { label: "Homepage Stats",  href: "/admin/stats",            icon: ListChecks },
     { label: "Company Logos",   href: "/admin/partner-logos",    icon: ImageIcon },

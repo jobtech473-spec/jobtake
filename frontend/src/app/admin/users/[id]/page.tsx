@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo, formatDeviceLabel } from "@/lib/utils";
 import { UserActionsPanel } from "./UserActionsPanel";
 import { formatUserId } from "@/lib/user-id";
 import { buildResumePreview } from "@/lib/resume-preview";
@@ -13,6 +13,7 @@ import { EmailAction } from "@/components/EmailAction";
 import {
   ArrowLeft, Mail, Phone, MapPin, Clock, CheckCircle2, Zap,
   Briefcase, GraduationCap, FileText, Building2, Globe, Linkedin, Github, Download,
+  Monitor,
 } from "lucide-react";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -48,6 +49,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   });
 
   if (!user) notFound();
+
+  const activeSessions = await prisma.session.findMany({
+    where: { userId: user.id, expiresAt: { gt: new Date() } },
+    orderBy: { lastActiveAt: "desc" },
+    select: { id: true, userAgent: true, ipAddress: true, createdAt: true, lastActiveAt: true },
+  });
 
   const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
   // Collapse repeat uploads of the same file (newest first, since user.resumes is ordered by createdAt desc)
@@ -258,6 +265,25 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 <dd className="text-zinc-700 font-medium">{formatUserId(user.serial)}</dd>
               </div>
             </dl>
+          </div>
+
+          <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm p-5">
+            <h3 className="font-bold text-zinc-900 text-sm mb-4 flex items-center gap-1.5">
+              <Monitor className="h-3.5 w-3.5 text-zinc-400" /> Logged-in Devices
+            </h3>
+            {activeSessions.length === 0 ? (
+              <p className="text-xs text-zinc-400">Not currently logged in on any device.</p>
+            ) : (
+              <div className="space-y-3">
+                {activeSessions.map(s => (
+                  <div key={s.id} className="text-xs border border-zinc-100 rounded-xl px-3 py-2.5">
+                    <div className="font-semibold text-zinc-800">{formatDeviceLabel(s.userAgent)}</div>
+                    <div className="text-zinc-400 mt-0.5">{s.ipAddress || "Unknown IP"}</div>
+                    <div className="text-zinc-400 mt-0.5">Active {timeAgo(s.lastActiveAt)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {user.role === "SEEKER" && (

@@ -64,3 +64,24 @@ export function timeAgo(date: Date | string) {
   if (months < 12) return `${months}mo ago`;
   return `${Math.floor(months / 12)}y ago`;
 }
+
+// Turns a raw User-Agent string into a short "Browser on OS" label for
+// showing which device a login session belongs to.
+export function formatDeviceLabel(userAgent?: string | null): string {
+  if (!userAgent) return "Unknown device";
+  const ua = userAgent;
+  const os =
+    /Windows/i.test(ua) ? "Windows" :
+    /iPhone|iPad|iPod/i.test(ua) ? "iOS" :
+    /Android/i.test(ua) ? "Android" :
+    /Macintosh|Mac OS X/i.test(ua) ? "macOS" :
+    /Linux/i.test(ua) ? "Linux" : "Unknown OS";
+  const browser =
+    /Edg\//i.test(ua) ? "Edge" :
+    /OPR\//i.test(ua) ? "Opera" :
+    /Chrome\//i.test(ua) ? "Chrome" :
+    /CriOS\//i.test(ua) ? "Chrome" :
+    /Firefox\//i.test(ua) ? "Firefox" :
+    /Safari\//i.test(ua) ? "Safari" : "Unknown browser";
+  return `${browser} on ${os}`;
+}

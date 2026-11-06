@@ -35,6 +35,7 @@ const Body = z.object({
   ugSpecialization: z.string().optional(),
   diplomaSpecialization: z.string().optional(),
   itiSpecialization: z.string().optional(),
+  status: z.enum(["DRAFT", "PENDING"]).optional().default("PENDING"),
 });
 
 export async function POST(req: NextRequest) {
@@ -114,15 +115,17 @@ export async function POST(req: NextRequest) {
 
   const base = slugify(data.data.title);
   const slug = `${base}-${Math.random().toString(36).slice(2, 7)}`;
+  const isDraft = data.data.status === "DRAFT";
 
   let job;
   try {
     job = await prisma.$transaction(async (tx) => {
-      // Each job post spends one credit, except for admin-posted jobs. The
+      // Each job post spends one credit, except for admin-posted jobs and
+      // drafts (a draft isn't live yet, so it shouldn't cost a credit). The
       // `gt: 0` guard makes the decrement atomic under concurrent requests —
       // updateMany matches 0 rows (instead of going negative) once credits
       // run out, which is how we detect "out of credits" below.
-      if (user.role === "EMPLOYER") {
+      if (user.role === "EMPLOYER" && !isDraft) {
         const spent = await tx.company.updateMany({
           where: { id: companyId, jobCredits: { gt: 0 } },
           data: { jobCredits: { decrement: 1 } },
@@ -161,9 +164,10 @@ export async function POST(req: NextRequest) {
           minEducation: data.data.minEducation,
           educationSpecialization: data.data.educationSpecialization,
           keySkills: data.data.keySkills.filter(s => data.data.skills.includes(s)).slice(0, 5),
-          // GST verification already gates who can reach this point, so jobs go live immediately.
-          status: "PUBLISHED",
-          publishedAt: new Date(),
+          // GST verification already gates who can reach this point, so a
+          // non-draft submission goes live immediately.
+          status: isDraft ? "DRAFT" : "PUBLISHED",
+          publishedAt: isDraft ? null : new Date(),
         },
       });
     });

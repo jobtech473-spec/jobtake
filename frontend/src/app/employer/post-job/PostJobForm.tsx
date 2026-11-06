@@ -477,6 +477,7 @@ export function PostJobForm({ categories, options, isAdmin, company }: { categor
     setLoading(true);
     const seniority = getSeniorityFromExperience(experienceMin, experienceMax);
     const body = {
+      status,
       title, description, responsibilities, requirements, benefits,
       location: remoteJob ? "Remote" : location,
       industries: industryNames,
